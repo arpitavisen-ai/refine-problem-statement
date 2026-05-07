@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "get_ticket",
-      "description": "Gets a ticket",
+      "description": "Pull the full ticket record including subject, body, submitter email, and timestamps. Call this first to understand the issue.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -13,56 +13,60 @@
     },
     {
       "name": "lookup_customer_by_email",
-      "description": "Customer lookup",
+      "description": "Find the customer account from an email address. Use the submitter email from the ticket to get the customer_id you need for all other tools.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "email": {"type": "string"}
+          "email": {"type": "string", "description": "Email address of the ticket submitter"}
         },
         "required": ["email"]
       }
     },
     {
       "name": "read_error_logs",
-      "description": "Reads error logs. Note: only last 24h unless you specify since_hours.",
+      "description": "Fetch error logs for a customer, filterable by endpoint and HTTP status code. Returns the last 24 hours by default — use since_hours to look further back.",
       "input_schema": {
         "type": "object",
         "properties": {
           "customer_id": {"type": "string"},
-          "endpoint": {"type": "string"},
-          "status_code": {"type": "integer"},
-          "since_hours": {"type": "integer"}
+          "endpoint": {"type": "string", "description": "Optional: filter to a specific API endpoint, e.g. '/api/v2/users/sync'"},
+          "status_code": {"type": "integer", "description": "Optional: filter by HTTP status code, e.g. 500, 401, 429"},
+          "since_hours": {"type": "integer", "description": "How many hours back to search. Default: 24. Use 72 or more for issues that started days ago."}
         },
         "required": ["customer_id"]
       }
     },
     {
       "name": "check_webhook_deliveries",
-      "description": "Webhook delivery log",
+      "description": "View the webhook delivery log for a customer: delivery status, retry count, last successful and failed timestamps, and dropped event count.",
       "input_schema": {
         "type": "object",
         "properties": {
           "customer_id": {"type": "string"},
-          "status": {"type": "string", "enum": ["delivered", "retrying", "dropped", "all"]},
-          "since_hours": {"type": "integer"}
+          "status": {
+            "type": "string",
+            "enum": ["delivered", "retrying", "dropped", "all"],
+            "description": "Filter by delivery status. Use 'dropped' to see events we gave up on after retries."
+          },
+          "since_hours": {"type": "integer", "description": "How many hours back to search. Default: 24."}
         },
         "required": ["customer_id"]
       }
     },
     {
       "name": "test_api_key",
-      "description": "Tests an API key",
+      "description": "Validate that an API key is active and check its permission scopes. Pass the key prefix (first 12 characters before the underscore-separated suffix), not the full key — e.g. for 'sk_live_abc123xyz', pass 'sk_live_abc1'.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "key_prefix": {"type": "string"}
+          "key_prefix": {"type": "string", "description": "First 12 characters of the API key, e.g. 'sk_live_abc1'. Do not pass the full key."}
         },
         "required": ["key_prefix"]
       }
     },
     {
       "name": "inspect_integration_config",
-      "description": "Integration config from traffic headers",
+      "description": "Read the customer's detected integration configuration from recent traffic headers: SDK version, configured endpoints, retry settings, and timeout values.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -73,12 +77,12 @@
     },
     {
       "name": "get_rate_limit_status",
-      "description": "Rate limit status",
+      "description": "Check the customer's current API usage against their rate limit, broken down by endpoint for the last hour. Use when the ticket mentions 429 errors or throttling.",
       "input_schema": {
         "type": "object",
         "properties": {
           "customer_id": {"type": "string"},
-          "endpoint": {"type": "string"}
+          "endpoint": {"type": "string", "description": "Optional: check rate limit for a specific endpoint only"}
         },
         "required": ["customer_id"]
       }

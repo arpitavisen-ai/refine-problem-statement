@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$d = $input | Out-String | ConvertFrom-Json; if ($d.tool_input.file_path) { npx prettier --write $d.tool_input.file_path 2>$null }; exit 0",
+            "shell": "powershell"
+          }
+        ]
+      }
+    ]
+  }
+}

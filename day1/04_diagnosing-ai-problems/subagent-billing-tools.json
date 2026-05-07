@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "get_ticket",
-      "description": "Gets a ticket",
+      "description": "Pull the full ticket record including subject, body, submitter email, and timestamps. Call this first to understand the issue.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -13,18 +13,18 @@
     },
     {
       "name": "lookup_customer_by_email",
-      "description": "Customer lookup",
+      "description": "Find the customer account from an email address. Use the submitter email from the ticket to get the customer_id you need for all other tools.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "email": {"type": "string"}
+          "email": {"type": "string", "description": "Email address of the ticket submitter"}
         },
         "required": ["email"]
       }
     },
     {
       "name": "get_billing_history",
-      "description": "Billing history for a customer",
+      "description": "Retrieve the last 12 months of invoices, payments, plan changes, and credits for a customer. Use this to verify charges, confirm plan change dates, and find transaction IDs needed for refunds.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -35,7 +35,7 @@
     },
     {
       "name": "check_plan_entitlements",
-      "description": "Returns plan entitlements.",
+      "description": "Return what features and usage limits the customer's current plan includes (e.g. seat cap, API call limit, storage). Use before confirming whether a charge or feature is expected.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -46,33 +46,37 @@
     },
     {
       "name": "issue_refund",
-      "description": "Issues a refund. Calls Stripe under the hood.",
+      "description": "Refund a specific charge back to the customer's payment method. Use when the transaction_id is known from billing history. For corrections to an open or future invoice instead, use adjust_invoice.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "transaction_id": {"type": "string"},
-          "amount": {"type": "number"},
-          "reason": {"type": "string", "enum": ["duplicate_charge", "billing_error", "service_credit", "goodwill"]}
+          "transaction_id": {"type": "string", "description": "Transaction ID from get_billing_history, e.g. txn_abc123"},
+          "amount": {"type": "number", "description": "Amount to refund in USD. Must be greater than 0 and not exceed the original transaction amount."},
+          "reason": {
+            "type": "string",
+            "enum": ["duplicate_charge", "billing_error", "service_credit", "goodwill"],
+            "description": "duplicate_charge = same amount charged twice. billing_error = wrong amount or wrong plan billed. service_credit = compensating for a service failure. goodwill = discretionary credit."
+          }
         },
         "required": ["transaction_id", "amount", "reason"]
       }
     },
     {
       "name": "adjust_invoice",
-      "description": "Invoice adjustment",
+      "description": "Apply a credit or correction to an open invoice. Use when the invoice_id is known and the invoice is not yet paid. For reversing a charge that has already been processed, use issue_refund instead.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "invoice_id": {"type": "string"},
-          "credit_amount": {"type": "number"},
-          "credit_description": {"type": "string"}
+          "invoice_id": {"type": "string", "description": "Invoice ID from get_billing_history, e.g. inv_abc123"},
+          "credit_amount": {"type": "number", "description": "Amount to credit in USD"},
+          "credit_description": {"type": "string", "description": "Reason for the credit, e.g. 'Plan downgrade correction — Scale to Growth Feb 26'"}
         },
         "required": ["invoice_id", "credit_amount", "credit_description"]
       }
     },
     {
       "name": "check_payment_method",
-      "description": "Payment method info",
+      "description": "Return the payment method on file: card type, last 4 digits, expiry, and most recent failure if any. Use when investigating payment failures or declined charges.",
       "input_schema": {
         "type": "object",
         "properties": {

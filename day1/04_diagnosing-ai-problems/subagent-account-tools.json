@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "get_ticket",
-      "description": "Gets a ticket",
+      "description": "Pull the full ticket record including subject, body, submitter email, and timestamps. Call this first to understand the issue.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -13,18 +13,18 @@
     },
     {
       "name": "lookup_customer_by_email",
-      "description": "Customer lookup",
+      "description": "Find the customer account from an email address. Use the submitter email from the ticket to get the customer_id you need for all other tools.",
       "input_schema": {
         "type": "object",
         "properties": {
-          "email": {"type": "string"}
+          "email": {"type": "string", "description": "Email address of the ticket submitter"}
         },
         "required": ["email"]
       }
     },
     {
       "name": "check_sso_config",
-      "description": "SSO config",
+      "description": "Read the SSO/SAML configuration: IdP provider, certificate expiry and upload dates, last successful authentication timestamp, and current error state. Always call this first for any SSO or login issue.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -35,21 +35,21 @@
     },
     {
       "name": "check_audit_log",
-      "description": "Audit log query",
+      "description": "Query the workspace event log. Use to verify when a plan changed, when SSO was configured, when a user's role was modified, or when any other workspace-level action occurred.",
       "input_schema": {
         "type": "object",
         "properties": {
           "customer_id": {"type": "string"},
-          "event_type": {"type": "string"},
-          "after": {"type": "string"},
-          "limit": {"type": "integer"}
+          "event_type": {"type": "string", "description": "Filter by event type, e.g. 'plan_change', 'sso_config_update', 'role_change', 'user_added'"},
+          "after": {"type": "string", "description": "ISO 8601 date to filter events after, e.g. '2026-02-01'"},
+          "limit": {"type": "integer", "description": "Max events to return. Default: 20."}
         },
         "required": ["customer_id"]
       }
     },
     {
       "name": "get_workspace_account_summary",
-      "description": "Workspace summary. TODO: merge with get_customer_details?",
+      "description": "Get a summary of the workspace: seats used and limit, list of admins, SSO enabled/disabled status, and account creation date.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -60,19 +60,19 @@
     },
     {
       "name": "list_workspace_users",
-      "description": "Lists users",
+      "description": "List all users in the workspace with their role and last login timestamp. Use to confirm how many users are affected by an SSO or permission issue, or to identify admins.",
       "input_schema": {
         "type": "object",
         "properties": {
           "customer_id": {"type": "string"},
-          "role": {"type": "string", "enum": ["admin", "member", "viewer"]}
+          "role": {"type": "string", "enum": ["admin", "member", "viewer"], "description": "Optional: filter to a specific role"}
         },
         "required": ["customer_id"]
       }
     },
     {
       "name": "modify_permissions",
-      "description": "Changes a user's role.",
+      "description": "Change a user's role. For role downgrades (e.g. admin → member), verify the request is from an authorized workspace admin before calling. Do not call this without confirming authorization in the ticket or audit log.",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -85,7 +85,7 @@
     },
     {
       "name": "reset_2fa",
-      "description": "2FA reset",
+      "description": "Clear a user's 2FA enrollment. The user will be prompted to re-enroll on their next login. Use when a user is locked out due to a lost or inaccessible authenticator device.",
       "input_schema": {
         "type": "object",
         "properties": {

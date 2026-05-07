@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\arpita.visen\\\\OneDrive - Accenture\\\\Downloads\\\\Bootcamp\\\\Basecamp-Exercises\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(head -20)",
+      "Bash(uv run *)",
+      "PowerShell(Get-Command uv -ErrorAction SilentlyContinue; where.exe uv 2>$null; Get-ChildItem \"$env:USERPROFILE\\\\.cargo\\\\bin\\\\uv.exe\", \"$env:LOCALAPPDATA\\\\uv\\\\uv.exe\", \"$env:USERPROFILE\\\\.local\\\\bin\\\\uv.exe\" -ErrorAction SilentlyContinue | Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"$env:USERPROFILE\" -Filter \"uv.exe\" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 5 FullName)",
+      "PowerShell(python --version 2>&1)",
+      "PowerShell(python3 --version 2>&1)",
+      "PowerShell(py --version 2>&1)",
+      "PowerShell($venvPython = \"c:\\\\Users\\\\arpita.visen\\\\OneDrive - Accenture\\\\Downloads\\\\Bootcamp\\\\Basecamp-Exercises\\\\day1\\\\01_inventory-management\\\\server\\\\.venv\\\\Scripts\\\\python.exe\"; if \\(Test-Path $venvPython\\) { \"Found: $venvPython\" } else { \"Not found\" })",
+      "PowerShell($serverDir = \"c:\\\\Users\\\\arpita.visen\\\\OneDrive - Accenture\\\\Downloads\\\\Bootcamp\\\\Basecamp-Exercises\\\\day1\\\\01_inventory-management\\\\server\"; $venvPython = \"$serverDir\\\\.venv\\\\Scripts\\\\python.exe\"; Set-Location $serverDir; & $venvPython main.py)",
+      "Read(//c/Users/arpita.visen/.claude/**)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "PowerShell(git add day1/01_inventory-management/CLAUDE.md day1/01_inventory-management/client/src/App.vue day1/01_inventory-management/client/src/api.js day1/01_inventory-management/client/src/main.js day1/01_inventory-management/client/src/views/Orders.vue day1/01_inventory-management/server/main.py day1/01_inventory-management/client/src/composables/useRestockingOrders.js day1/01_inventory-management/client/src/views/Restocking.vue day1/01_inventory-management/docs/architecture.html)",
+      "PowerShell(git push origin main)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\arpita.visen\\.claude",
+      "c:\\Users\\arpita.visen\\OneDrive - Accenture\\Downloads\\Bootcamp\\Basecamp-Exercises\\.claude"
+    ]
+  }
+}

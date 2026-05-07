@@ -1,0 +1,14 @@
+# Secret keys — never commit these
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Jupyter outputs
+*.ipynb_checkpoints/
+
+# Executed notebooks
+*_executed.ipynb
