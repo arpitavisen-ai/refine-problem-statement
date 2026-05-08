@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building_an_Eval.py — Visual Guide</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+
+  /* ── Layout ── */
+  .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 1.9rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
+  .subtitle { color: #94a3b8; margin-bottom: 48px; font-size: 0.95rem; }
+  h2 { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; letter-spacing: 0.02em; }
+  h3 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+
+  section { margin-bottom: 52px; }
+
+  /* ── Architecture Layers ── */
+  .layers { display: flex; flex-direction: column; gap: 4px; }
+  .layer { display: flex; align-items: stretch; border-radius: 10px; overflow: hidden; }
+  .layer-label { width: 160px; min-width: 160px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 14px 10px; text-align: center; }
+  .layer-body { flex: 1; padding: 14px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .layer-arrow { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 1.4rem; padding: 6px 0; }
+
+  .layer-1 { background: #1e1b4b; } .layer-1 .layer-label { background: #4338ca; color: #e0e7ff; }
+  .layer-2 { background: #1e293b; } .layer-2 .layer-label { background: #0f766e; color: #ccfbf1; }
+  .layer-3 { background: #1c1917; } .layer-3 .layer-label { background: #b45309; color: #fef3c7; }
+  .layer-4 { background: #0f172a; border: 1px solid #1e293b; } .layer-4 .layer-label { background: #1e293b; color: #94a3b8; }
+  .layer-5 { background: #1a0a2e; } .layer-5 .layer-label { background: #7c3aed; color: #ede9fe; }
+
+  .chip { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 3px 10px; font-size: 0.8rem; font-family: monospace; color: #cbd5e1; }
+
+  /* ── Cards grid ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge-blue  { background: #1d4ed8; color: #bfdbfe; }
+  .badge-green { background: #15803d; color: #bbf7d0; }
+  .badge-amber { background: #b45309; color: #fde68a; }
+  .badge-purple{ background: #7c3aed; color: #ddd6fe; }
+  .card p { font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; }
+  .card ul { padding-left: 18px; font-size: 0.82rem; color: #94a3b8; }
+  .card ul li { margin-bottom: 4px; }
+
+  /* ── Code blocks ── */
+  pre { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; color: #94a3b8; margin-top: 10px; }
+  .kw  { color: #c084fc; }   /* keyword */
+  .fn  { color: #60a5fa; }   /* function */
+  .st  { color: #34d399; }   /* string */
+  .cm  { color: #4b5563; }   /* comment */
+  .nb  { color: #f59e0b; }   /* number */
+  .op  { color: #e879f9; }   /* operator / special */
+
+  /* ── Tasks table ── */
+  .tasks-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  .tasks-table th { background: #1e293b; color: #94a3b8; text-align: left; padding: 10px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #334155; }
+  .tasks-table td { padding: 12px 14px; border-bottom: 1px solid #1e293b; vertical-align: top; }
+  .tasks-table tr:last-child td { border-bottom: none; }
+  .tasks-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cat-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+  .cat-product  { background: #1d4ed8; color: #bfdbfe; }
+  .cat-multi    { background: #065f46; color: #a7f3d0; }
+  .cat-calc     { background: #713f12; color: #fde68a; }
+  .cat-cap      { background: #5b21b6; color: #ddd6fe; }
+  .grader-tag { display: inline-block; background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 2px 6px; font-size: 0.72rem; font-family: monospace; margin: 2px 2px 0 0; }
+  .check-val { font-family: monospace; color: #34d399; font-size: 0.8rem; }
+  .task-id { font-family: monospace; color: #60a5fa; font-size: 0.82rem; font-weight: 600; }
+  .task-result { font-weight: 700; font-size: 0.78rem; }
+  .pass { color: #34d399; }
+  .fail { color: #f87171; }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+  .flow-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px; font-size: 0.82rem; text-align: center; min-width: 110px; }
+  .flow-box .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .flow-box .value { font-family: monospace; color: #e2e8f0; font-size: 0.88rem; }
+  .flow-arr { color: #475569; font-size: 1.3rem; padding: 0 8px; }
+
+  /* ── Grader detail ── */
+  .grader-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .grader-grid { grid-template-columns: 1fr; } }
+  .grader-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+  .grader-card h3 { color: #f1f5f9; margin-bottom: 4px; font-size: 0.95rem; text-transform: none; letter-spacing: 0; }
+  .grader-card .desc { font-size: 0.82rem; color: #64748b; margin-bottom: 14px; }
+  .grader-card .input-label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .grader-card .input-example { font-family: monospace; font-size: 0.78rem; color: #a5b4fc; background: #0f172a; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+  .returns { font-size: 0.78rem; color: #94a3b8; border-top: 1px solid #334155; padding-top: 12px; margin-top: 4px; }
+  .returns code { font-family: monospace; }
+  .score-pass { color: #34d399; } .score-fail { color: #f87171; }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid #1e293b; margin: 48px 0; }
+
+  /* ── Callout ── */
+  .callout { background: #1e1b4b; border-left: 3px solid #6366f1; border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 0.85rem; color: #a5b4fc; margin: 16px 0; }
+  .callout strong { color: #818cf8; }
+
+  /* ── Two column ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Building_an_Eval.py — Visual Guide</h1>
+  <p class="subtitle">A layered reference for the boutique shopping agent eval framework</p>
+
+  <!-- ── ARCHITECTURE LAYERS ── -->
+  <section>
+    <h2>Architecture Overview</h2>
+    <div class="layers">
+
+      <div class="layer layer-1">
+        <div class="layer-label">Config &amp; Client</div>
+        <div class="layer-body">
+          <span class="chip">MODEL = claude-haiku-4-5</span>
+          <span class="chip">SYSTEM_PROMPT</span>
+          <span class="chip">client = Anthropic()</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-2">
+        <div class="layer-label">Tool Implementations</div>
+        <div class="layer-body">
+          <span class="chip">get_product(product)</span>
+          <span class="chip">calculate(op, input1, input2)</span>
+          <span class="chip">TOOL_REGISTRY</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-2">
+        <div class="layer-label">Tool Specs → Claude</div>
+        <div class="layer-body">
+          <span class="chip">GET_PRODUCT_SPEC</span>
+          <span class="chip">CALCULATE_SPEC</span>
+          <span class="chip">ALL_TOOL_SPECS</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-1">
+        <div class="layer-label">Agent Loop</div>
+        <div class="layer-body">
+          <span class="chip">call_claude(messages, tools)</span>
+          <span class="chip">execute_tool(name, inputs)</span>
+          <span class="chip">run_agent(prompt, eval_mode)</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-3">
+        <div class="layer-label">Graders</div>
+        <div class="layer-body">
+          <span class="chip">response_contains</span>
+          <span class="chip">response_numeric</span>
+          <span class="chip">tool_use</span>
+          <span class="chip">llm_judge</span>
+          <span class="chip">GRADER_REGISTRY</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-4">
+        <div class="layer-label">Eval Runner</div>
+        <div class="layer-body">
+          <span class="chip">parse_transcript(messages)</span>
+          <span class="chip">run_single_task(agent, task)</span>
+          <span class="chip">run_eval(agent, tasks)</span>
+        </div>
+      </div>
+
+      <div class="layer-arrow">↓</div>
+
+      <div class="layer layer-5">
+        <div class="layer-label">Output</div>
+        <div class="layer-body">
+          <span class="chip">print_summary(results)</span>
+          <span class="chip">save_results(results)</span>
+          <span class="chip">inspect_task(results, task_id)</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── AGENT LOOP ── -->
+  <section>
+    <h2>Agent Loop — How <code style="font-size:1rem;color:#60a5fa">run_agent()</code> works</h2>
+
+    <div class="flow" style="margin-bottom:20px">
+      <div class="flow-box"><div class="label">Input</div><div class="value">prompt</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">API call</div><div class="value">call_claude()</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">stop_reason?</div><div class="value">end_turn / tool_use</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">Execute tools</div><div class="value">execute_tool()</div></div>
+      <div class="flow-arr">↻ loop</div>
+      <div class="flow-box" style="border-color:#34d399"><div class="label">Done</div><div class="value">final text</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="color:#60a5fa;margin-bottom:8px">Normal mode</h3>
+        <p style="font-size:0.83rem;color:#94a3b8;margin-bottom:8px">Returns the final text string shown to the user.</p>
+        <pre><span class="kw">return</span> <span class="st">"\n"</span>.join(
+  block.text <span class="kw">for</span> block <span class="kw">in</span> response.content
+  <span class="kw">if</span> isinstance(block, TextBlock)
+)</pre>
+      </div>
+      <div>
+        <h3 style="color:#f59e0b;margin-bottom:8px">Eval mode (eval_mode=True)</h3>
+        <p style="font-size:0.83rem;color:#94a3b8;margin-bottom:8px">Returns full messages + token usage so graders can inspect the transcript.</p>
+        <pre><span class="kw">return</span> {
+  <span class="st">"messages"</span>: messages,
+  <span class="st">"usage"</span>: {
+    <span class="st">"input_tokens"</span>: total_input_tokens,
+    <span class="st">"output_tokens"</span>: total_output_tokens
+  }
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── TOOLS ── -->
+  <section>
+    <h2>Tools</h2>
+    <div class="two-col">
+
+      <div class="grader-card">
+        <h3>get_product</h3>
+        <div class="desc">Looks up a product price from the catalog. Returns helpful error if not found.</div>
+        <div class="input-label">Parameter</div>
+        <div class="input-example">product: "jeans" | "t-shirt" | "sneakers" | …</div>
+        <div class="input-label">Catalog (12 items)</div>
+        <pre style="margin-top:0">jeans <span class="nb">49.99</span>  shirt  <span class="nb">29.99</span>  dress  <span class="nb">59.99</span>
+jacket <span class="nb">89.99</span> sneakers <span class="nb">74.99</span> hat  <span class="nb">19.99</span>
+socks  <span class="nb">9.99</span>  hoodie <span class="nb">44.99</span> shorts <span class="nb">34.99</span>
+t-shirt <span class="nb">24.99</span> sweater <span class="nb">54.99</span> belt <span class="nb">24.99</span></pre>
+        <div class="returns">On miss → returns <code>"Product 'X' not found. Available products: belt, dress, …"</code></div>
+      </div>
+
+      <div class="grader-card">
+        <h3>calculate</h3>
+        <div class="desc">Performs arithmetic. The system prompt instructs Claude to never do mental math — always delegate here.</div>
+        <div class="input-label">Parameters</div>
+        <div class="input-example">op: "+" | "-" | "*" | "/" | "**"<br>input1: number<br>input2: number</div>
+        <div class="input-label">Examples</div>
+        <pre style="margin-top:0"><span class="cm"># 3 shirts total</span>
+calculate(<span class="st">"*"</span>, <span class="nb">29.99</span>, <span class="nb">3</span>) → <span class="nb">89.97</span>
+
+<span class="cm"># 20% off jacket</span>
+calculate(<span class="st">"*"</span>, <span class="nb">89.99</span>, <span class="nb">0.80</span>) → <span class="nb">71.992</span></pre>
+        <div class="returns">Returns: a <code>float</code> (as string via <code>execute_tool</code>)</div>
+      </div>
+
+    </div>
+
+    <div class="callout" style="margin-top:20px">
+      <strong>Why tool specs matter:</strong> The original specs had <code>description: "get_product"</code> and <code>description: "calculator"</code> — Claude had no idea what products existed or when to use calculate. After adding proper descriptions (listing all 12 products, adding an enum for operators), the multi-tool eval score jumped from 0% to 100%.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── GRADERS ── -->
+  <section>
+    <h2>Graders</h2>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:20px">All graders share the same signature: <code style="color:#60a5fa">grader(result, check, context) → {"score": 0.0 or 1.0, "reason": "..."}</code></p>
+
+    <div class="grader-grid">
+
+      <!-- response_contains -->
+      <div class="grader-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="badge badge-blue">response_contains</span>
+          <span style="font-size:0.72rem;color:#64748b">Deterministic</span>
+        </div>
+        <h3>String presence check</h3>
+        <div class="desc">Checks if a substring appears anywhere in the final response text (case-insensitive).</div>
+        <div class="input-label">check format</div>
+        <div class="input-example">"49.99"  <span style="color:#475569"># just a string</span></div>
+        <pre><span class="kw">def</span> <span class="fn">grade_response_contains</span>(result, check, context):
+  text   = result[<span class="st">"final_text"</span>].lower()
+  target = check.lower()
+  <span class="kw">if</span> target <span class="kw">in</span> text:
+      <span class="kw">return</span> {<span class="st">"score"</span>: <span class="nb">1.0</span>, <span class="st">"reason"</span>: <span class="st">f"Found '{check}'"</span>}
+  <span class="kw">return</span> {<span class="st">"score"</span>: <span class="nb">0.0</span>, <span class="st">"reason"</span>: <span class="st">f"'{check}' not found"</span>}</pre>
+        <div class="returns">
+          <span class="score-pass">PASS (1.0)</span> — substring found<br>
+          <span class="score-fail">FAIL (0.0)</span> — substring missing
+        </div>
+      </div>
+
+      <!-- response_numeric -->
+      <div class="grader-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="badge badge-green">response_numeric</span>
+          <span style="font-size:0.72rem;color:#64748b">Deterministic</span>
+        </div>
+        <h3>Numeric value check</h3>
+        <div class="desc">Extracts all numbers from the response with regex and checks if any falls within ± tolerance of the expected value.</div>
+        <div class="input-label">check format</div>
+        <div class="input-example">{"value": 139.95, "tolerance": 0.10}</div>
+        <pre><span class="cm"># Finds numbers like: 139.95, 1,234.56, -0.5</span>
+numbers = re.findall(<span class="st">r"-?[\d,]+\.?\d*"</span>, text)
+<span class="kw">for</span> num <span class="kw">in</span> numbers:
+  <span class="kw">if</span> abs(num - value) &lt;= tolerance:
+      <span class="kw">return</span> {<span class="st">"score"</span>: <span class="nb">1.0</span>, ...}</pre>
+        <div class="returns">
+          <span class="score-pass">PASS (1.0)</span> — a number within tolerance found<br>
+          <span class="score-fail">FAIL (0.0)</span> — no matching number in response
+        </div>
+      </div>
+
+      <!-- tool_use -->
+      <div class="grader-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="badge badge-amber">tool_use</span>
+          <span style="font-size:0.72rem;color:#64748b">Deterministic</span>
+        </div>
+        <h3>Tool call verification</h3>
+        <div class="desc">Checks that the agent called a specific tool, optionally with specific arguments (partial match — only checks the keys you specify).</div>
+        <div class="input-label">check format</div>
+        <div class="input-example">{"tool_name": "get_product", "arguments": {"product": "jeans"}}</div>
+        <pre><span class="cm"># Scans all tool calls in the transcript</span>
+<span class="kw">for</span> call <span class="kw">in</span> result[<span class="st">"tool_calls"</span>]:
+  <span class="kw">if</span> call[<span class="st">"name"</span>] == tool_name:
+    <span class="cm"># partial-match specified args</span>
+    <span class="kw">if</span> args_match:
+      <span class="kw">return</span> {<span class="st">"score"</span>: <span class="nb">1.0</span>, ...}</pre>
+        <div class="returns">
+          <span class="score-pass">PASS (1.0)</span> — tool called (with matching args if specified)<br>
+          <span class="score-fail">FAIL (0.0)</span> — tool never called / wrong args
+        </div>
+      </div>
+
+      <!-- llm_judge -->
+      <div class="grader-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="badge badge-purple">llm_judge</span>
+          <span style="font-size:0.72rem;color:#64748b">LLM-as-judge</span>
+        </div>
+        <h3>AI-powered rubric check</h3>
+        <div class="desc">Sends the query + response + a criterion to a judge model (Haiku). Parses PASS/FAIL from the first line. Used for open-ended questions where deterministic checks don't apply.</div>
+        <div class="input-label">check format</div>
+        <div class="input-example">"Response lists some of the available products"</div>
+        <pre><span class="cm"># Judge prompt:</span>
+<span class="st">f"""Original query: {query}
+Agent's response: {final_text}
+Criterion: {check}"""</span>
+
+<span class="cm"># Parse first line for PASS/FAIL</span>
+first_line = judge_text.split(<span class="st">"\n"</span>)[<span class="nb">0</span>].upper()
+<span class="kw">if</span> <span class="st">"PASS"</span> <span class="kw">in</span> first_line: score = <span class="nb">1.0</span></pre>
+        <div class="returns">
+          <span class="score-pass">PASS (1.0)</span> — judge says PASS<br>
+          <span class="score-fail">FAIL (0.0)</span> — judge says FAIL or unparseable
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── TASKS ── -->
+  <section>
+    <h2>Eval Tasks</h2>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:20px">6 tasks across 4 categories. Final score after improvements: <strong style="color:#34d399">6/6 (100%)</strong></p>
+
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Query</th>
+          <th>Category</th>
+          <th>Graders &amp; Checks</th>
+          <th>Key Challenge</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><span class="task-id">price_jeans</span></td>
+          <td style="color:#e2e8f0">"How much do jeans cost?"</td>
+          <td><span class="cat-pill cat-product">product_lookup</span></td>
+          <td>
+            <span class="grader-tag">response_contains</span> <span class="check-val">"49.99"</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">get_product("jeans")</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">Reference task — direct lookup</td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+        <tr>
+          <td><span class="task-id">price_tshirt</span></td>
+          <td style="color:#e2e8f0">"Price of a t-shirt?"</td>
+          <td><span class="cat-pill cat-product">product_lookup</span></td>
+          <td>
+            <span class="grader-tag">response_contains</span> <span class="check-val">"24.99"</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">get_product("t-shirt")</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">Hyphen edge case — must pass <code style="color:#94a3b8">"t-shirt"</code>, not <code style="color:#94a3b8">"tshirt"</code></td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+        <tr>
+          <td><span class="task-id">price_shoes_synonym</span></td>
+          <td style="color:#e2e8f0">"How much for shoes?"</td>
+          <td><span class="cat-pill cat-product">product_lookup</span></td>
+          <td>
+            <span class="grader-tag">tool_use</span> <span class="check-val">get_product (any)</span><br>
+            <span class="grader-tag">response_contains</span> <span class="check-val">"sneakers"</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">"shoes" not in catalog → agent must suggest "sneakers" from error message</td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+        <tr>
+          <td><span class="task-id">total_shirts_belts</span></td>
+          <td style="color:#e2e8f0">"3 shirts and 2 belts, what's my total?"</td>
+          <td><span class="cat-pill cat-multi">multi_tool</span></td>
+          <td>
+            <span class="grader-tag">response_numeric</span> <span class="check-val">139.95 ±0.10</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">get_product</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">calculate("*")</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">calculate("+")</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">shirt(29.99)×3 + belt(24.99)×2 = 139.95<br>Needs 4+ tool calls chained</td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+        <tr>
+          <td><span class="task-id">discount_jacket</span></td>
+          <td style="color:#e2e8f0">"What's 20% off a jacket?"</td>
+          <td><span class="cat-pill cat-calc">calculation</span></td>
+          <td>
+            <span class="grader-tag">response_numeric</span> <span class="check-val">71.99 ±0.10</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">get_product</span><br>
+            <span class="grader-tag">tool_use</span> <span class="check-val">calculate</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">jacket(89.99) × 0.80 = 71.992<br>Must give discounted price, not just discount amount</td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+        <tr>
+          <td><span class="task-id">what_do_you_sell</span></td>
+          <td style="color:#e2e8f0">"What do you sell?"</td>
+          <td><span class="cat-pill cat-cap">capabilities</span></td>
+          <td>
+            <span class="grader-tag">llm_judge</span> <span class="check-val" style="color:#c084fc">"lists some products"</span><br>
+            <span class="grader-tag">llm_judge</span> <span class="check-val" style="color:#c084fc">"helpful, shopping context"</span>
+          </td>
+          <td style="color:#64748b;font-size:0.8rem">Open-ended — no deterministic answer. Requires LLM-as-judge grader</td>
+          <td><span class="task-result pass">PASS</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ── EVAL RUNNER ── -->
+  <section>
+    <h2>Eval Runner — Data Flow</h2>
+
+    <div class="flow" style="margin-bottom:24px;flex-wrap:wrap;gap:8px">
+      <div class="flow-box"><div class="label">tasks list</div><div class="value">6 tasks</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">run_eval()</div><div class="value">ThreadPool</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">run_single_task()</div><div class="value">per task</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">run_agent()</div><div class="value">eval_mode=True</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">parse_transcript()</div><div class="value">final_text + tool_calls</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><div class="label">graders</div><div class="value">scores per check</div></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box" style="border-color:#34d399"><div class="label">results dict</div><div class="value">passed / grades / metrics</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="color:#60a5fa;margin-bottom:8px;text-transform:none;font-size:0.88rem">parse_transcript(messages)</h3>
+        <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px">Converts the raw message list into a structured dict the graders can read.</p>
+        <pre><span class="cm"># Returns:</span>
+{
+  <span class="st">"final_text"</span>: <span class="st">"Jeans cost $49.99"</span>,
+  <span class="st">"tool_calls"</span>: [
+    {
+      <span class="st">"name"</span>: <span class="st">"get_product"</span>,
+      <span class="st">"arguments"</span>: {<span class="st">"product"</span>: <span class="st">"jeans"</span>},
+      <span class="st">"result"</span>: <span class="st">"49.99"</span>
+    }
+  ],
+  <span class="st">"messages"</span>: [...]
+}</pre>
+      </div>
+      <div>
+        <h3 style="color:#f59e0b;margin-bottom:8px;text-transform:none;font-size:0.88rem">run_single_task() result shape</h3>
+        <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px">Every task produces a result dict with pass/fail, individual grades, and metrics.</p>
+        <pre>{
+  <span class="st">"task_id"</span>: <span class="st">"price_jeans"</span>,
+  <span class="st">"passed"</span>: <span class="kw">True</span>,  <span class="cm"># all checks score 1.0</span>
+  <span class="st">"grades"</span>: [
+    {<span class="st">"type"</span>: <span class="st">"response_contains"</span>,
+     <span class="st">"score"</span>: <span class="nb">1.0</span>, <span class="st">"reason"</span>: <span class="st">"Found '49.99'"</span>}
+  ],
+  <span class="st">"metrics"</span>: {
+    <span class="st">"time"</span>: <span class="nb">7.02</span>, <span class="st">"tool_calls"</span>: <span class="nb">1</span>,
+    <span class="st">"input_tokens"</span>: <span class="nb">1424</span>
+  }
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── IMPROVEMENTS SUMMARY ── -->
+  <section>
+    <h2>What Changed — 50% → 100%</h2>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-header"><span class="badge badge-blue">Fix 1</span></div>
+        <h3 style="color:#f1f5f9;margin-bottom:6px;text-transform:none">Better System Prompt</h3>
+        <p>Original: <code style="color:#94a3b8">"You are a helpful assistant."</code></p>
+        <p>Fixed: Tells the agent it's "Boutique", to always use tools for prices, and to never do mental math.</p>
+        <p style="color:#34d399;font-size:0.8rem">Fixed: total_shirts_belts, discount_jacket</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="badge badge-green">Fix 2</span></div>
+        <h3 style="color:#f1f5f9;margin-bottom:6px;text-transform:none">Better Tool Specs</h3>
+        <p>Original: <code style="color:#94a3b8">description: "get_product"</code></p>
+        <p>Fixed: Lists all 12 valid product names in the parameter description. Adds <code style="color:#94a3b8">enum</code> for calculate operators.</p>
+        <p style="color:#34d399;font-size:0.8rem">Fixed: t-shirt hyphen, shoes synonym, calculate usage</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="badge badge-amber">Fix 3</span></div>
+        <h3 style="color:#f1f5f9;margin-bottom:6px;text-transform:none">get_product Error Handling</h3>
+        <p>Original: <code style="color:#94a3b8">catalog[product]</code> → raises raw <code>KeyError</code></p>
+        <p>Fixed: Returns <code style="color:#94a3b8">"Product 'X' not found. Available: belt, dress, …"</code> — agent can suggest alternatives.</p>
+        <p style="color:#34d399;font-size:0.8rem">Fixed: price_shoes_synonym</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="badge badge-purple">Fix 4</span></div>
+        <h3 style="color:#f1f5f9;margin-bottom:6px;text-transform:none">grade_llm_judge Registered Early</h3>
+        <p>Original: Registered <em>after</em> <code style="color:#94a3b8">run_eval()</code> — showed "Unknown grader"</p>
+        <p>Fixed: Moved into <code style="color:#94a3b8">GRADER_REGISTRY</code> at startup so it's available when the eval runs.</p>
+        <p style="color:#34d399;font-size:0.8rem">Fixed: what_do_you_sell</p>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

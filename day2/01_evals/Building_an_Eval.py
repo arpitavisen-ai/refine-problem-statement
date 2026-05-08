@@ -1,8 +1,4 @@
-!pip install -q anthropic
-
 import os
-os.environ["ANTHROPIC_API_KEY"] = "sk-ant-... "
-
 import math
 from anthropic import Anthropic
 from anthropic.types import ToolUseBlock, TextBlock
@@ -10,7 +6,12 @@ from anthropic.types import ToolUseBlock, TextBlock
 # ── Config ────────────────────────────────────────────────────────────────────
 
 MODEL = "claude-haiku-4-5-20251001"
-SYSTEM_PROMPT = "You are a helpful assistant."
+SYSTEM_PROMPT = (
+    "You are Boutique, a shopping assistant. You help customers find products, "
+    "check prices, and calculate totals. Always use your tools to look up prices "
+    "rather than guessing. If a product isn't found, suggest similar items from "
+    "the catalog. Never do mental math — always use your calculate tool for any arithmetic."
+)
 
 client = Anthropic()
 
@@ -31,7 +32,10 @@ def get_product(product: str):
         "sweater": 54.99,
         "belt": 24.99,
     }
-    return catalog[product]
+    if product in catalog:
+        return catalog[product]
+    available = ", ".join(sorted(catalog.keys()))
+    return f"Product '{product}' not found. Available products: {available}"
 
 
 def calculate(op: str, input1: float, input2: float):
@@ -51,13 +55,13 @@ TOOL_REGISTRY = {
 
 GET_PRODUCT_SPEC = {
     "name": "get_product",
-    "description": "get_product",
+    "description": "Look up the price of a product from the store catalog. Returns the price as a number. Returns an error message if the product is not found.",
     "input_schema": {
         "type": "object",
         "properties": {
             "product": {
                 "type": "string",
-                "description": "product",
+                "description": "Product name, lowercase. Available products: jeans, shirt, dress, jacket, sneakers, hat, socks, hoodie, shorts, t-shirt, sweater, belt",
             },
         },
         "required": ["product"],
@@ -66,21 +70,22 @@ GET_PRODUCT_SPEC = {
 
 CALCULATE_SPEC = {
     "name": "calculate",
-    "description": "calculator",
+    "description": "Perform a math operation on two numbers. Use this for any arithmetic instead of doing mental math.",
     "input_schema": {
         "type": "object",
         "properties": {
             "op": {
                 "type": "string",
-                "description": "operator",
+                "description": "The math operator to apply.",
+                "enum": ["+", "-", "*", "/", "**"],
             },
             "input1": {
                 "type": "number",
-                "description": "input1",
+                "description": "The first operand.",
             },
             "input2": {
                 "type": "number",
-                "description": "input2",
+                "description": "The second operand.",
             },
         },
         "required": ["op", "input1", "input2"],
@@ -146,13 +151,6 @@ def run_agent(prompt, eval_mode=False, model=None):
 
 print("boutique agent ready.")
 
-while True:
-    query = input("\nYou: ")
-    if not query.strip() or query.strip().lower() in ("quit", "exit", "q"):
-        print("Session ended.")
-        break
-    print(f"\nBoutique: {run_agent(query)}")
-
 # ── Graders (just run this cell) ──────────────────────────────────────────────
 
 import re
@@ -209,10 +207,38 @@ def grade_tool_use(result, check, context=None):
     return {"score": 0.0, "reason": f"'{tool_name}' never called. Actual: {[c['name'] for c in result['tool_calls']]}"}
 
 
+def grade_llm_judge(result, check, context=None):
+    query = context["query"] if context else "Unknown query"
+    judge_prompt = f"""Original query: {query}
+
+Agent's response: {result["final_text"]}
+
+Criterion: {check}"""
+
+    judge_response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=150,
+        temperature=0.0,
+        system=(
+            "You are an eval grader. Respond with PASS or FAIL on the first line, "
+            "then a brief one-sentence reason on the next line."
+        ),
+        messages=[{"role": "user", "content": judge_prompt}],
+    )
+    judge_text = judge_response.content[0].text.strip()
+    first_line = judge_text.split("\n")[0].strip().upper()
+    reason = judge_text.split("\n", 1)[1].strip() if "\n" in judge_text else judge_text
+
+    if "PASS" in first_line:
+        return {"score": 1.0, "reason": f"LLM judge: {reason}"}
+    return {"score": 0.0, "reason": f"LLM judge: {reason}"}
+
+
 GRADER_REGISTRY = {
     "response_contains": grade_response_contains,
     "response_numeric": grade_response_numeric,
     "tool_use": grade_tool_use,
+    "llm_judge": grade_llm_judge,
 }
 
 print(f"Graders loaded: {list(GRADER_REGISTRY.keys())}")
@@ -415,14 +441,76 @@ tasks = [
     # ── Build tasks for these queries ──────────────────────────────────────
 
     # 1. "Price of a t-shirt?"
+    {
+        "id": "price_tshirt",
+        "description": "Price lookup with hyphenated product name",
+        "query": "Price of a t-shirt?",
+        "category": "product_lookup",
+        "graders": [
+            {"type": "response_contains", "checks": ["24.99"]},
+            {"type": "tool_use", "checks": [{"tool_name": "get_product", "arguments": {"product": "t-shirt"}}]},
+        ],
+    },
 
     # 2. "How much for shoes?"
+    {
+        "id": "price_shoes_synonym",
+        "description": "Synonym query: 'shoes' not in catalog, 'sneakers' is",
+        "query": "How much for shoes?",
+        "category": "product_lookup",
+        "graders": [
+            {"type": "tool_use", "checks": [{"tool_name": "get_product"}]},
+            {"type": "response_contains", "checks": ["sneakers"]},
+        ],
+    },
 
     # 3. "3 shirts and 2 belts, what's my total?"
+    # shirt=29.99, belt=24.99 → 3*29.99 + 2*24.99 = 139.95
+    {
+        "id": "total_shirts_belts",
+        "description": "Multi-item total requiring product lookups + calculation",
+        "query": "3 shirts and 2 belts, what's my total?",
+        "category": "multi_tool",
+        "graders": [
+            {"type": "response_numeric", "checks": [{"value": 139.95, "tolerance": 0.10}]},
+            {"type": "tool_use", "checks": [
+                {"tool_name": "get_product"},
+                {"tool_name": "calculate", "arguments": {"op": "*"}},
+                {"tool_name": "calculate", "arguments": {"op": "+"}},
+            ]},
+        ],
+    },
 
     # 4. "What's 20% off a jacket?"
+    # jacket=89.99 → 89.99 * 0.80 = 71.992
+    {
+        "id": "discount_jacket",
+        "description": "Calculate 20% off a jacket (lookup + percentage math)",
+        "query": "What's 20% off a jacket?",
+        "category": "calculation",
+        "graders": [
+            {"type": "response_numeric", "checks": [{"value": 71.99, "tolerance": 0.10}]},
+            {"type": "tool_use", "checks": [
+                {"tool_name": "get_product"},
+                {"tool_name": "calculate"},
+            ]},
+        ],
+    },
 
     # 5. "What do you sell?"
+    # Open-ended — uses llm_judge (implement grade_llm_judge below to make this pass)
+    {
+        "id": "what_do_you_sell",
+        "description": "Agent describes available products",
+        "query": "What do you sell?",
+        "category": "capabilities",
+        "graders": [
+            {"type": "llm_judge", "checks": [
+                "Response describes or lists some of the available products in the catalog",
+                "Response is helpful and relevant to a shopping context",
+            ]},
+        ],
+    },
 
 ]
 
@@ -431,7 +519,7 @@ print_summary(results)
 save_results(results)
 
 # Replace with a task ID you want to inspect
-inspect_task(results, "price_jeans")
+inspect_task(results, "price_tshirt")
 
 baseline = run_eval(run_agent, tasks, num_runs=5)
 print_summary(baseline)
@@ -439,19 +527,30 @@ print_summary(baseline)
 # Implement the LLM-as-judge grader
 
 def grade_llm_judge(result, check, context=None):
-    # TODO: Implement this grader
-    #
-    # Step 1: Build the judge prompt
-    #   - Include: context["query"], result["final_text"], and the check criterion
-    #   - Ask the judge to respond with PASS or FAIL on the first line, then a reason
-    #
-    # Step 2: Call Claude
-    #   - response = client.messages.create(model="claude-haiku-4-5-20241022", ...)
-    #
-    # Step 3: Parse the response
-    #   - Check if the first line contains "PASS" or "FAIL"
-    #   - Return {"score": 1.0, "reason": "..."} or {"score": 0.0, "reason": "..."}
-    pass
+    query = context["query"] if context else "Unknown query"
+    judge_prompt = f"""Original query: {query}
+
+Agent's response: {result["final_text"]}
+
+Criterion: {check}"""
+
+    judge_response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=150,
+        temperature=0.0,
+        system=(
+            "You are an eval grader. Respond with PASS or FAIL on the first line, "
+            "then a brief one-sentence reason on the next line."
+        ),
+        messages=[{"role": "user", "content": judge_prompt}],
+    )
+    judge_text = judge_response.content[0].text.strip()
+    first_line = judge_text.split("\n")[0].strip().upper()
+    reason = judge_text.split("\n", 1)[1].strip() if "\n" in judge_text else judge_text
+
+    if "PASS" in first_line:
+        return {"score": 1.0, "reason": f"LLM judge: {reason}"}
+    return {"score": 0.0, "reason": f"LLM judge: {reason}"}
 
 
 # Register it so the runner can use it
