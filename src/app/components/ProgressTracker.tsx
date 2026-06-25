@@ -1,110 +1,160 @@
 import { useState, useRef } from 'react';
-import { Calendar, Edit2 } from 'lucide-react';
-import { EditableText } from './EditableText';
-import { useFirebaseSync } from '../hooks/useFirebaseSync';
+import { Calendar, Edit2, Check } from 'lucide-react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+
+const MILESTONES = [
+  { pct: 0, label: 'Kickoff' },
+  { pct: 25, label: 'Strategy' },
+  { pct: 50, label: 'Discovery' },
+  { pct: 75, label: 'Delivery' },
+  { pct: 100, label: 'Launch' },
+];
 
 export function ProgressTracker() {
-  const [progress, setProgress] = useFirebaseSync("projectProgress", 25);
+  const [progress, setProgress] = useLocalStorage("projectProgress", 25);
   const [isDragging, setIsDragging] = useState(false);
-  const [targetDate, setTargetDate] = useFirebaseSync("targetDate", '16th June');
+  const [targetDate, setTargetDate] = useLocalStorage("targetDate", '16th June');
+  const [editingDate, setEditingDate] = useState(false);
+  const [tempDate, setTempDate] = useState(targetDate);
   const trackRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseDown = () => {
-    setIsDragging(true);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
 
   const calculateProgress = (clientX: number) => {
     if (!trackRef.current) return;
-
     const rect = trackRef.current.getBoundingClientRect();
-    const buttonWidth = 32; // w-8 = 32px
+    const buttonWidth = 28;
     const buttonRadius = buttonWidth / 2;
-
-    // Adjust for button radius so 0% and 100% are reachable
     const adjustedWidth = rect.width - buttonWidth;
     const x = clientX - rect.left - buttonRadius;
-    const percentage = Math.max(0, Math.min(100, (x / adjustedWidth) * 100));
-    setProgress(Math.round(percentage));
+    const pct = Math.max(0, Math.min(100, (x / adjustedWidth) * 100));
+    setProgress(Math.round(pct));
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    calculateProgress(e.clientX);
-  };
-
-  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    calculateProgress(e.clientX);
-  };
+  const activeMilestone = MILESTONES.reduce((best, m) => {
+    if (m.pct <= progress) return m;
+    return best;
+  }, MILESTONES[0]);
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Project Progress</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {progress}% complete • {100 - progress}% remaining
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
-          <Calendar className="w-4 h-4 text-gray-500" />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Target:</span>
-            <EditableText
-              value={targetDate}
-              onChange={setTargetDate}
-              className="text-sm font-medium text-gray-700"
-              placeholder="Set target date..."
-            />
+    <div
+      className="rounded-2xl border border-white/8 overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #0F1A2E 0%, #111D32 100%)',
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      <div className="px-8 pt-7 pb-6">
+        <div className="flex items-start justify-between mb-7">
+          <div>
+            <p
+              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-400 mb-1.5"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              Project Progress
+            </p>
+            <div className="flex items-baseline gap-3">
+              <span
+                className="text-5xl font-light text-white tabular-nums"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                {progress}%
+              </span>
+              <span className="text-slate-500 text-sm">complete</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Phase: <span className="text-slate-300">{activeMilestone.label}</span>
+              &nbsp;·&nbsp;{100 - progress}% remaining
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 bg-[#0A1628] px-4 py-2.5 rounded-xl border border-white/8">
+            <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
+            <span
+              className="text-[10px] uppercase tracking-widest text-slate-500"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              Target
+            </span>
+            {editingDate ? (
+              <input
+                value={tempDate}
+                onChange={e => setTempDate(e.target.value)}
+                onBlur={() => { setTargetDate(tempDate); setEditingDate(false); }}
+                onKeyDown={e => { if (e.key === 'Enter') { setTargetDate(tempDate); setEditingDate(false); } }}
+                className="text-sm font-medium text-white bg-transparent border-b border-blue-500/60 focus:outline-none w-28"
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => { setEditingDate(true); setTempDate(targetDate); }}
+                className="flex items-center gap-1.5 text-sm font-medium text-white hover:text-blue-300 transition-colors group"
+              >
+                {targetDate}
+                <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+              </button>
+            )}
           </div>
         </div>
-      </div>
 
-      <div
-        ref={trackRef}
-        className="relative h-12 bg-gray-200 rounded-full cursor-pointer"
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onClick={handleTrackClick}
-      >
-        <div
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-150"
-          style={{ width: `${progress}%` }}
-        />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-blue-600 cursor-grab active:cursor-grabbing flex items-center justify-center transition-transform hover:scale-110"
-          style={{ left: `calc(${progress}% - 16px)` }}
-          onMouseDown={handleMouseDown}
-        >
-          <div className="w-2 h-2 bg-blue-600 rounded-full" />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-semibold text-gray-700">
-            {progress < 50 ? '' : `${progress}% Complete`}
-          </span>
-        </div>
-      </div>
+        <div className="relative mb-3">
+          <div
+            ref={trackRef}
+            className="relative h-2 bg-white/8 rounded-full cursor-pointer"
+            onMouseMove={e => { if (isDragging) calculateProgress(e.clientX); }}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            onClick={(e) => calculateProgress(e.clientX)}
+          >
+            <div
+              className="absolute top-0 left-0 h-full rounded-full transition-all duration-150"
+              style={{
+                width: `${progress}%`,
+                background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 60%, #60A5FA 100%)',
+                boxShadow: '0 0 12px rgba(59,130,246,0.5)',
+              }}
+            />
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white cursor-grab active:cursor-grabbing shadow-lg flex items-center justify-center transition-transform hover:scale-125"
+              style={{
+                left: `calc(${progress}% - 10px)`,
+                boxShadow: '0 0 0 3px rgba(59,130,246,0.4), 0 2px 8px rgba(0,0,0,0.4)',
+              }}
+              onMouseDown={e => { e.stopPropagation(); setIsDragging(true); }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            </div>
+          </div>
 
-      <div className="mt-4 grid grid-cols-4 gap-2 text-xs text-gray-600">
-        <div className="text-center">
-          <div className="font-medium">0%</div>
-          <div className="text-gray-400">Start</div>
+          <div className="absolute -top-1 left-0 right-0 flex justify-between pointer-events-none">
+            {MILESTONES.map(m => (
+              <div
+                key={m.pct}
+                className="flex flex-col items-center"
+                style={{ left: `${m.pct}%` }}
+              />
+            ))}
+          </div>
         </div>
-        <div className="text-center">
-          <div className="font-medium">25%</div>
-          <div className="text-gray-400">Strategy</div>
-        </div>
-        <div className="text-center">
-          <div className="font-medium">50%</div>
-          <div className="text-gray-400">Discovery</div>
-        </div>
-        <div className="text-center">
-          <div className="font-medium">100%</div>
-          <div className="text-gray-400">Delivery</div>
+
+        <div className="flex justify-between mt-5">
+          {MILESTONES.map(m => {
+            const active = m.pct <= progress;
+            return (
+              <div key={m.pct} className="flex flex-col items-center gap-1.5">
+                <div
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${active ? 'bg-blue-400' : 'bg-white/15'}`}
+                />
+                <span
+                  className={`text-[9px] uppercase tracking-widest transition-colors ${active ? 'text-blue-400' : 'text-slate-600'}`}
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  {m.label}
+                </span>
+                <span className={`text-[9px] tabular-nums transition-colors ${active ? 'text-slate-400' : 'text-slate-700'}`}>
+                  {m.pct}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
