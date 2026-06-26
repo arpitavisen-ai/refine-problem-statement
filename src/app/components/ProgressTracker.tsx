@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Calendar, Edit2, Check } from 'lucide-react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useFirebaseSync } from '../hooks/useFirebaseSync';
 
 const MILESTONES = [
   { pct: 0, label: 'Kickoff' },
@@ -11,9 +11,9 @@ const MILESTONES = [
 ];
 
 export function ProgressTracker() {
-  const [progress, setProgress] = useLocalStorage("projectProgress", 25);
+  const [progress, setProgress] = useFirebaseSync("projectProgress", 25);
   const [isDragging, setIsDragging] = useState(false);
-  const [targetDate, setTargetDate] = useLocalStorage("targetDate", '16th June');
+  const [targetDate, setTargetDate] = useFirebaseSync("targetDate", '16th June');
   const [editingDate, setEditingDate] = useState(false);
   const [tempDate, setTempDate] = useState(targetDate);
   const trackRef = useRef<HTMLDivElement>(null);

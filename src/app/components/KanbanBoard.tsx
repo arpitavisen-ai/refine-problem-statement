@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical, Plus, X, Tag } from 'lucide-react';
 import { EditableText } from './EditableText';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useFirebaseSync } from '../hooks/useFirebaseSync';
 
 interface Task {
   id: string;
@@ -266,7 +266,7 @@ const initialColumns: Column[] = [
 ];
 
 export function KanbanBoard() {
-  const [columns, setColumns] = useLocalStorage<Column[]>("kanbanColumns", initialColumns);
+  const [columns, setColumns] = useFirebaseSync<Column[]>("kanbanColumns", initialColumns);
 
   const handleMoveTask = (taskId: string, fromId: string, toId: string, toIndex: number) => {
     if (fromId === toId) return;

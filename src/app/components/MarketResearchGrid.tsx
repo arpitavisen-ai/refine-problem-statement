@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Plus, Trash2, ExternalLink, Bold, Italic, Underline, List, ListOrdered, FileText, Upload, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { X, Plus, Trash2, ExternalLink, Bold, Italic, Underline, List, ListOrdered, FileText, Upload, Image as ImageIcon, Save } from 'lucide-react';
 
 interface ResearchItem {
   id: string;
@@ -17,6 +18,7 @@ interface MarketResearchGridProps {
   onUpdate: (id: string, field: string, value: string) => void;
   onDelete: (id: string) => void;
   onAdd: (data: Omit<ResearchItem, 'id'>) => void;
+  onSave?: () => void;
 }
 
 const ITEM_IMAGES: Record<string, string> = {
@@ -622,7 +624,7 @@ function ListCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd }: MarketResearchGridProps) {
+export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave }: MarketResearchGridProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
@@ -647,13 +649,24 @@ export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd }: MarketR
             Artefact Details
           </h2>
         </div>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Activity
-        </button>
+        <div className="flex items-center gap-3">
+          {onSave && (
+            <button
+              onClick={() => { onSave(); toast.success('All changes saved to database'); }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 text-sm font-medium rounded-xl transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              Save All Changes
+            </button>
+          )}
+          <button
+            onClick={() => setAddOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Activity
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">

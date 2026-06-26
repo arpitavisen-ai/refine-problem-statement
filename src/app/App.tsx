@@ -9,17 +9,17 @@ import { PersonaCard } from './components/PersonaCard';
 import { ProgressTracker } from './components/ProgressTracker';
 import { MarketResearchGrid } from './components/MarketResearchGrid';
 import { PDLCSection } from './components/PDLCSection';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useFirebaseSync } from './hooks/useFirebaseSync';
 
 export default function App() {
-  const [problemStatement, setProblemStatement] = useLocalStorage(
+  const [problemStatement, setProblemStatement, flushProblemStatement] = useFirebaseSync(
     "problemStatement",
     "NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. The 10 Year Health Plan (July 2025) directly ties trust income to patient ratings through clinical team payments, patient power payments, and publicly published league tables updated quarterly from summer 2025. Yet most trusts still rely on manual coding, sampled data, and disconnected reporting systems that prevent timely action. There is no NHS-native platform that combines AI-powered theme classification, closed-loop feedback management, and integration with clinical systems — leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards."
   );
   const [editingStatement, setEditingStatement] = useState(false);
   const [tempStatement, setTempStatement] = useState(problemStatement);
 
-  const [userSegments, setUserSegments] = useLocalStorage("userSegments", {
+  const [userSegments, setUserSegments, flushUserSegments] = useFirebaseSync("userSegments", {
     chiefNurse: {
       title: "Chief Nurse",
       imageUrl: "https://images.unsplash.com/photo-1584432810601-6c7f27d2362b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxOSFMlMjBudXJzZSUyMGNsaW5pY2FsJTIwbGVhZGVyJTIwaG9zcGl0YWx8ZW58MXx8fHwxNzgyMzk2NzM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
@@ -46,7 +46,7 @@ export default function App() {
     }
   });
 
-  const [marketResearch, setMarketResearch] = useLocalStorage("marketResearch", [
+  const [marketResearch, setMarketResearch, flushMarketResearch] = useFirebaseSync("marketResearch", [
     { id: '1', title: 'Competitive Analysis', description: 'Analyse existing product intelligence platforms in private sector and international public sector organisations to understand the landscape and identify differentiation opportunities.' },
     { id: '2', title: 'Current State Assessment', description: 'Map existing tools and systems used across UK public sector for product reporting and performance tracking, identifying gaps and integration opportunities.' },
     { id: '3', title: 'User Research', description: 'Conduct interviews and surveys with 15–20 product leaders, PMs, and senior stakeholders across 5–7 departments to surface unmet needs and latent demand.' },
@@ -252,6 +252,11 @@ export default function App() {
                 onUpdate={updateMarketResearch}
                 onDelete={deleteMarketResearch}
                 onAdd={addMarketResearch}
+                onSave={() => {
+                  flushProblemStatement();
+                  flushUserSegments();
+                  flushMarketResearch();
+                }}
               />
             </Tabs.Content>
 

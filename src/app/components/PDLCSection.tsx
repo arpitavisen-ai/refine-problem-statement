@@ -8,7 +8,7 @@ import {
   ArrowRight, Save, Plus, Trash2,
 } from 'lucide-react';
 import { RichTextEditor, InlineEdit } from './RichTextEditor';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useFirebaseSync } from '../hooks/useFirebaseSync';
 
 // ─── Static config (icons & colours — never serialised) ─────────────────────
 
@@ -126,7 +126,7 @@ const DEFAULT_PHASES: EditablePhase[] = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function usePhases() {
-  const [phases, setPhases] = useLocalStorage<EditablePhase[]>('pdlcPhases', DEFAULT_PHASES);
+  const [phases, setPhases] = useFirebaseSync<EditablePhase[]>('pdlcPhases', DEFAULT_PHASES);
 
   const updatePhase = useCallback((phaseId: string, field: keyof EditablePhase, value: string) => {
     setPhases(prev => prev.map(p => p.id === phaseId ? { ...p, [field]: value } : p));
