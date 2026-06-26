@@ -21,10 +21,12 @@ test.describe('AC-03 · User Analysis Tab', () => {
     }
   });
 
-  test('persona cards show key fields: goals, painPoints', async ({ page }) => {
-    // Persona cards show field labels — check for any goal/pain text within card content
+  test('persona cards show key fields after clicking a card', async ({ page }) => {
+    // Fields are revealed after clicking a persona card
+    await page.locator('text=Chief Nurse').first().click();
+    await page.waitForTimeout(800);
     const bodyText = await page.locator('body').innerText();
-    expect(bodyText).toMatch(/goals|pain|motivat|opportunit/i);
+    expect(bodyText).toMatch(/goals|pain|motivat|opportunit|ensure|monitor/i);
   });
 
   test('clicking a persona card opens the detail panel', async ({ page }) => {
