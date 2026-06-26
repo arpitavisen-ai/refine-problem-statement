@@ -216,7 +216,7 @@ function EditableField({
 // ─── Item Modal (View Details / Read More) ────────────────────────────────────
 
 function ItemModal({
-  item, index, open, onClose, onUpdate, onDelete,
+  item, index, open, onClose, onUpdate, onDelete, onSave,
 }: {
   item: ResearchItem;
   index: number;
@@ -224,6 +224,7 @@ function ItemModal({
   onClose: () => void;
   onUpdate: (field: string, value: string) => void;
   onDelete: () => void;
+  onSave?: () => void;
 }) {
   const openReport = () => {
     if (!item.report) return;
@@ -318,8 +319,12 @@ function ItemModal({
                   <Trash2 className="w-4 h-4" />
                   Remove item
                 </button>
-                <Dialog.Close className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
-                  Done
+                <Dialog.Close
+                  onClick={() => onSave?.()}
+                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Save & Close
                 </Dialog.Close>
               </div>
             </div>
@@ -717,6 +722,7 @@ export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave }:
           onClose={() => setOpenId(null)}
           onUpdate={(field, value) => onUpdate(item.id, field, value)}
           onDelete={() => onDelete(item.id)}
+          onSave={onSave}
         />
       ))}
 
