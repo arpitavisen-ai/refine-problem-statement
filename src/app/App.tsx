@@ -93,13 +93,13 @@ export default function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Toaster theme="dark" position="bottom-right" richColors />
+      <Toaster theme="light" position="bottom-right" richColors />
       <div
-        className="min-h-screen bg-background"
+        className="min-h-screen bg-white"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
         {/* Top bar */}
-        <header className="border-b border-white/7 bg-[#080F1E]">
+        <header className="border-b border-slate-200 bg-white">
           <div className="max-w-[1400px] mx-auto px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
@@ -108,7 +108,7 @@ export default function App() {
                 </svg>
               </div>
               <span
-                className="text-sm font-semibold text-white tracking-tight"
+                className="text-sm font-semibold text-slate-900 tracking-tight"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Patient Feedback Intelligence Platform
@@ -137,12 +137,12 @@ export default function App() {
                 Strategic Initiative
               </p>
               <h1
-                className="text-5xl font-semibold text-white leading-tight mb-6"
+                className="text-5xl font-semibold text-slate-900 leading-tight mb-6"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Product Intelligence
                 <br />
-                <em className="font-normal text-slate-400">for the NHS</em>
+                <em className="font-normal text-slate-600">for the NHS</em>
               </h1>
               <div className="relative group">
                 <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-500/40 rounded-full" />
@@ -153,7 +153,7 @@ export default function App() {
                       onChange={e => setTempStatement(e.target.value)}
                       onBlur={() => { setProblemStatement(tempStatement); setEditingStatement(false); }}
                       rows={5}
-                      className="w-full bg-[#0F1A2E] border border-blue-500/40 rounded-xl px-4 py-3 text-sm text-slate-300 leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
                       autoFocus
                     />
                     <button
@@ -168,8 +168,8 @@ export default function App() {
                     className="pl-5 cursor-pointer"
                     onClick={() => { setEditingStatement(true); setTempStatement(problemStatement); }}
                   >
-                    <p className="text-slate-400 leading-relaxed text-sm max-w-2xl">{problemStatement}</p>
-                    <button className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-400 transition-colors opacity-0 group-hover:opacity-100">
+                    <p className="text-slate-600 leading-relaxed text-sm max-w-2xl">{problemStatement}</p>
+                    <button className="mt-2 flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-700 transition-colors opacity-0 group-hover:opacity-100">
                       <Edit2 className="w-3 h-3" /> Edit statement
                     </button>
                   </div>
@@ -187,7 +187,7 @@ export default function App() {
               ].map(stat => (
                 <div
                   key={stat.label}
-                  className="bg-[#0F1A2E] rounded-xl border border-white/7 px-4 py-4"
+                  className="bg-slate-50 rounded-xl border border-slate-200 px-4 py-4"
                 >
                   <p
                     className="text-[9px] uppercase tracking-[0.15em] text-slate-500 mb-1"
@@ -196,7 +196,7 @@ export default function App() {
                     {stat.label}
                   </p>
                   <p
-                    className="text-2xl font-semibold text-white mb-0.5"
+                    className="text-2xl font-semibold text-slate-900 mb-0.5"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     {stat.value}
@@ -211,7 +211,7 @@ export default function App() {
         {/* Tabs */}
         <div className="max-w-[1400px] mx-auto px-8 pb-16">
           <Tabs.Root defaultValue="users">
-            <Tabs.List className="flex gap-0 border-b border-white/8 mb-10">
+            <Tabs.List className="flex gap-0 border-b border-slate-200 mb-10">
               {[
                 { value: 'users', label: 'User Analysis', Icon: Users },
                 { value: 'research', label: 'Artefacts', Icon: TrendingUp },
@@ -221,7 +221,7 @@ export default function App() {
                 <Tabs.Trigger
                   key={value}
                   value={value}
-                  className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-200 transition-colors data-[state=active]:text-white data-[state=active]:border-blue-500"
+                  className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition-colors data-[state=active]:text-blue-600 data-[state=active]:border-blue-600"
                 >
                   <Icon className="w-4 h-4" />
                   {label}
@@ -239,7 +239,7 @@ export default function App() {
                   Click any persona to explore in depth
                 </p>
                 <h2
-                  className="text-2xl font-semibold text-white"
+                  className="text-2xl font-semibold text-slate-900"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   User Personas
@@ -292,7 +292,7 @@ export default function App() {
                     Drag tasks between columns to update status
                   </p>
                   <h2
-                    className="text-2xl font-semibold text-white"
+                    className="text-2xl font-semibold text-slate-900"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     Delivery Board

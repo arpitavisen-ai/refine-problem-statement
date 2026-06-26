@@ -104,39 +104,42 @@ function RichTextEditor({
       key={title}
       onMouseDown={e => { e.preventDefault(); action(); }}
       title={title}
-      className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors text-[11px] font-bold"
+      className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors text-[11px] font-bold"
     >
       {label}
     </button>
   );
 
   return (
-    <div className={`border rounded-lg overflow-hidden transition-colors ${focused ? 'border-blue-500/50' : 'border-white/10'}`}>
+    <div className={`border rounded-lg overflow-hidden transition-colors ${focused ? 'border-blue-500/50' : 'border-slate-200'}`}>
       <style>{`
+        .rich-editor { color: #1e293b; }
         .rich-editor ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
         .rich-editor ol { list-style: decimal; padding-left: 1.4em; margin: 0.4em 0; }
         .rich-editor li { margin: 0.2em 0; }
-        .rich-editor h2 { font-size: 1.1em; font-weight: 700; margin: 1em 0 0.3em; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.3em; }
-        .rich-editor h3 { font-size: 0.95em; font-weight: 600; margin: 0.8em 0 0.2em; color: #e2e8f0; }
+        .rich-editor h2 { font-size: 1.1em; font-weight: 700; margin: 1em 0 0.3em; color: #111827; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0.3em; }
+        .rich-editor h3 { font-size: 0.95em; font-weight: 600; margin: 0.8em 0 0.2em; color: #1f2937; }
         .rich-editor p { margin: 0.35em 0; }
-        .rich-editor b, .rich-editor strong { color: #f1f5f9; }
+        .rich-editor b, .rich-editor strong { color: #111827; }
         .rich-editor a { color: #60a5fa; text-decoration: underline; }
         .rich-editor:focus { outline: none; }
-        .rich-editor table { width: 100%; border-collapse: collapse; margin: 0.75em 0; font-size: 0.82em; }
-        .rich-editor th { background: rgba(255,255,255,0.07); color: #94a3b8; font-weight: 600; text-align: left; padding: 0.45em 0.7em; border: 1px solid rgba(255,255,255,0.08); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
-        .rich-editor td { padding: 0.4em 0.7em; border: 1px solid rgba(255,255,255,0.06); color: #cbd5e1; vertical-align: top; line-height: 1.5; }
-        .rich-editor tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-        .rich-editor blockquote { border-left: 3px solid #3b82f6; margin: 0.75em 0; padding: 0.6em 1em; background: rgba(59,130,246,0.06); color: #94a3b8; font-style: italic; border-radius: 0 6px 6px 0; }
+        .rich-editor-wrap { overflow-x: auto; overflow-y: visible; }
+        .rich-editor table { min-width: 500px; border-collapse: collapse; margin: 0.75em 0; font-size: 0.82em; }
+        .rich-editor th { background: rgba(0,0,0,0.04); color: #64748b; font-weight: 600; text-align: left; padding: 0.45em 0.7em; border: 1px solid rgba(0,0,0,0.08); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .rich-editor td { padding: 0.4em 0.7em; border: 1px solid rgba(0,0,0,0.06); color: #374151; vertical-align: top; line-height: 1.5; word-wrap: break-word; max-width: 300px; }
+        .rich-editor tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+        .rich-editor blockquote { border-left: 3px solid #3b82f6; margin: 0.75em 0; padding: 0.6em 1em; background: rgba(59,130,246,0.06); color: #475569; font-style: italic; border-radius: 0 6px 6px 0; }
+        .rich-editor p, .rich-editor li { word-wrap: break-word; overflow-wrap: break-word; }
       `}</style>
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-white/10 bg-[#080F1E]/60 flex-wrap">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-slate-200 bg-slate-50 flex-wrap">
         {toolbarBtn(<Bold className="w-3.5 h-3.5" />, () => exec('bold'), 'Bold')}
         {toolbarBtn(<Italic className="w-3.5 h-3.5" />, () => exec('italic'), 'Italic')}
         {toolbarBtn(<Underline className="w-3.5 h-3.5" />, () => exec('underline'), 'Underline')}
-        <div className="w-px h-4 bg-white/10 mx-1" />
+        <div className="w-px h-4 bg-slate-200 mx-1" />
         {toolbarBtn(<List className="w-3.5 h-3.5" />, () => exec('insertUnorderedList'), 'Bullet List')}
         {toolbarBtn(<ListOrdered className="w-3.5 h-3.5" />, () => exec('insertOrderedList'), 'Numbered List')}
-        <div className="w-px h-4 bg-white/10 mx-1" />
+        <div className="w-px h-4 bg-slate-200 mx-1" />
         {toolbarBtn('H2', () => exec('formatBlock', 'H2'), 'Heading 2')}
         {toolbarBtn('H3', () => exec('formatBlock', 'H3'), 'Heading 3')}
         {toolbarBtn('¶', () => exec('formatBlock', 'p'), 'Paragraph')}
@@ -144,19 +147,22 @@ function RichTextEditor({
       {/* Editable area */}
       <div className="relative min-h-[160px]">
         {isEmpty && !focused && (
-          <div className="absolute top-0 left-0 right-0 px-4 py-3 text-sm text-slate-600 pointer-events-none select-none">
+          <div className="absolute top-0 left-0 right-0 px-4 py-3 text-sm text-slate-400 pointer-events-none select-none">
             {placeholder ?? 'Add rich notes, findings, and observations...'}
           </div>
         )}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInput}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className="rich-editor min-h-[160px] px-4 py-3 text-sm text-slate-300 leading-relaxed focus:outline-none"
-        />
+        <div className="rich-editor-wrap">
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className="rich-editor min-h-[160px] px-4 py-3 text-sm leading-relaxed focus:outline-none"
+            style={{ color: '#1e293b' }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -206,7 +212,7 @@ function EditableField({
   return (
     <div
       onClick={() => { setEditing(true); setTemp(value); }}
-      className={`${className} cursor-pointer hover:bg-white/5 rounded px-1 py-0.5 transition-colors ${!value ? 'opacity-40' : ''}`}
+      className={`${className} cursor-pointer hover:bg-slate-100 rounded px-1 py-0.5 transition-colors ${!value ? 'opacity-40' : ''}`}
     >
       {value || (placeholder ?? 'Click to edit...')}
     </div>
@@ -238,21 +244,21 @@ function ItemModal({
   return (
     <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50" />
+        <Dialog.Overlay className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50" />
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed inset-0 flex items-center justify-center z-50 p-6 outline-none"
         >
           <Dialog.Title className="sr-only">{item.title || 'Artefact details'}</Dialog.Title>
-          <div className="bg-[#0C1526] border border-white/10 rounded-2xl overflow-hidden w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
             {/* Header image */}
-            <div className="relative h-48 bg-[#080F1E] overflow-hidden flex-shrink-0">
+            <div className="relative h-48 bg-slate-50 overflow-hidden flex-shrink-0">
               <img
                 src={getImage(item)}
                 alt={item.title}
                 className="w-full h-full object-cover opacity-80"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0C1526] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-transparent" />
               <div className="absolute top-4 left-4">
                 <span
                   className={`inline-block text-[10px] font-semibold uppercase tracking-[0.15em] px-3 py-1 rounded-full border ${getPhaseColor(index)}`}
@@ -261,7 +267,7 @@ function ItemModal({
                   {getPhaseLabel(index)}
                 </span>
               </div>
-              <Dialog.Close className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors border border-white/20">
+              <Dialog.Close className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-200/80 backdrop-blur-sm flex items-center justify-center text-slate-700 hover:bg-slate-300/80 transition-colors border border-slate-300">
                 <X className="w-4 h-4" />
               </Dialog.Close>
             </div>
@@ -271,7 +277,7 @@ function ItemModal({
               <EditableField
                 value={item.title}
                 onChange={v => onUpdate('title', v)}
-                className="text-2xl font-semibold text-white mb-3 block"
+                className="text-2xl font-semibold text-slate-900 mb-3 block"
                 placeholder="Artefact title..."
               />
               <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
@@ -281,7 +287,7 @@ function ItemModal({
                 value={item.description}
                 onChange={v => onUpdate('description', v)}
                 multiline
-                className="text-sm text-slate-400 leading-relaxed block mb-5"
+                className="text-sm text-slate-600 leading-relaxed block mb-5"
                 placeholder="Short summary..."
               />
 
@@ -296,10 +302,10 @@ function ItemModal({
 
               {/* Report section */}
               {item.report && (
-                <div className="mt-5 flex items-center gap-3 p-3 rounded-lg bg-white/4 border border-white/8">
+                <div className="mt-5 flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
                   <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white font-medium truncate">{item.reportName ?? 'Report'}</p>
+                    <p className="text-sm text-slate-900 font-medium truncate">{item.reportName ?? 'Report'}</p>
                     <p className="text-xs text-slate-500">Attached report</p>
                   </div>
                   <button
@@ -311,7 +317,7 @@ function ItemModal({
                 </div>
               )}
 
-              <div className="mt-6 pt-5 border-t border-white/8 flex justify-between items-center">
+              <div className="mt-6 pt-5 border-t border-slate-200 flex justify-between items-center">
                 <button
                   onClick={() => { onDelete(); onClose(); }}
                   className="flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors"
@@ -390,19 +396,19 @@ function AddActivityModal({
   return (
     <Dialog.Root open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50" />
+        <Dialog.Overlay className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50" />
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed inset-0 flex items-center justify-center z-50 p-6 outline-none"
         >
           <Dialog.Title className="sr-only">Add Artefact</Dialog.Title>
-          <div className="bg-[#0C1526] border border-white/10 rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl">
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl">
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
-              <h2 className="text-base font-semibold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-base font-semibold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Add Artefact
               </h2>
-              <Dialog.Close className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+              <Dialog.Close className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                 <X className="w-4 h-4" />
               </Dialog.Close>
             </div>
@@ -417,7 +423,7 @@ function AddActivityModal({
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Competitive Analysis"
-                  className="w-full bg-[#080F1E] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500/50 transition-colors"
                 />
               </div>
 
@@ -431,7 +437,7 @@ function AddActivityModal({
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Brief description of this artefact..."
                   rows={3}
-                  className="w-full bg-[#080F1E] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
                 />
               </div>
 
@@ -443,7 +449,7 @@ function AddActivityModal({
                 <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleThumbnail} className="hidden" />
                 <button
                   onClick={() => thumbInputRef.current?.click()}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#080F1E] border border-white/10 hover:border-blue-500/30 rounded-lg text-sm text-slate-400 hover:text-white transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-white border border-slate-200 hover:border-blue-500/30 rounded-lg text-sm text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   {thumbnail ? (
                     <>
@@ -467,7 +473,7 @@ function AddActivityModal({
                 <input ref={reportInputRef} type="file" accept=".pdf,.doc,.docx,.pptx,.xlsx,.png,.jpg,.jpeg" onChange={handleReport} className="hidden" />
                 <button
                   onClick={() => reportInputRef.current?.click()}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#080F1E] border border-white/10 hover:border-blue-500/30 rounded-lg text-sm text-slate-400 hover:text-white transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-white border border-slate-200 hover:border-blue-500/30 rounded-lg text-sm text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   {report ? (
                     <>
@@ -481,12 +487,12 @@ function AddActivityModal({
                     </>
                   )}
                 </button>
-                <p className="text-[10px] text-slate-600 mt-1">Viewable later from "View details"</p>
+                <p className="text-[10px] text-slate-400 mt-1">Viewable later from "View details"</p>
               </div>
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-1">
-                <Dialog.Close className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">
+                <Dialog.Close className="px-4 py-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">
                   Cancel
                 </Dialog.Close>
                 <button
@@ -511,15 +517,15 @@ function HeroCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-2xl overflow-hidden bg-[#0F1A2E] border border-white/7 hover:border-blue-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col lg:flex-row"
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/10 flex flex-col lg:flex-row"
     >
-      <div className="lg:w-[45%] relative h-64 lg:h-auto bg-[#080F1E] overflow-hidden flex-shrink-0">
+      <div className="lg:w-[45%] relative h-64 lg:h-auto bg-slate-100 overflow-hidden flex-shrink-0">
         <img
           src={getImage(item)}
           alt={item.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
         />
-        <div className="absolute inset-0 lg:hidden bg-gradient-to-t from-[#0F1A2E]/80 to-transparent" />
+        <div className="absolute inset-0 lg:hidden bg-gradient-to-t from-slate-50/80 to-transparent" />
       </div>
       <div className="flex-1 p-8 flex flex-col justify-center">
         <div className="flex items-start justify-between mb-2">
@@ -529,9 +535,9 @@ function HeroCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
           >
             {getPhaseLabel(index)}
           </span>
-          <span className="text-xs text-slate-600 font-mono">01</span>
+          <span className="text-xs text-slate-400 font-mono">01</span>
         </div>
-        <h3 className="text-2xl font-semibold text-white mb-3 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <h3 className="text-2xl font-semibold text-slate-900 mb-3 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
           {item.title || 'Untitled Artefact'}
         </h3>
         <p className="text-slate-400 text-sm leading-relaxed mb-6">
@@ -543,7 +549,7 @@ function HeroCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
           </span>
         )}
         <div className="flex items-center gap-1.5 text-sm text-blue-400 font-medium group-hover:gap-2.5 transition-all duration-200">
-          Read more
+          View details
           <ExternalLink className="w-3.5 h-3.5" />
         </div>
       </div>
@@ -555,15 +561,15 @@ function GridCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F1A2E] border border-white/7 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/20 hover:-translate-y-0.5 flex flex-col"
+      className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/10 hover:-translate-y-0.5 flex flex-col"
     >
-      <div className="relative h-44 bg-[#080F1E] overflow-hidden flex-shrink-0">
+      <div className="relative h-44 bg-slate-100 overflow-hidden flex-shrink-0">
         <img
           src={getImage(item)}
           alt={item.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F1A2E]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
         <div className="absolute top-3 left-3">
           <span
             className={`inline-block text-[9px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${getPhaseColor(index)}`}
@@ -579,7 +585,7 @@ function GridCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
         )}
       </div>
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-lg font-semibold text-white mb-2 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
           {item.title || 'Untitled'}
         </h3>
         <p className="text-slate-400 text-xs leading-relaxed flex-1 line-clamp-3">
@@ -600,9 +606,9 @@ function ListCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F1A2E] border border-white/7 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10 flex items-stretch"
+      className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10 flex items-stretch"
     >
-      <div className="relative w-32 flex-shrink-0 bg-[#080F1E] overflow-hidden">
+      <div className="relative w-32 flex-shrink-0 bg-slate-100 overflow-hidden">
         <img
           src={getImage(item)}
           alt={item.title}
@@ -619,10 +625,10 @@ function ListCard({ item, index, onOpen }: { item: ResearchItem; index: number; 
           </span>
           <div className="flex items-center gap-2">
             {item.report && <FileText className="w-3 h-3 text-emerald-400" />}
-            <span className="text-[10px] text-slate-600 font-mono">{String(index + 1).padStart(2, '0')}</span>
+            <span className="text-[10px] text-slate-400 font-mono">{String(index + 1).padStart(2, '0')}</span>
           </div>
         </div>
-        <h3 className="text-base font-semibold text-white mb-1 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <h3 className="text-base font-semibold text-slate-900 mb-1 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
           {item.title || 'Untitled'}
         </h3>
         <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
@@ -654,7 +660,7 @@ export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave }:
             Research Agenda
           </p>
           <h2
-            className="text-3xl font-semibold text-white leading-tight"
+            className="text-3xl font-semibold text-slate-900 leading-tight"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Artefact Details
@@ -696,14 +702,14 @@ export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave }:
         {listItems.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-px flex-1 bg-white/7" />
+              <div className="h-px flex-1 bg-slate-200" />
               <span
                 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 Additional Activities
               </span>
-              <div className="h-px flex-1 bg-white/7" />
+              <div className="h-px flex-1 bg-slate-200" />
             </div>
             {listItems.map((item, i) => (
               <ListCard key={item.id} item={item} index={i + 4} onOpen={() => setOpenId(item.id)} />
