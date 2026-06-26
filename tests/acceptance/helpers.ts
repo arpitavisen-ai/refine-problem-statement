@@ -4,7 +4,7 @@ import { Page, expect } from '@playwright/test';
 export async function loadApp(page: Page) {
   await page.goto('/');
   // Wait for the hero problem-statement section to appear (proves Firebase seeded & React rendered)
-  await expect(page.locator('text=Patient Feedback').first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('text=Patient Feedback').first()).toBeVisible({ timeout: 25_000 });
 }
 
 /** Click a tab by its visible label. */

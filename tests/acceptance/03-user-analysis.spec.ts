@@ -21,17 +21,14 @@ test.describe('AC-03 · User Analysis Tab', () => {
     }
   });
 
-  test('persona cards render with content fields', async ({ page }) => {
-    // Wait for Firebase to hydrate persona data into cards
+  test('persona cards render with images and titles', async ({ page }) => {
     await page.waitForTimeout(2000);
-    // The persona grid renders 3 cards — confirm at least one has image and title
-    const personaImages = page.locator('img[alt*="Nurse"], img[alt*="Manager"], img[src*="unsplash"]');
-    const imgCount = await personaImages.count();
-    // Each card renders an image and persona title — just confirm the grid is populated
-    const cardGrid = page.locator('[class*="grid"] [class*="col"]').first().or(
-      page.locator('img').nth(1)
-    );
-    await expect(cardGrid).toBeVisible({ timeout: 5_000 });
+    // Persona images have alt text matching their role
+    const nurseImg = page.getByRole('img', { name: /Chief Nurse|nurse/i }).first();
+    const managerImg = page.getByRole('img', { name: /Quality Manager|Ward Manager/i }).first();
+    const hasNurse = await nurseImg.isVisible().catch(() => false);
+    const hasManager = await managerImg.isVisible().catch(() => false);
+    expect(hasNurse || hasManager).toBeTruthy();
   });
 
   test('clicking a persona card opens the detail panel', async ({ page }) => {
