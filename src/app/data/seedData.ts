@@ -1,4 +1,4 @@
-export const SEED_VERSION = 3;
+export const SEED_VERSION = 4;
 
 export const SEED_PROBLEM_STATEMENT = `NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. The 10 Year Health Plan (July 2025) directly ties trust income to patient ratings through clinical team payments, patient power payments, and publicly published league tables updated quarterly from summer 2025. Yet most trusts still rely on manual coding, sampled data, and disconnected reporting systems that prevent timely action. There is no NHS-native platform that combines AI-powered theme classification, closed-loop feedback management, and integration with clinical systems — leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards.`;
 
@@ -251,56 +251,65 @@ export const SEED_MARKET_RESEARCH = [
   },
   {
     id: 'artefact-research-plan',
-    title: 'Discovery Research Plan',
-    description: '8-week plan to validate before building. Sequenced to de-risk the biggest unknowns first — IG gate, AI accuracy, and commercial viability must all pass before a line of production code is written.',
+    title: 'Discovery Research Plan — MVP Demo',
+    description: 'Five-stage discovery plan scoped to the MVP demo: user interviews (1 round), feedback analysis, tech discovery, ideation & hypotheses, and design prototypes.',
     thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=600&fit=crop&auto=format',
     richContent: rich(`
-<h2>Research Goals — Priority Order</h2>
-<table>
-<tr><th>Priority</th><th>Goal</th></tr>
-<tr><td><strong>Must validate</strong></td><td>Will NHS IG/CISO sign off on a third-party processor for patient feedback data? This is a build/no-build question.</td></tr>
-<tr><td><strong>Must validate</strong></td><td>What does a meaningful, actionable alert look like to a Quality Manager? What triggers would cause them to act vs ignore?</td></tr>
-<tr><td><strong>Must validate</strong></td><td>Is AI theme classification accurate enough on real NHS free-text without domain-specific fine-tuning? (Technical spike)</td></tr>
-<tr><td><strong>Should validate</strong></td><td>What does the Ward Manager digest need to contain to drive action rather than deletion?</td></tr>
-<tr><td><strong>Should validate</strong></td><td>What is the right pricing model and budget holder?</td></tr>
-</table>
-<h2>Phase 1 — Foundational Interviews (Weeks 1–3)</h2>
-<p>4× Chief Nurses, 4× Quality Managers, 3× Ward Managers, 2× IG/CISO leads</p>
+<h2>Scope — What This Discovery Covers</h2>
+<p>This plan is scoped to what is required to confidently build and demonstrate the MVP. It does not attempt to validate every future feature — only the assumptions that would invalidate the MVP if wrong. The MVP scope (AI theme classification, sentiment alerting, ward digest, board pack) is treated as fixed input; discovery informs <em>how</em> to build it, not <em>whether</em> to.</p>
+<h2>Stage 1 — User Interviews (1 Round)</h2>
+<p><strong>Who:</strong> 6–9 participants — 2–3 Chief Nurses, 2–3 Quality Managers, 2–3 Ward Managers across 2–3 NHS trusts.</p>
+<p><strong>Purpose:</strong> Validate core pain points, understand current feedback workflows, and pressure-test the MVP feature set against real daily needs.</p>
 <ul>
-<li>Chief Nurse questions: feedback lag, 10YHP anxiety, and CQC triggers</li>
-<li>Quality Manager questions: current process mapping, sampling rates, and alert design preferences</li>
-<li>IG/CISO questions: data processing approval conditions, DTAC process, and DPIA requirements</li>
+<li>Recruit participants across trust types (acute, community, mental health)</li>
+<li>Semi-structured interview guide — 45 minutes per session</li>
+<li>Chief Nurse focus: board accountability, CQC anxiety, 10YHP income exposure</li>
+<li>Quality Manager focus: current manual process, sampling rates, what a useful alert looks like</li>
+<li>Ward Manager focus: digest format, time constraints, positive feedback appetite</li>
+<li>Capture verbatim quotes; note surprises and contradictions</li>
+<li>Synthesise into 5–7 key insight themes within 48 hours of final interview</li>
 </ul>
-<h2>Phase 2 — Technical Spike (Weeks 2–4)</h2>
-<p>Engineering + data science + 1 willing Quality Manager (data access)</p>
+<h2>Stage 2 — Feedback Analysis (Platform &amp; Dashboard Scope)</h2>
+<p><strong>Purpose:</strong> Analyse interview findings and existing NHS FFT data to confirm and sharpen the MVP platform and dashboard design. Keep scope tightly bounded to what the MVP must deliver — no scope creep.</p>
 <ul>
-<li>Classify 500 real FFT comments. Validate accuracy against expert coding.</li>
-<li>Audit data formats from 3 trusts. Estimate ward naming normalisation effort.</li>
-<li>Back-test threshold calibration on historical trust data.</li>
+<li>Affinity map all interview observations into clusters</li>
+<li>Cross-reference insight themes against MVP feature list — confirm each feature has a user need behind it</li>
+<li>Identify any MVP features that lack evidence — flag for de-scoping or deferral</li>
+<li>Define must-have dashboard views for each persona (Chief Nurse, Quality Manager)</li>
+<li>Validate alert threshold logic against real user mental models of "urgent" vs "monitor"</li>
+<li>Produce a one-page MVP scope confirmation document as a shared team reference</li>
 </ul>
-<h2>Phase 3 — Prototype Testing (Weeks 5–6)</h2>
-<p>3× Quality Managers, 4× Ward Managers, 2× Chief Nurses</p>
+<h2>Stage 3 — Tech Discovery</h2>
+<p><strong>Purpose:</strong> Evaluate technical options and confirm feasibility for the specific capabilities needed in the MVP. De-risk architecture decisions before build begins.</p>
 <ul>
-<li>Alert dashboard: can QMs identify highest-risk ward unprompted in &lt;30 seconds?</li>
-<li>Alert trust: would they act on a red alert? What would make them doubt it?</li>
-<li>Digest engagement: reading time, what they'd forward, what they'd skip</li>
-<li>Drilldown utility: navigation without help; verbatims reached in &lt;3 clicks</li>
+<li>NHS data ingest: FFT CSV/API, NHS App ratings — format audit across 2 trusts</li>
+<li>AI/NLP model selection: evaluate options for theme classification on NHS free-text (accuracy vs cost vs latency)</li>
+<li>Run a classification spike on 300–500 real FFT comments; validate against expert-coded ground truth</li>
+<li>Data residency and IG requirements: confirm UK cloud hosting approach and DTAC timeline</li>
+<li>Build vs buy assessment for key MVP components (alerting engine, digest delivery)</li>
+<li>Document architecture decisions in a lightweight ADR (Architecture Decision Record)</li>
 </ul>
-<h2>Phase 4 — Pricing &amp; Procurement (Weeks 6–7)</h2>
-<p>3× Chief Nurses (re-engaged), 2× Finance Directors, 1× NHS procurement lead</p>
+<h2>Stage 4 — Ideation &amp; Hypothesis Creation</h2>
+<p><strong>Purpose:</strong> Translate interview insights and tech findings into a prioritised set of testable hypotheses for the MVP. Use structured methods to surface the right problems before jumping to solutions.</p>
 <ul>
-<li>Van Westendorp pricing: too cheap / acceptable / too expensive thresholds</li>
-<li>Budget location: quality/safety vs IT. Co-signatory requirements above £30k</li>
-<li>Procurement route: G-Cloud direct award vs tender</li>
+<li>Run a focused HMW (How Might We) session using interview insights as prompts</li>
+<li>Map jobs-to-be-done for each primary persona against MVP feature candidates</li>
+<li>Generate a hypothesis backlog: "We believe [feature] will [outcome] for [persona]. We'll know this is true when [signal]."</li>
+<li>Score hypotheses against MVP goals using impact × confidence</li>
+<li>Select top 3–5 hypotheses to carry into prototype design</li>
+<li>Document out-of-scope hypotheses to revisit post-MVP</li>
 </ul>
-<h2>Decision Gates</h2>
-<table>
-<tr><th>Gate</th><th>Pass Criterion</th></tr>
-<tr><td>IG / CISO Gate</td><td>At least 2 of 4 IG leads indicate they would approve a DTAC-compliant cloud processor. If 0/4: re-scope to on-premise only.</td></tr>
-<tr><td>AI Accuracy Gate</td><td>Spike achieves ≥85% accuracy on real NHS data without fine-tuning. If not: include fine-tuning in scope or narrow taxonomy.</td></tr>
-<tr><td>Alert Design Gate</td><td>≥4 of 5 Quality Managers in prototype testing describe a specific action they would take on a red alert.</td></tr>
-<tr><td>Commercial Gate</td><td>At least 1 trust willing to sign a paid pilot at ≥£30k before build. If not: extend discovery, not build.</td></tr>
-</table>`)
+<h2>Stage 5 — Design Prototypes</h2>
+<p><strong>Purpose:</strong> Translate the top MVP hypotheses into testable low and mid-fidelity prototypes. Focus on the core dashboard and key user flows to gather directional feedback before engineering investment.</p>
+<ul>
+<li>Wireframe the alert dashboard (Quality Manager primary view) — top-3 deteriorating wards default</li>
+<li>Wireframe the drilldown flow: alert → theme → verbatim comments</li>
+<li>Wireframe the weekly ward digest email format</li>
+<li>Build mid-fidelity interactive prototype of the dashboard in Figma</li>
+<li>Run 2–3 informal walkthroughs with Quality Managers to gather directional feedback</li>
+<li>Iterate once based on feedback; lock prototype for sprint planning reference</li>
+<li>Prototype sign-off by product and design lead before development begins</li>
+</ul>`)
   },
   {
     id: 'artefact-findings',

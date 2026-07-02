@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
 import {
   X, Target, Search, Rocket, BarChart2, Map, Users2, Lightbulb,
   FlaskConical, TestTube2, Cpu, ClipboardList, Palette, GitBranch,
   Code2, ShieldCheck, Megaphone, TrendingUp, ChevronRight, RotateCcw,
-  ArrowRight, Save, Plus, Trash2,
+  ArrowRight, Save, Plus, Trash2, Video, Play, Pencil,
 } from 'lucide-react';
 import { RichTextEditor, InlineEdit } from './RichTextEditor';
 import { useFirebaseSync } from '../hooks/useFirebaseSync';
@@ -79,6 +79,7 @@ interface EditablePhase {
   title: string;
   subtitle: string;
   cards: EditableCard[];
+  videoUrl?: string;
 }
 
 const DEFAULT_PHASES: EditablePhase[] = [
@@ -98,13 +99,13 @@ const DEFAULT_PHASES: EditablePhase[] = [
   {
     id: 'discovery',
     title: 'Product Discovery',
-    subtitle: 'Validate assumptions before committing to build.',
+    subtitle: 'Validate assumptions for the MVP before committing to build.',
     cards: [
-      { id: 'pd-1', title: 'Market Research & Analysis', subtitle: 'User & market insights', description: 'Validate assumptions about user needs and market gaps through rigorous qualitative and quantitative research with real users.', bullets: ['Desk research & literature review', 'User interviews (15–20)', 'Surveys & quantitative data', 'Affinity mapping', 'Insight synthesis'] },
-      { id: 'pd-2', title: 'Brainstorming & Hypotheses', subtitle: 'Ideation & framing', description: 'Facilitate structured ideation sessions to generate and prioritise product hypotheses ready for testing.', bullets: ['Jobs-to-be-done framework', 'Problem framing workshops', 'HMW (How Might We) sessions', 'Hypothesis backlog creation', 'Opportunity scoring'] },
-      { id: 'pd-3', title: 'Rapid Prototyping', subtitle: 'Build to learn', description: 'Build low and mid-fidelity prototypes to test ideas quickly and cheaply before committing engineering resources.', bullets: ['Wireframe creation', 'Low-fidelity prototypes', 'Design sprint facilitation', 'Concept validation', 'Iteration cycles'] },
-      { id: 'pd-4', title: 'Rapid Testing', subtitle: 'Assumption validation', description: 'Conduct moderated and unmoderated user testing to validate prototypes and uncover usability issues before development begins.', bullets: ['Usability testing sessions', 'A/B testing', 'Think-aloud protocol', 'Insight capture & synthesis', 'Test-driven iteration'] },
-      { id: 'pd-5', title: 'Tech Discovery', subtitle: 'Feasibility & architecture', description: 'Evaluate technical options, integration feasibility, and high-level architecture requirements to de-risk delivery.', bullets: ['API & integration assessment', 'Build vs. buy analysis', 'Architecture decisions', 'Data & security requirements', 'Tooling evaluation (Jira, ADO, etc.)'] },
+      { id: 'pd-1', title: 'User Interviews', subtitle: 'Round 1 · NHS stakeholders', description: 'Conduct one round of structured user interviews with key NHS personas — Chief Nurses, Quality Managers, and Ward Managers — to validate the core problem, uncover unmet needs, and pressure-test MVP scope.', bullets: ['Recruit 6–9 participants across 3 NHS trusts', 'Semi-structured interview guide aligned to MVP scope', 'Focus on current feedback workflows and pain points', 'Capture verbatim quotes and key observations', 'Synthesise findings into insight themes'] },
+      { id: 'pd-2', title: 'Feedback Analysis', subtitle: 'Platform & dashboard scope', description: 'Analyse findings from user interviews and existing NHS FFT data to define what the MVP platform and dashboard must do. Keep scope tightly bounded to what is needed for the MVP demo — no gold-plating.', bullets: ['Affinity map interview insights', 'Identify top 3–5 critical jobs-to-be-done for MVP', 'Define must-have vs. out-of-scope platform features', 'Validate dashboard views against real user workflows', 'Document agreed MVP scope as a reference artefact'] },
+      { id: 'pd-3', title: 'Tech Discovery', subtitle: 'Feasibility & architecture', description: 'Evaluate technical options and integration feasibility scoped specifically to MVP delivery. Identify the minimum viable architecture needed to demonstrate the platform end-to-end.', bullets: ['NHS data ingestion approach (FFT, NHS App)', 'AI/NLP model selection for theme classification', 'Build vs. buy assessment for key components', 'Data security and IG requirements for MVP', 'High-level architecture decision record'] },
+      { id: 'pd-4', title: 'Ideation & Hypotheses', subtitle: 'Structured problem framing', description: 'Run focused ideation sessions to generate and prioritise product hypotheses for the MVP. Use HMW prompts and jobs-to-be-done to frame solvable problems, then score and rank hypotheses for testing.', bullets: ['HMW (How Might We) workshop', 'Jobs-to-be-done mapping', 'Hypothesis backlog creation', 'Opportunity scoring against MVP goals', 'Prioritised list of hypotheses to prototype'] },
+      { id: 'pd-5', title: 'Design Prototypes', subtitle: 'Lo-fi to mid-fi concepts', description: 'Translate the top MVP hypotheses into low and mid-fidelity design prototypes. Focus on the core dashboard and key user flows to gather early feedback before engineering begins.', bullets: ['Wireframes for core MVP screens', 'Mid-fidelity interactive prototype', 'Dashboard layout validation with users', 'Design critique and iteration cycle', 'Prototype sign-off ahead of delivery'] },
     ],
   },
   {
@@ -391,6 +392,191 @@ function FlipCard({
   );
 }
 
+// ─── Phase video snippet ──────────────────────────────────────────────────────
+
+function getYouTubeEmbedId(url: string): string | null {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^&?/\s]+)/);
+  return m ? m[1] : null;
+}
+
+function PhaseVideoSnippet({
+  videoUrl, onUpdate, borderColor,
+}: {
+  videoUrl?: string;
+  onUpdate: (url: string) => void;
+  borderColor: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState(videoUrl ?? '');
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const ytId = videoUrl ? getYouTubeEmbedId(videoUrl) : null;
+  const isYoutube = !!ytId;
+  const isVideoFile = !!(videoUrl && !isYoutube);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (playing) videoRef.current.play().catch(() => {});
+    else { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+  }, [playing]);
+
+  // reset playback when video changes
+  useEffect(() => { setPlaying(false); }, [videoUrl]);
+
+  const commit = (url: string) => { onUpdate(url.trim()); setEditing(false); };
+  const clear = () => { onUpdate(''); setInputVal(''); setEditing(false); setPlaying(false); };
+
+  if (!videoUrl) {
+    return (
+      <div className="mt-6">
+        {editing ? (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50">
+            <Video className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+            <input
+              autoFocus
+              value={inputVal}
+              onChange={e => setInputVal(e.target.value)}
+              placeholder="Paste a video URL (mp4 / YouTube)…"
+              className="flex-1 bg-transparent text-sm text-slate-700 focus:outline-none"
+              onKeyDown={e => {
+                if (e.key === 'Enter') commit(inputVal);
+                if (e.key === 'Escape') setEditing(false);
+              }}
+            />
+            <button onClick={() => commit(inputVal)} className="text-xs font-medium text-blue-500 hover:text-blue-400 transition-colors">Add</button>
+            <button onClick={() => setEditing(false)} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center justify-center gap-2 w-full text-xs text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 hover:border-slate-400 px-4 py-3 rounded-xl transition-colors"
+          >
+            <Video className="w-3.5 h-3.5" />
+            Add video snippet
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6">
+      <div
+        className={`relative rounded-xl overflow-hidden border ${borderColor} bg-slate-900 group`}
+        style={{ aspectRatio: '16/9' }}
+      >
+        {/* mp4 / direct video */}
+        {isVideoFile && (
+          <>
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            {!playing && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <button
+                  data-testid="video-play-btn"
+                  onClick={() => setPlaying(true)}
+                  className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                >
+                  <Play className="w-6 h-6 ml-0.5" />
+                </button>
+              </div>
+            )}
+            {playing && (
+              <button
+                onClick={() => setPlaying(false)}
+                className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-lg bg-black/60 text-white text-xs transition-opacity"
+              >
+                Stop
+              </button>
+            )}
+          </>
+        )}
+
+        {/* YouTube */}
+        {isYoutube && (
+          <>
+            {!playing ? (
+              <>
+                <img
+                  src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                  alt="Video thumbnail"
+                  className="w-full h-full object-cover opacity-80"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <button
+                    data-testid="video-play-btn"
+                    onClick={() => setPlaying(true)}
+                    className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                  >
+                    <Play className="w-7 h-7 ml-1" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <iframe
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+                <button
+                  onClick={() => setPlaying(false)}
+                  className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-lg bg-black/60 text-white text-xs transition-opacity z-10"
+                >
+                  Stop
+                </button>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Remove */}
+        <button
+          onClick={clear}
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-slate-900/80 flex items-center justify-center text-slate-300 hover:text-white transition-all z-20"
+          title="Remove video"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Edit URL row */}
+      {editing ? (
+        <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50">
+          <input
+            autoFocus
+            value={inputVal}
+            onChange={e => setInputVal(e.target.value)}
+            className="flex-1 bg-transparent text-sm text-slate-700 focus:outline-none"
+            placeholder="New video URL…"
+            onKeyDown={e => {
+              if (e.key === 'Enter') commit(inputVal);
+              if (e.key === 'Escape') setEditing(false);
+            }}
+          />
+          <button onClick={() => commit(inputVal)} className="text-xs font-medium text-blue-500 hover:text-blue-400">Update</button>
+          <button onClick={() => setEditing(false)} className="text-xs text-slate-400 hover:text-slate-600">Cancel</button>
+        </div>
+      ) : (
+        <button
+          onClick={() => { setInputVal(videoUrl ?? ''); setEditing(true); }}
+          className="mt-2 flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <Pencil className="w-3 h-3" /> Change video URL
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── Phase section ────────────────────────────────────────────────────────────
 
 function PhaseSection({
@@ -457,6 +643,12 @@ function PhaseSection({
           );
         })}
       </div>
+
+      <PhaseVideoSnippet
+        videoUrl={phase.videoUrl}
+        onUpdate={url => updatePhase('videoUrl' as keyof EditablePhase, url)}
+        borderColor={config.borderColor}
+      />
     </div>
   );
 }
