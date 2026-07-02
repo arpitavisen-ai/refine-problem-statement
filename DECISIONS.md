@@ -25,14 +25,14 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-### AD-03 · Versioned seed data pattern
+### AD-03 · Versioned seed data pattern — seed-if-empty, never overwrite
 **Status:** Active  
 **Date:** Project inception  
-**Last updated:** After MVP discovery plan update  
-**Decision:** All default content is defined in `src/app/data/seedData.ts` as `SEED_*` constants alongside a `SEED_VERSION` integer. On app mount, the stored Firebase `dataVersion` is compared to `SEED_VERSION`. If lower, all seed data is re-written to Firebase and the version is updated.  
-**Rationale:** Allows default content to be updated in code and pushed to all users on next load without manual database edits. Any developer can update seed content, bump the version, and all app instances receive the new defaults on their next page load.  
-**Trade-off:** Re-seeding overwrites any user edits to seeded fields (problem statement, user segments, market research). Intentional — seed updates are authoritative. Non-seeded paths (e.g. `pdlcPhases` edited live) are unaffected.  
-**Current version:** `SEED_VERSION = 4`
+**Last updated:** 2026-07-03 — fixed overwrite bug  
+**Decision:** All default content is defined in `src/app/data/seedData.ts` as `SEED_*` constants alongside a `SEED_VERSION` integer. On app mount, if the stored `dataVersion` is lower than `SEED_VERSION`, each path is seeded **only if it does not already exist in Firebase**. Existing user data is never overwritten.  
+**Rationale:** The original implementation used unconditional `set()` calls — every `SEED_VERSION` bump overwrote user edits in Firebase, reverting all in-app changes. The fix uses `seedIfEmpty()`: check the path first, write only if absent. `SEED_VERSION` now signals "check for new empty paths" not "reset everything."  
+**When to bump SEED_VERSION:** Only when adding a brand-new Firebase path that needs a default value for first-time users. Never bump it to push content updates to existing users — edit Firebase directly or accept that existing users keep their data.  
+**Current version:** `SEED_VERSION = 6`
 
 ---
 
@@ -204,5 +204,5 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-*Last updated: 2026-07-03 (added user interview scripts artefact; SEED_VERSION bumped to 6)*  
+*Last updated: 2026-07-03 (fixed seed overwrite bug — seedIfEmpty pattern; interview scripts added)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

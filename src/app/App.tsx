@@ -17,57 +17,41 @@ import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_R
 export default function App() {
   const [problemStatement, setProblemStatement, flushProblemStatement] = useFirebaseSync(
     "problemStatement",
-    "NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. The 10 Year Health Plan (July 2025) directly ties trust income to patient ratings through clinical team payments, patient power payments, and publicly published league tables updated quarterly from summer 2025. Yet most trusts still rely on manual coding, sampled data, and disconnected reporting systems that prevent timely action. There is no NHS-native platform that combines AI-powered theme classification, closed-loop feedback management, and integration with clinical systems — leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards."
+    SEED_PROBLEM_STATEMENT
   );
   const [editingStatement, setEditingStatement] = useState(false);
   const [tempStatement, setTempStatement] = useState(problemStatement);
 
-  const [userSegments, setUserSegments, flushUserSegments] = useFirebaseSync("userSegments", {
-    chiefNurse: {
-      title: "Chief Nurse",
-      imageUrl: "https://images.unsplash.com/photo-1584432810601-6c7f27d2362b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxOSFMlMjBudXJzZSUyMGNsaW5pY2FsJTIwbGVhZGVyJTIwaG9zcGl0YWx8ZW58MXx8fHwxNzgyMzk2NzM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      goals: "Ensure patient experience meets CQC standards and board expectations\nMonitor trust-wide feedback trends and emerging risks\nDemonstrate improvement to regulators and NHSE\nAlign patient experience strategy to the 10 Year Health Plan\nSecure trust income tied to patient ratings",
-      painPoints: "Feedback data arrives too late to act on before inspections\nNo single view across all wards and care settings\nManual board reports take days to compile\nUnable to link patient feedback to clinical outcomes or team performance",
-      motivators: "Real-time trust-wide visibility of patient sentiment\nAutomated CQC-ready reporting and evidence packs\nEarly warning alerts before issues escalate\nBoard-level dashboards that require no manual preparation",
-      opportunities: "AI-powered anomaly detection surfacing ward-level risks proactively\nOne-click regulatory evidence packs for CQC inspections\nPortfolio view linking patient experience to clinical and financial outcomes"
-    },
-    qualityManager: {
-      title: "Quality Manager",
-      imageUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGhjYXJlJTIwcHJvZmVzc2lvbmFsJTIwZGF0YSUyMGFuYWx5c2lzJTIwbGFwdG9wfGVufDF8fHx8MTc4MjM5Njc0M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      goals: "Analyse all patient feedback — not just samples — at speed and scale\nClassify free-text themes accurately without manual coding\nGenerate meaningful reports for clinical and executive audiences\nIdentify patterns and trends across wards, specialties, and time periods\nClose the loop between patient feedback and operational action",
-      painPoints: "Spending 60–70% of time manually coding free-text responses\nSampling means genuine issues go undetected until it is too late\nMultiple disconnected tools with no unified analytical layer\nDifficult to demonstrate that feedback has led to measurable change\nNo way to benchmark against peer trusts or national datasets",
-      motivators: "AI theme classification reducing manual coding to near zero\nDrill-down from trust level to ward level to verbatim comments\nClosed-loop feedback workflow linking issues to resolved actions\nBenchmarking against FFT and national patient survey data",
-      opportunities: "Automated theme tagging at 92–95% accuracy on real NHS data\nAnomaly alerts when sentiment drops on a ward or specialty\nSelf-serve report builder for clinical governance and board packs\nIntegration with Datix, EPR, and NHS App feedback channels"
-    },
-    wardManager: {
-      title: "Ward Manager",
-      imageUrl: "https://images.unsplash.com/photo-1516841273335-e39b37888115?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHx3YXJkJTIwbWFuYWdlciUyMGhvc3BpdGFsJTIwY2xpbmljYWwlMjB0ZWFtfGVufDF8fHx8MTc4MjM5NjczOHww&ixlib=rb-4.1.0&q=80&w=1080",
-      goals: "Understand what patients on my ward are saying in near real time\nReceive actionable feedback before discharge — not weeks later\nTrack whether actions taken have improved patient experience scores\nBuild a culture of continuous improvement within the ward team\nAvoid surprises during CQC inspections or trust reviews",
-      painPoints: "Feedback arrives weeks after a patient's stay — too late to respond\nAggregated scores hide which specific issues need addressing\nNo visibility into whether complaints have been resolved downstream\nTeam members are not aware of feedback relevant to their practice\nFeeling that feedback is collected but never acted upon",
-      motivators: "Near real-time ward-level feedback visible on a simple dashboard\nSpecific, actionable themes rather than headline satisfaction scores\nAbility to log actions taken and track whether scores improve\nRecognition when ward performance improves based on patient voice",
-      opportunities: "Ward-level dashboard surfacing the top 3 feedback themes each week\nPre-discharge feedback capture before patients leave the ward\nClosed-loop action log visible to ward team and quality management\nComparison with similar wards to benchmark and share good practice"
-    }
-  });
+  const [userSegments, setUserSegments, flushUserSegments] = useFirebaseSync(
+    "userSegments",
+    SEED_USER_SEGMENTS
+  );
 
-  const [marketResearch, setMarketResearch, flushMarketResearch] = useFirebaseSync("marketResearch", [
-    { id: '1', title: 'Competitive Analysis', description: 'Analyse existing product intelligence platforms in private sector and international public sector organisations to understand the landscape and identify differentiation opportunities.' },
-    { id: '2', title: 'Current State Assessment', description: 'Map existing tools and systems used across UK public sector for product reporting and performance tracking, identifying gaps and integration opportunities.' },
-    { id: '3', title: 'User Research', description: 'Conduct interviews and surveys with 15–20 product leaders, PMs, and senior stakeholders across 5–7 departments to surface unmet needs and latent demand.' },
-    { id: '4', title: 'Technology Stack Research', description: 'Evaluate integration capabilities with common delivery tools (Jira, Azure DevOps, ServiceNow, etc.) and assess technical feasibility of proposed architecture.' },
-    { id: '5', title: 'Pricing & Business Model', description: 'Research pricing models for SaaS platforms in public sector and applicable procurement frameworks (G-Cloud, Crown Commercial Service, etc.).' },
-    { id: '6', title: 'Compliance & Security', description: 'Understand data protection requirements, security standards, and compliance obligations (GDPR, Cyber Essentials, NCSC guidelines) relevant to public sector platforms.' },
-    { id: '7', title: 'Success Metrics Definition', description: 'Define how platform success will be measured and benchmarked in a public sector context, including adoption, efficiency gains, and outcome alignment.' },
-  ]);
+  const [marketResearch, setMarketResearch, flushMarketResearch] = useFirebaseSync(
+    "marketResearch",
+    SEED_MARKET_RESEARCH
+  );
 
+  // Seed only paths that are genuinely empty — never overwrite user edits.
+  // SEED_VERSION is used only to trigger seeding of brand-new paths added in
+  // a release. Existing paths with user data are always left untouched.
   useEffect(() => {
     const versionRef = ref(db, 'dataVersion');
-    get(versionRef).then(snapshot => {
+    get(versionRef).then(async snapshot => {
       const version = snapshot.exists() ? (snapshot.val() as number) : 0;
       if (version < SEED_VERSION) {
-        set(ref(db, 'problemStatement'), JSON.stringify(SEED_PROBLEM_STATEMENT));
-        set(ref(db, 'userSegments'), JSON.stringify(SEED_USER_SEGMENTS));
-        set(ref(db, 'marketResearch'), JSON.stringify(SEED_MARKET_RESEARCH));
-        set(versionRef, SEED_VERSION);
+        const seedIfEmpty = async (path: string, data: unknown) => {
+          const snap = await get(ref(db, path));
+          if (!snap.exists()) {
+            await set(ref(db, path), JSON.stringify(data));
+          }
+        };
+        await Promise.all([
+          seedIfEmpty('problemStatement', SEED_PROBLEM_STATEMENT),
+          seedIfEmpty('userSegments', SEED_USER_SEGMENTS),
+          seedIfEmpty('marketResearch', SEED_MARKET_RESEARCH),
+        ]);
+        await set(versionRef, SEED_VERSION);
       }
     });
   }, []);
