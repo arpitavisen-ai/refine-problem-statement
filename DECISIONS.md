@@ -114,7 +114,16 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-### DD-06 · Discovery Research Plan as a structured 5-stage artefact
+### DD-06 · Ingest tab removed — out of MVP demo scope
+**Status:** Active  
+**Date:** 2026-07-03  
+**Decision:** The NHS FFT Data Ingest tab, `NHSFFTUpload` component, `fftParser` utility, `fftRecords` Firebase state, and the related acceptance test (`09-nhs-fft-upload.spec.ts`) were removed entirely. The default tab is now User Analysis.  
+**Rationale:** The Ingest tab was a data-loading utility for internal use during discovery. It is not part of the MVP demo narrative — the demo focuses on personas, discovery artefacts, PDLC, and the delivery backlog. Including it added complexity without adding value to the demo audience.  
+**Files removed:** `src/app/components/NHSFFTUpload.tsx`, `src/app/utils/fftParser.ts`, `src/imports/sample_nhs_fft_data.csv`, `tests/acceptance/09-nhs-fft-upload.spec.ts`.
+
+---
+
+### DD-08 · Discovery Research Plan as a structured 5-stage artefact
 **Status:** Active  
 **Date:** After MVP discovery plan update  
 **Decision:** The Discovery Research Plan artefact is structured around 5 sequential stages (User Interviews → Feedback Analysis → Tech Discovery → Ideation & Hypotheses → Design Prototypes) scoped strictly to MVP demo requirements.  
@@ -195,5 +204,5 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-*Last updated: 2026-07-03 (personas and JTBD canvases updated to MVP demo scope and discovery findings; SEED_VERSION bumped to 5)*  
+*Last updated: 2026-07-03 (removed Ingest tab and all FFT upload code — out of MVP demo scope; personas and JTBD canvases updated)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

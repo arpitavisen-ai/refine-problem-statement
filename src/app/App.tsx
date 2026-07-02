@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Upload } from 'lucide-react';
+import { Users, TrendingUp, ListChecks, Edit2, Check, Layers } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -11,11 +11,8 @@ import { PersonaCard } from './components/PersonaCard';
 import { ProgressTracker } from './components/ProgressTracker';
 import { MarketResearchGrid } from './components/MarketResearchGrid';
 import { PDLCSection } from './components/PDLCSection';
-import { NHSFFTUpload } from './components/NHSFFTUpload';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH } from './data/seedData';
-import type { FFTRecord } from './utils/fftParser';
-import { toast } from 'sonner';
 
 export default function App() {
   const [problemStatement, setProblemStatement, flushProblemStatement] = useFirebaseSync(
@@ -62,8 +59,6 @@ export default function App() {
     { id: '7', title: 'Success Metrics Definition', description: 'Define how platform success will be measured and benchmarked in a public sector context, including adoption, efficiency gains, and outcome alignment.' },
   ]);
 
-  const [fftRecords, setFFTRecords, flushFFTRecords] = useFirebaseSync<FFTRecord[]>("fftRecords", []);
-
   useEffect(() => {
     const versionRef = ref(db, 'dataVersion');
     get(versionRef).then(snapshot => {
@@ -94,33 +89,6 @@ export default function App() {
 
   const deleteMarketResearch = (id: string) => {
     setMarketResearch(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleFFTImport = (records: FFTRecord[]) => {
-    setFFTRecords(prev => {
-      // Filter out duplicates from existing records
-      const existingKeys = new Set(
-        prev.map(r => `${r.trustCode}|${r.wardCode}|${r.responseDate}|${r.overallExperience}|${r.comments || ''}`)
-      );
-      
-      const newRecords = records.filter(r => {
-        const key = `${r.trustCode}|${r.wardCode}|${r.responseDate}|${r.overallExperience}|${r.comments || ''}`;
-        return !existingKeys.has(key);
-      });
-
-      if (newRecords.length > 0) {
-        toast.success(`Imported ${newRecords.length} NHS FFT records`, {
-          description: `${records.length - newRecords.length} duplicates skipped`
-        });
-        return [...prev, ...newRecords];
-      } else {
-        toast.info('No new records to import', {
-          description: 'All records already exist in the database'
-        });
-        return prev;
-      }
-    });
-    flushFFTRecords();
   };
 
   return (
@@ -242,10 +210,9 @@ export default function App() {
 
         {/* Tabs */}
         <div className="max-w-[1400px] mx-auto px-8 pb-16">
-          <Tabs.Root defaultValue="ingest">
+          <Tabs.Root defaultValue="users">
             <Tabs.List className="flex gap-0 border-b border-slate-200 mb-10">
               {[
-                { value: 'ingest', label: 'Ingest', Icon: Upload },
                 { value: 'users', label: 'User Analysis', Icon: Users },
                 { value: 'research', label: 'Artefacts', Icon: TrendingUp },
                 { value: 'pdlc', label: 'PDLC', Icon: Layers },
@@ -261,23 +228,6 @@ export default function App() {
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
-
-            {/* NHS FFT Data Ingest */}
-            <Tabs.Content value="ingest">
-              <NHSFFTUpload onImport={handleFFTImport} />
-              
-              {/* Display record count */}
-              {fftRecords.length > 0 && (
-                <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-blue-900">
-                    📊 Total NHS FFT Records in Database: <strong>{fftRecords.length}</strong>
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    Covering {new Set(fftRecords.map(r => r.trustCode)).size} trusts across {new Set(fftRecords.map(r => r.wardCode)).size} wards
-                  </p>
-                </div>
-              )}
-            </Tabs.Content>
 
             {/* User Analysis */}
             <Tabs.Content value="users">
