@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "promote": "powershell -ExecutionPolicy Bypass -File scripts/promote.ps1",
     "test": "npx playwright test --config=playwright.config.ts",
     "test:prod": "cross-env BASE_URL=https://refine-problem-statement.vercel.app npx playwright test --config=playwright.config.ts",
     "test:headed": "npx playwright test --config=playwright.config.ts --headed",

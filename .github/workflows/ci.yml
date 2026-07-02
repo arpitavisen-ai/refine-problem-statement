@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
 
 jobs:
@@ -35,13 +35,11 @@ jobs:
 
       - name: Check DECISIONS.md is present and up to date
         run: |
-          # 1. File must exist
           if [ ! -f DECISIONS.md ]; then
             echo "❌ DECISIONS.md not found at project root."
             exit 1
           fi
 
-          # 2. Must contain all three required sections
           for section in "## Architectural Decisions" "## Design Decisions" "## Coding Decisions"; do
             if ! grep -qF "$section" DECISIONS.md; then
               echo "❌ DECISIONS.md is missing section: $section"
@@ -49,13 +47,11 @@ jobs:
             fi
           done
 
-          # 3. Must have a Last updated date
           if ! grep -qE 'Last updated: [0-9]{4}-[0-9]{2}-[0-9]{2}' DECISIONS.md; then
             echo "❌ DECISIONS.md is missing a 'Last updated: YYYY-MM-DD' line."
             exit 1
           fi
 
-          # 4. Warn if architectural files changed without touching DECISIONS.md
           ARCH_FILES="src/app/hooks/useFirebaseSync.ts src/app/firebase.ts src/app/data/seedData.ts src/app/App.tsx src/app/components/PDLCSection.tsx .github/workflows/ci.yml"
           CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           ARCH_CHANGED=""
@@ -86,7 +82,8 @@ jobs:
           path: tests/report/
           retention-days: 7
 
-      # Only promote to production when tests pass on the main branch
+      # Only promote to production when tests pass on the main branch.
+      # develop pushes get a preview URL only — never touch production.
       - name: Promote to production
         if: github.ref == 'refs/heads/main'
         run: npx vercel --prod --token "${{ secrets.VERCEL_TOKEN }}" --yes

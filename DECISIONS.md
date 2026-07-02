@@ -63,11 +63,17 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-### AD-07 · Vercel for hosting with CI/CD via GitHub Actions
+### AD-07 · Local-first review workflow: develop → main promotion gate
 **Status:** Active  
-**Decision:** Every push triggers a Vercel preview build; Playwright acceptance tests run against the preview URL; if tests pass and branch is `main`, the preview is promoted to production. Production is never updated if tests fail.  
-**Rationale:** Zero-downtime deployments, preview URLs per branch for review, and a hard gate preventing broken builds reaching production.  
-**Two remotes in use:** `origin` → `github.com/arpvisen/...` (personal); `upstream` → `github.com/arpitavisen-ai/...` (work/AI account). Deployments are triggered from `upstream`.
+**Last updated:** 2026-07-03  
+**Decision:** All development work happens on the `develop` branch. Pushes to `develop` trigger a Vercel **preview** deploy and tests — never production. Production is updated only by running `npm run promote`, which: builds locally, asks for confirmation after local review at `localhost:5173`, then merges `develop → main` and pushes — triggering the CI pipeline that deploys to Vercel production.  
+**Rationale:** Prevents untested changes from going directly to production. Local review at `localhost:5173` catches visual and UX issues that Playwright tests may miss. The promote script enforces the sequence: build passes → local review confirmed → merge → deploy.  
+**Workflow summary:**
+```
+npm run dev          ← review at localhost:5173
+npm run promote      ← when happy: merges develop→main, pushes, triggers production deploy
+```
+**Two remotes in use:** `origin` → `github.com/arpvisen/...` (personal); `upstream` → `github.com/arpitavisen-ai/...` (work/AI account). `npm run promote` pushes to `upstream`.
 
 ---
 
@@ -204,5 +210,5 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
-*Last updated: 2026-07-03 (fixed seed overwrite bug — seedIfEmpty pattern; interview scripts added)*  
+*Last updated: 2026-07-03 (added develop→main promotion workflow; local-first review before production deploy)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
