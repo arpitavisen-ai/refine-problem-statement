@@ -42,7 +42,7 @@ Every push and pull request triggers the pipeline in `.github/workflows/ci.yml`:
 Production is never updated if tests fail.
 
 ### Required GitHub Secrets
-
+https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup
 Add these under **Settings → Secrets and variables → Actions**:
 
 | Secret | Value |
@@ -59,12 +59,10 @@ To enable the Figma MCP integration, generate a personal token at **figma.com �
 
 > **Never commit Figma tokens to the repository.** Revoke and regenerate any token that has been pushed.
 
-Figma Token = figd_tq9Nksg5svS4PieOidZuJYCyFznG5uiGUT-RBPSq
+Figma Token = [set in local MCP config — never commit tokens]
+
 ---
 
 ## Production URL
 
 [https://refine-problem-statement.vercel.app](https://refine-problem-statement.vercel.app)
-
-## Atlassian Token 
-Token=ATATT3xFfGF0YlwgaIW6zpDtZG6Va3PuYDqGiGbror80OQWOTfI1F3vdp6uYy7-vIGe0-nFL9SMROMtAvKUexYeyx7PGe87aBaQRejOvstUERd_c20MvVthW-itqchEonrIvhnCLsGuXxh0kZZwq5SUj7ty4DhHnmY3QNY-8YcFL2NPLpwHjQ0s=1C25992B
