@@ -646,8 +646,8 @@ export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave }:
   const [addOpen, setAddOpen] = useState(false);
 
   const heroItem = items[0];
-  const gridItems = items.slice(1, 4);
-  const listItems = items.slice(4);
+  const gridItems = items.slice(1, 8);
+  const listItems = items.slice(8);
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
