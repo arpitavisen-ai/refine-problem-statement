@@ -7,9 +7,54 @@ A React + Vite app for documenting and collaborating on product problem statemen
 ## Local Development
 
 ```bash
+# 1. Install dependencies (only needed once, or after package changes)
 npm install --legacy-peer-deps
+
+# 2. Start the dev server
 npm run dev
 ```
+
+The app will be available at **http://localhost:5173**. Changes hot-reload automatically.
+
+> **Tip:** Always run locally and verify before promoting to production. See the [Promoting to Production](#promoting-to-production) section below.
+
+---
+
+## Branching Workflow
+
+| Branch | Purpose | Deploys to |
+|---|---|---|
+| `develop` | Active development | Vercel **preview** only |
+| `main` | Production-ready code | Vercel **production** |
+
+All work goes on `develop`. You never push directly to `main` — the `promote` script handles that after a local review.
+
+```
+develop  →  (npm run promote)  →  main  →  Vercel production
+```
+
+---
+
+## Promoting to Production
+
+When you are happy with your changes on `develop` and have reviewed them locally:
+
+```bash
+# Make sure all changes are committed first
+git status
+
+# Run the promotion script
+npm run promote
+```
+
+The script will:
+1. Verify the working tree is clean and you are on `develop`
+2. Pull the latest from `upstream/develop`
+3. Run `npm run build` to catch compile errors
+4. Ask you to confirm you have reviewed the app at **http://localhost:5173**
+5. Merge `develop → main` and push to `upstream` — this triggers the production deploy on Vercel
+
+> **Do not push to `main` directly** — always use `npm run promote` so the build and local review are enforced.
 
 ---
 
