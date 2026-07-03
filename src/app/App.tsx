@@ -32,9 +32,11 @@ export default function App() {
     SEED_MARKET_RESEARCH
   );
 
-  // Seed only paths that are genuinely empty — never overwrite user edits.
-  // SEED_VERSION is used only to trigger seeding of brand-new paths added in
-  // a release. Existing paths with user data are always left untouched.
+  // Migration strategy:
+  // - Scalar paths (problemStatement, userSegments): seed only if empty — user edits are authoritative.
+  // - marketResearch: merge by artefact ID — existing items and user edits are preserved,
+  //   but new seed artefacts (identified by id) are appended if not already present.
+  // Bump SEED_VERSION when adding new artefact IDs or new scalar paths.
   useEffect(() => {
     const versionRef = ref(db, 'dataVersion');
     get(versionRef).then(async snapshot => {
@@ -42,14 +44,28 @@ export default function App() {
       if (version < SEED_VERSION) {
         const seedIfEmpty = async (path: string, data: unknown) => {
           const snap = await get(ref(db, path));
+          if (!snap.exists()) await set(ref(db, path), JSON.stringify(data));
+        };
+
+        // Merge new seed artefacts into existing marketResearch without overwriting user edits
+        const mergeMarketResearch = async () => {
+          const snap = await get(ref(db, 'marketResearch'));
           if (!snap.exists()) {
-            await set(ref(db, path), JSON.stringify(data));
+            await set(ref(db, 'marketResearch'), JSON.stringify(SEED_MARKET_RESEARCH));
+          } else {
+            const existing = JSON.parse(snap.val() as string) as typeof SEED_MARKET_RESEARCH;
+            const existingIds = new Set(existing.map(item => item.id));
+            const newItems = SEED_MARKET_RESEARCH.filter(item => !existingIds.has(item.id));
+            if (newItems.length > 0) {
+              await set(ref(db, 'marketResearch'), JSON.stringify([...existing, ...newItems]));
+            }
           }
         };
+
         await Promise.all([
           seedIfEmpty('problemStatement', SEED_PROBLEM_STATEMENT),
           seedIfEmpty('userSegments', SEED_USER_SEGMENTS),
-          seedIfEmpty('marketResearch', SEED_MARKET_RESEARCH),
+          mergeMarketResearch(),
         ]);
         await set(versionRef, SEED_VERSION);
       }
