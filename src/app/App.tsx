@@ -142,7 +142,7 @@ export default function App() {
               >
                 AI in Product Management
                 <br />
-                <em className="font-normal text-slate-600">usecase Feedback analysis for NHS</em>
+                <em className="font-normal text-slate-600">usecase: Feedback analysis for NHS</em>
               </h1>
               <div className="relative group">
                 <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-500/40 rounded-full" />
