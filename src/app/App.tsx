@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, TrendingUp, ListChecks, Edit2, Check, Layers } from 'lucide-react';
+import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Activity } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -16,12 +16,17 @@ import { PasswordGate } from './components/PasswordGate';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH } from './data/seedData';
 
+const NhsDashboardPage = lazy(() =>
+  import('../microsites/nhs-dashboard/NhsDashboardPage').then(m => ({ default: m.NhsDashboardPage }))
+);
+
 export default function App() {
   const [problemStatement, setProblemStatement, flushProblemStatement] = useFirebaseSync(
     "problemStatement",
     SEED_PROBLEM_STATEMENT
   );
   const [editingStatement, setEditingStatement] = useState(false);
+  const [activeTab, setActiveTab] = useState('users');
   const [artefactDetailId, setArtefactDetailId] = useState<string | null>(null);
   const [tempStatement, setTempStatement] = useState(problemStatement);
 
@@ -214,7 +219,7 @@ export default function App() {
 
         {/* Tabs */}
         <div className="max-w-[1400px] mx-auto px-8 pb-16">
-          <Tabs.Root defaultValue="users">
+          <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
             <Tabs.List className="flex gap-0 border-b border-slate-200 mb-10">
               {[
                 { value: 'users', label: 'User Analysis', Icon: Users },
@@ -231,6 +236,18 @@ export default function App() {
                   {label}
                 </Tabs.Trigger>
               ))}
+              {/* Separator — the NHS tab is the built product, not another framework section */}
+              <div className="w-px bg-slate-200 my-2 mx-2 self-stretch" aria-hidden="true" />
+              <Tabs.Trigger
+                value="nhs"
+                className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition-colors data-[state=active]:text-emerald-600 data-[state=active]:border-emerald-600"
+              >
+                <Activity className="w-4 h-4" />
+                NHS platform
+                <span className="text-[9px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-1.5 py-0.5 ml-0.5">
+                  Built
+                </span>
+              </Tabs.Trigger>
             </Tabs.List>
 
             {/* User Analysis */}
@@ -312,8 +329,30 @@ export default function App() {
                 <KanbanBoard />
               </div>
             </Tabs.Content>
+
+            {/* NHS Platform — content renders as a full-screen overlay (see below) */}
+            <Tabs.Content value="nhs" />
           </Tabs.Root>
         </div>
+
+        {/* NHS Dashboard — full-screen overlay, mounts only when tab is active.
+            Lazy-loaded so the microsite bundle stays out of the host's initial load. */}
+        {activeTab === 'nhs' && (
+          <div className="fixed inset-0 z-50">
+            <Suspense
+              fallback={
+                <div
+                  className="flex items-center justify-center h-full"
+                  style={{ backgroundColor: '#003087', fontFamily: 'Arial, sans-serif' }}
+                >
+                  <span className="text-white text-sm font-medium">Loading NHS Platform…</span>
+                </div>
+              }
+            >
+              <NhsDashboardPage onBack={() => setActiveTab('users')} />
+            </Suspense>
+          </div>
+        )}
       </div>
     </DndProvider>
     </PasswordGate>

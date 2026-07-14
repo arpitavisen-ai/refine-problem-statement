@@ -64,6 +64,15 @@ Updated automatically as decisions are made, changed, or removed.
 
 ---
 
+### AD-08 · NHS dashboard deployed as a decoupled microsite module
+**Status:** Active  
+**Date:** 2026-07-14  
+**Decision:** The NHS Patient Feedback Intelligence dashboard is deployed as a decoupled feature module at `src/microsites/nhs-dashboard/`, deliberately outside the host's `src/app/` tree. It is registered as a fifth nav tab ("NHS platform") with a visual separator marking it as "the product the framework built" rather than another framework section. The tab is lazily loaded (`React.lazy + Suspense`) so the microsite bundle (charts, NHS fonts, data) stays out of the host's initial load. For this MVP the dashboard runs as a self-contained static HTML file (`public/nhs-dashboard/nhs-feedback-dashboard-v5_1.html`) served inside a same-origin iframe, preserving the exact signed-off v5_1 prototype behaviour. The microsite keeps its own NHS Digital light-mode design system (Frutiger W01 → Arial, `#003087`/`#005bbb`) scoped to the `.nhs-microsite` wrapper, isolated from the host's dark theme. The welcome/interstitial page is deferred — the nav entry routes straight to the dashboard; the route is structured so a welcome page can be inserted later without restructuring. Data upload is also deferred (DD-06 removed code is not resurrected). Any future persistence follows AD-02 (JSON strings); the microsite does not write to the host's Firebase paths.  
+**Rationale:** The main site is a modular framework showcase; the NHS dashboard is evidence of a built product. Keeping it architecturally separate (no cross-imports beyond the single lazy route and the nav entry link) means it can be lifted to its own repo cleanly and keeps the two codebases from entangling. The iframe approach for MVP preserves the prototype exactly, avoids regression risk on dashboard internals, and — because the iframe is same-origin — allows Playwright to reach inside via `frameLocator` for full acceptance-test coverage. A React port is the natural next step if the dashboard needs deeper host integration.  
+**Trade-off:** The iframe is opaque: changes to the dashboard require editing the HTML file directly, and deep-linking into dashboard state is not possible. Acceptable for MVP; a React port would resolve both trade-offs. The `fixed inset-0 z-50` overlay pattern gives the dashboard the full viewport without restructuring the host layout, at the cost of the host header being covered while the NHS tab is active (intentional — stepping into the platform should feel distinct).
+
+---
+
 ### AD-07 · Local-first review workflow: develop → main promotion gate
 **Status:** Active  
 **Last updated:** 2026-07-03  
@@ -240,5 +249,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-08 (added DD-09 prototype in-tab detail view; added CD-10 prototype version HTML storage; added artefact-prototype to SEED_MARKET_RESEARCH; SEED_VERSION bumped to 8)*  
+*Last updated: 2026-07-14 (added AD-08 NHS dashboard microsite; fifth nav tab with lazy-loaded iframe embed; Playwright tests 11-smoke + 12-journey added)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
