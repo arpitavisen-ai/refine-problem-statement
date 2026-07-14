@@ -87,6 +87,15 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-09 · NHS service start page built; deferred welcome page resolved; QA fixes applied
+**Status:** Active  
+**Date:** 2026-07-14  
+**Decision:** The NHS service start page (`NhsStartPage.tsx`) has been built as the microsite's entry point, resolving the deferral recorded in AD-08. The NHS Platform nav entry now routes to the start page first; "Start now" proceeds to the dashboard; back from the dashboard returns to the start page; back from the start page exits to the host showcase. The start page is a faithful React port of the validated `nhs-start-page.html` prototype, keeping all copy, layout, and NHS Digital light-mode styling verbatim. It is lazily loaded as a separate bundle from the dashboard. Two QA fixes were applied at port time: (1) **Skip link** — a "Skip to main content" `<a>` pointing to `#main-content` is the first focusable element in the DOM, addressing the missing WCAG 2.4.1 Bypass Blocks requirement; the link is visually hidden until focused. (2) **Focus token corrected** — changed from `#ffeb3b` (incorrect, from prototype) to `#FFB81C` to match `NhsDashboardPage.tsx` and the CLAUDE.md NHS design system spec exactly. The "How this was built" secondary link navigates the host to the Artefacts tab / PrototypeDetailView via an `onBuildLog` callback prop; a prop is not a cross-boundary import, so AD-08's boundary rule is preserved. Font loading: both start page and dashboard use the Arial/Frutiger local() fallback — consistent and matching across the microsite. Playwright test suite extended: `13-nhs-start-page.spec.ts` added; `11-smoke` and `12-journey` updated to reflect the new start-page entry (the `openNhsDashboard` helper now clicks Start now before asserting dashboard state).  
+**Rationale:** The GDS "start using a service" pattern provides context, framing, and persona orientation before the user enters a complex dashboard — standard NHS digital service UX. The skip link and corrected focus token bring the page into WCAG 2.1 AA compliance. Landing the nav entry on a start page rather than directly on the dashboard gives stakeholders a moment to understand what they are about to see, which matters in a demo context.  
+**Trade-off:** "How this was built" cannot deep-link directly to PrototypeDetailView because the host has no URL routing — it drives the host's `activeTab` and `artefactDetailId` state via a callback. If URL routing is added later, this upgrades to a real deep link at zero refactor cost. The start page CSS is scoped under `.nhs-start-page` in a standalone import; Tailwind does not process it, so class names are plain strings (no purge concerns).
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -249,5 +258,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-14 (added AD-08 NHS dashboard microsite; fifth nav tab with lazy-loaded iframe embed; Playwright tests 11-smoke + 12-journey added)*  
+*Last updated: 2026-07-14 (added AD-09 NHS start page; QA fixes skip link + focus token; tests 11/12 updated + 13-nhs-start-page added; AD-08 deferred welcome page resolved)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

@@ -16,6 +16,9 @@ import { PasswordGate } from './components/PasswordGate';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH } from './data/seedData';
 
+const NhsStartPage = lazy(() =>
+  import('../microsites/nhs-dashboard/NhsStartPage').then(m => ({ default: m.NhsStartPage }))
+);
 const NhsDashboardPage = lazy(() =>
   import('../microsites/nhs-dashboard/NhsDashboardPage').then(m => ({ default: m.NhsDashboardPage }))
 );
@@ -27,6 +30,7 @@ export default function App() {
   );
   const [editingStatement, setEditingStatement] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
+  const [nhsView, setNhsView] = useState<'start' | 'dashboard'>('start');
   const [artefactDetailId, setArtefactDetailId] = useState<string | null>(null);
   const [tempStatement, setTempStatement] = useState(problemStatement);
 
@@ -219,7 +223,13 @@ export default function App() {
 
         {/* Tabs */}
         <div className="max-w-[1400px] mx-auto px-8 pb-16">
-          <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+          <Tabs.Root
+            value={activeTab}
+            onValueChange={(value) => {
+              if (activeTab === 'nhs' && value !== 'nhs') setNhsView('start');
+              setActiveTab(value);
+            }}
+          >
             <Tabs.List className="flex gap-0 border-b border-slate-200 mb-10">
               {[
                 { value: 'users', label: 'User Analysis', Icon: Users },
@@ -335,21 +345,34 @@ export default function App() {
           </Tabs.Root>
         </div>
 
-        {/* NHS Dashboard — full-screen overlay, mounts only when tab is active.
-            Lazy-loaded so the microsite bundle stays out of the host's initial load. */}
+        {/* NHS Platform — full-screen overlay, mounts only when tab is active.
+            Start page loads first; dashboard loads on "Start now".
+            overflow-y-auto lets the start page scroll; dashboard fills height via flex. */}
         {activeTab === 'nhs' && (
-          <div className="fixed inset-0 z-50">
+          <div className="fixed inset-0 z-50 overflow-y-auto">
             <Suspense
               fallback={
                 <div
-                  className="flex items-center justify-center h-full"
+                  className="flex items-center justify-center h-full min-h-screen"
                   style={{ backgroundColor: '#003087', fontFamily: 'Arial, sans-serif' }}
                 >
                   <span className="text-white text-sm font-medium">Loading NHS Platform…</span>
                 </div>
               }
             >
-              <NhsDashboardPage onBack={() => setActiveTab('users')} />
+              {nhsView === 'start' ? (
+                <NhsStartPage
+                  onStartNow={() => setNhsView('dashboard')}
+                  onBack={() => { setNhsView('start'); setActiveTab('users'); }}
+                  onBuildLog={() => {
+                    setNhsView('start');
+                    setActiveTab('research');
+                    setArtefactDetailId('artefact-prototype');
+                  }}
+                />
+              ) : (
+                <NhsDashboardPage onBack={() => setNhsView('start')} />
+              )}
             </Suspense>
           </div>
         )}

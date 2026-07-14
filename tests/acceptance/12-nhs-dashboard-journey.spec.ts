@@ -10,7 +10,9 @@ import { loadApp } from './helpers';
 async function openNhsDashboard(page: Parameters<typeof loadApp>[0]) {
   await loadApp(page);
   await page.getByRole('tab', { name: 'NHS platform' }).click();
-  // Wait for the NHS back strip to appear (host-side chrome)
+  // Start page appears first — click through to dashboard
+  await page.locator('[data-testid="nhs-start-now-btn"]').click();
+  // Wait for the dashboard back strip (host-side chrome above the iframe)
   await expect(page.locator('[data-testid="nhs-back-btn"]')).toBeVisible({ timeout: 10_000 });
 }
 
@@ -18,7 +20,7 @@ test.describe('AC-12 · NHS Dashboard Journey', () => {
 
   // ─── Nav & entry ───────────────────────────────────────────────────────────
 
-  test('NHS Platform tab is visible and navigates to dashboard', async ({ page }) => {
+  test('Start now from start page navigates to dashboard iframe', async ({ page }) => {
     await openNhsDashboard(page);
     await expect(page.locator('[data-testid="nhs-dashboard-frame"]')).toBeVisible();
   });
@@ -195,12 +197,12 @@ test.describe('AC-12 · NHS Dashboard Journey', () => {
 
   // ─── Back navigation ───────────────────────────────────────────────────────
 
-  test('back button dismisses the NHS dashboard and returns to host site', async ({ page }) => {
+  test('back button from dashboard returns to start page (not host)', async ({ page }) => {
     await openNhsDashboard(page);
     await page.locator('[data-testid="nhs-back-btn"]').click();
-    // NHS overlay gone
+    // Dashboard frame gone
     await expect(page.locator('[data-testid="nhs-dashboard-frame"]')).not.toBeVisible({ timeout: 5_000 });
-    // Host site hero section is visible again
-    await expect(page.locator('text=Patient Feedback').first()).toBeVisible();
+    // Start page is visible again
+    await expect(page.locator('[data-testid="nhs-start-now-btn"]')).toBeVisible({ timeout: 5_000 });
   });
 });

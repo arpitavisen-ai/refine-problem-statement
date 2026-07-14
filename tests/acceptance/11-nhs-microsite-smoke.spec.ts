@@ -26,10 +26,13 @@ test.describe('AC-11 · NHS Microsite Smoke', () => {
     expect(nhsIdx).toBeGreaterThan(tasksIdx);
   });
 
-  test('clicking NHS tab mounts the dashboard iframe', async ({ page }) => {
+  test('clicking NHS tab shows the start page (not the dashboard directly)', async ({ page }) => {
     await loadApp(page);
     await page.getByRole('tab', { name: 'NHS platform' }).click();
-    await expect(page.locator('[data-testid="nhs-dashboard-frame"]')).toBeVisible({ timeout: 10_000 });
+    // Start page entry — "Start now" button must be visible
+    await expect(page.locator('[data-testid="nhs-start-now-btn"]')).toBeVisible({ timeout: 10_000 });
+    // Dashboard frame must NOT be visible yet (requires clicking Start now)
+    await expect(page.locator('[data-testid="nhs-dashboard-frame"]')).not.toBeVisible();
   });
 
   test('no console errors when navigating to NHS tab', async ({ page }) => {
