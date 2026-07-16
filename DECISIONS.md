@@ -222,6 +222,24 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### CD-11 · Test maintenance is mandatory with every code change
+**Status:** Active  
+**Date:** 2026-07-16  
+**Decision:** Any change to user-visible behaviour, navigation, state management, persistence, modal flows, validation, or important DOM structure must include an assessment of affected automated tests. Tests must be updated in the same commit whenever intended behaviour changes. New functionality must include acceptance coverage for its primary happy path and at least one failure/cancel path.  
+**Rationale:** The CI failure triggered by the Prototype design-log edit feature (July 2026) showed that adding UI behaviour without updating tests leaves CI with stale assertions and no coverage of new flows. Behaviour changes that ship without test updates accumulate silently until CI breaks on an unrelated commit, making root-cause analysis harder.  
+**Implementation guidance:**  
+1. Before committing a code change, grep `tests/acceptance/` for any selector or text that references the changed component or user flow.  
+2. Update those selectors and assertions to match the new behaviour.  
+3. Add new `test()` blocks for new user-visible actions (happy path + cancel/error path).  
+4. Prefer `getByRole`, `getByLabel`, and `data-testid` attributes over CSS class names, DOM position, or `nth()` selectors.  
+5. Add `data-testid` attributes to new interactive elements at the same time as writing the component — not as a retrofit.  
+6. Run the specific spec file first (`npx playwright test tests/acceptance/16-*.spec.ts`), then the full suite.  
+7. Never skip, delete, or weaken an assertion simply because implementation behaviour changed — update the expectation to match the intended new behaviour instead.  
+8. CI failures must be fixed at their root cause. Do not add `continue-on-error`, suppress exit codes, or remove tests to make CI green.  
+**Relevant files:** `tests/acceptance/`, `playwright.config.ts`, `.github/workflows/ci.yml`.
+
+---
+
 ### CD-10 · Prototype version HTML stored as raw strings in Firebase RTDB
 **Status:** Active  
 **Date:** 2026-07-08  
@@ -258,5 +276,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-14 (added AD-09 NHS start page; QA fixes skip link + focus token; tests 11/12 updated + 13-nhs-start-page added; AD-08 deferred welcome page resolved)*  
+*Last updated: 2026-07-16 (added CD-11 test maintenance policy; CI workflow hardened — fetch-depth 2, visible Vercel output, URL validation; added AC-16 Prototype editing tests; data-testids added to PrototypeDetailView)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

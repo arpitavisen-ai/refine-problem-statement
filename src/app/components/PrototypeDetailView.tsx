@@ -115,6 +115,7 @@ function VersionModal({ open, onClose, initial, onSave }: VersionModalProps) {
         <Dialog.Content
           className="fixed inset-0 flex items-center justify-center z-50 p-6 outline-none"
           aria-labelledby={labelId}
+          data-testid="prototype-version-modal"
         >
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -148,6 +149,7 @@ function VersionModal({ open, onClose, initial, onSave }: VersionModalProps) {
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="e.g. Version 4 — Final"
                   required
+                  data-testid="version-label-field"
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-colors"
                 />
               </div>
@@ -231,6 +233,7 @@ function VersionModal({ open, onClose, initial, onSave }: VersionModalProps) {
                 <Dialog.Close asChild>
                   <button
                     type="button"
+                    data-testid="prototype-version-cancel"
                     className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                   >
                     Cancel
@@ -238,6 +241,7 @@ function VersionModal({ open, onClose, initial, onSave }: VersionModalProps) {
                 </Dialog.Close>
                 <button
                   type="submit"
+                  data-testid="prototype-version-save"
                   disabled={!canSubmit || submitting}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
                 >
@@ -281,7 +285,11 @@ function VersionEntry({
 
       {/* Content */}
       <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-5'}`}>
-        <div className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors group">
+        <div
+          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors group"
+          data-testid="prototype-version-card"
+          data-version-id={version.id}
+        >
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h3
@@ -309,6 +317,7 @@ function VersionEntry({
               <button
                 onClick={() => onEdit(version)}
                 aria-label={`Edit ${version.label}`}
+                data-testid="edit-version-btn"
                 className="w-6 h-6 flex items-center justify-center rounded-md text-slate-300 hover:text-slate-600 hover:bg-slate-100 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -458,6 +467,7 @@ export function PrototypeDetailView({ onBack }: PrototypeDetailViewProps) {
           </div>
           <button
             onClick={() => setAddOpen(true)}
+            data-testid="add-version-btn"
             className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" />
