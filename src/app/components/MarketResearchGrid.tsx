@@ -1,0 +1,775 @@
+import { useState, useRef, useEffect } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { toast } from 'sonner';
+import { X, Plus, Trash2, ExternalLink, Bold, Italic, Underline, List, ListOrdered, FileText, Upload, Image as ImageIcon, Save } from 'lucide-react';
+
+interface ResearchItem {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail?: string;
+  report?: string;
+  reportName?: string;
+  richContent?: string;
+}
+
+interface MarketResearchGridProps {
+  items: ResearchItem[];
+  onUpdate: (id: string, field: string, value: string) => void;
+  onDelete: (id: string) => void;
+  onAdd: (data: Omit<ResearchItem, 'id'>) => void;
+  onSave?: () => void;
+  onOpenDetail?: (id: string) => void;
+}
+
+const ITEM_IMAGES: Record<string, string> = {
+  '1': 'https://images.unsplash.com/photo-1523875194681-bedd468c58bf?w=1200&h=600&fit=crop&auto=format',
+  '2': 'https://images.unsplash.com/photo-1543286386-2e659306cd6c?w=800&h=500&fit=crop&auto=format',
+  '3': 'https://images.unsplash.com/photo-1686771416537-bf4a4f263d88?w=800&h=500&fit=crop&auto=format',
+  '4': 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=500&fit=crop&auto=format',
+  '5': 'https://images.unsplash.com/photo-1604594849809-dfedbc827105?w=800&h=500&fit=crop&auto=format',
+  '6': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=500&fit=crop&auto=format',
+  '7': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop&auto=format',
+};
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1711097383282-28097ae16b1d?w=800&h=500&fit=crop&auto=format';
+
+const PHASE_LABELS = [
+  'Landscape Audit', 'Current State', 'User Research',
+  'Tech Evaluation', 'Business Model', 'Compliance', 'Measurement',
+];
+
+const PHASE_COLORS = [
+  'text-blue-400 bg-blue-500/10 border-blue-500/20',
+  'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+  'text-purple-400 bg-purple-500/10 border-purple-500/20',
+  'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+  'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  'text-rose-400 bg-rose-500/10 border-rose-500/20',
+  'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+];
+
+function getImage(item: ResearchItem) {
+  return item.thumbnail ?? ITEM_IMAGES[item.id] ?? FALLBACK_IMAGE;
+}
+
+function getPhaseLabel(index: number) {
+  return PHASE_LABELS[index] ?? 'Research';
+}
+
+function getPhaseColor(index: number) {
+  return PHASE_COLORS[index % PHASE_COLORS.length];
+}
+
+// ─── Rich Text Editor ────────────────────────────────────────────────────────
+
+function RichTextEditor({
+  value, onChange, placeholder,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+  placeholder?: string;
+}) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [focused, setFocused] = useState(false);
+  const lastValueRef = useRef('__UNINITIALIZED__');
+
+  useEffect(() => {
+    if (editorRef.current && lastValueRef.current !== value) {
+      editorRef.current.innerHTML = value || '';
+      lastValueRef.current = value;
+    }
+  }, [value]);
+
+  const exec = (command: string, val?: string) => {
+    document.execCommand(command, false, val);
+    editorRef.current?.focus();
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      lastValueRef.current = html;
+      onChange(html);
+    }
+  };
+
+  const handleInput = () => {
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      lastValueRef.current = html;
+      onChange(html);
+    }
+  };
+
+  const isEmpty = !value || value === '<br>' || value.trim() === '';
+
+  const toolbarBtn = (label: React.ReactNode, action: () => void, title: string) => (
+    <button
+      key={title}
+      onMouseDown={e => { e.preventDefault(); action(); }}
+      title={title}
+      className="w-7 h-7 flex items-center justify-center rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors text-[11px] font-bold"
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div className={`border rounded-lg overflow-hidden transition-colors ${focused ? 'border-blue-500/50' : 'border-slate-200'}`}>
+      <style>{`
+        .rich-editor { color: #1e293b; }
+        .rich-editor ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
+        .rich-editor ol { list-style: decimal; padding-left: 1.4em; margin: 0.4em 0; }
+        .rich-editor li { margin: 0.2em 0; }
+        .rich-editor h2 { font-size: 1.1em; font-weight: 700; margin: 1em 0 0.3em; color: #111827; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0.3em; }
+        .rich-editor h3 { font-size: 0.95em; font-weight: 600; margin: 0.8em 0 0.2em; color: #1f2937; }
+        .rich-editor p { margin: 0.35em 0; }
+        .rich-editor b, .rich-editor strong { color: #111827; }
+        .rich-editor a { color: #60a5fa; text-decoration: underline; }
+        .rich-editor:focus { outline: none; }
+        .rich-editor-wrap { overflow-x: auto; overflow-y: visible; }
+        .rich-editor table { min-width: 500px; border-collapse: collapse; margin: 0.75em 0; font-size: 0.82em; }
+        .rich-editor th { background: rgba(0,0,0,0.04); color: #64748b; font-weight: 600; text-align: left; padding: 0.45em 0.7em; border: 1px solid rgba(0,0,0,0.08); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .rich-editor td { padding: 0.4em 0.7em; border: 1px solid rgba(0,0,0,0.06); color: #374151; vertical-align: top; line-height: 1.5; word-wrap: break-word; max-width: 300px; }
+        .rich-editor tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+        .rich-editor blockquote { border-left: 3px solid #3b82f6; margin: 0.75em 0; padding: 0.6em 1em; background: rgba(59,130,246,0.06); color: #475569; font-style: italic; border-radius: 0 6px 6px 0; }
+        .rich-editor p, .rich-editor li { word-wrap: break-word; overflow-wrap: break-word; }
+      `}</style>
+      {/* Toolbar */}
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-slate-200 bg-slate-50 flex-wrap">
+        {toolbarBtn(<Bold className="w-3.5 h-3.5" />, () => exec('bold'), 'Bold')}
+        {toolbarBtn(<Italic className="w-3.5 h-3.5" />, () => exec('italic'), 'Italic')}
+        {toolbarBtn(<Underline className="w-3.5 h-3.5" />, () => exec('underline'), 'Underline')}
+        <div className="w-px h-4 bg-slate-200 mx-1" />
+        {toolbarBtn(<List className="w-3.5 h-3.5" />, () => exec('insertUnorderedList'), 'Bullet List')}
+        {toolbarBtn(<ListOrdered className="w-3.5 h-3.5" />, () => exec('insertOrderedList'), 'Numbered List')}
+        <div className="w-px h-4 bg-slate-200 mx-1" />
+        {toolbarBtn('H2', () => exec('formatBlock', 'H2'), 'Heading 2')}
+        {toolbarBtn('H3', () => exec('formatBlock', 'H3'), 'Heading 3')}
+        {toolbarBtn('¶', () => exec('formatBlock', 'p'), 'Paragraph')}
+      </div>
+      {/* Editable area */}
+      <div className="relative min-h-[160px]">
+        {isEmpty && !focused && (
+          <div className="absolute top-0 left-0 right-0 px-4 py-3 text-sm text-slate-400 pointer-events-none select-none">
+            {placeholder ?? 'Add rich notes, findings, and observations...'}
+          </div>
+        )}
+        <div className="rich-editor-wrap">
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className="rich-editor min-h-[160px] px-4 py-3 text-sm leading-relaxed focus:outline-none"
+            style={{ color: '#1e293b' }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Editable plain text field (for title) ───────────────────────────────────
+
+function EditableField({
+  value, onChange, multiline, className, placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  multiline?: boolean;
+  className?: string;
+  placeholder?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [temp, setTemp] = useState(value);
+
+  if (editing) {
+    if (multiline) {
+      return (
+        <textarea
+          value={temp}
+          onChange={e => setTemp(e.target.value)}
+          onBlur={() => { onChange(temp); setEditing(false); }}
+          className={`${className} bg-transparent border border-blue-500/40 rounded px-2 py-1 w-full resize-none focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          autoFocus
+          rows={Math.max(3, temp.split('\n').length + 1)}
+          placeholder={placeholder}
+        />
+      );
+    }
+    return (
+      <input
+        value={temp}
+        onChange={e => setTemp(e.target.value)}
+        onBlur={() => { onChange(temp); setEditing(false); }}
+        onKeyDown={e => { if (e.key === 'Enter') { onChange(temp); setEditing(false); } }}
+        className={`${className} bg-transparent border border-blue-500/40 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-blue-500`}
+        autoFocus
+        placeholder={placeholder}
+      />
+    );
+  }
+
+  return (
+    <div
+      onClick={() => { setEditing(true); setTemp(value); }}
+      className={`${className} cursor-pointer hover:bg-slate-100 rounded px-1 py-0.5 transition-colors ${!value ? 'opacity-40' : ''}`}
+    >
+      {value || (placeholder ?? 'Click to edit...')}
+    </div>
+  );
+}
+
+// ─── Item Modal (View Details / Read More) ────────────────────────────────────
+
+function ItemModal({
+  item, index, open, onClose, onUpdate, onDelete, onSave,
+}: {
+  item: ResearchItem;
+  index: number;
+  open: boolean;
+  onClose: () => void;
+  onUpdate: (field: string, value: string) => void;
+  onDelete: () => void;
+  onSave?: () => void;
+}) {
+  const openReport = () => {
+    if (!item.report) return;
+    const win = window.open();
+    if (win) {
+      win.document.write(`<iframe src="${item.report}" style="width:100%;height:100%;border:none;" />`);
+      win.document.title = item.reportName ?? 'Report';
+    }
+  };
+
+  return (
+    <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="fixed inset-0 flex items-center justify-center z-50 p-6 outline-none"
+        >
+          <Dialog.Title className="sr-only">{item.title || 'Artefact details'}</Dialog.Title>
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
+            {/* Header image */}
+            <div className="relative h-48 bg-slate-50 overflow-hidden flex-shrink-0">
+              <img
+                src={getImage(item)}
+                alt={item.title}
+                className="w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-transparent" />
+              <div className="absolute top-4 left-4">
+                <span
+                  className={`inline-block text-[10px] font-semibold uppercase tracking-[0.15em] px-3 py-1 rounded-full border ${getPhaseColor(index)}`}
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  {getPhaseLabel(index)}
+                </span>
+              </div>
+              <Dialog.Close className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-200/80 backdrop-blur-sm flex items-center justify-center text-slate-700 hover:bg-slate-300/80 transition-colors border border-slate-300">
+                <X className="w-4 h-4" />
+              </Dialog.Close>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="p-7 overflow-y-auto flex-1">
+              <EditableField
+                value={item.title}
+                onChange={v => onUpdate('title', v)}
+                className="text-2xl font-semibold text-slate-900 mb-3 block"
+                placeholder="Artefact title..."
+              />
+              <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                Summary
+              </p>
+              <EditableField
+                value={item.description}
+                onChange={v => onUpdate('description', v)}
+                multiline
+                className="text-sm text-slate-600 leading-relaxed block mb-5"
+                placeholder="Short summary..."
+              />
+
+              <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                Detailed Notes
+              </p>
+              <RichTextEditor
+                value={item.richContent ?? ''}
+                onChange={v => onUpdate('richContent', v)}
+                placeholder="Add rich notes, findings, and observations..."
+              />
+
+              {/* Report section */}
+              {item.report && (
+                <div className="mt-5 flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-900 font-medium truncate">{item.reportName ?? 'Report'}</p>
+                    <p className="text-xs text-slate-500">Attached report</p>
+                  </div>
+                  <button
+                    onClick={openReport}
+                    className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium rounded-lg transition-colors border border-blue-500/20"
+                  >
+                    View Report
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-6 pt-5 border-t border-slate-200 flex justify-between items-center">
+                <button
+                  onClick={() => { onDelete(); onClose(); }}
+                  className="flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Remove item
+                </button>
+                <Dialog.Close
+                  onClick={() => onSave?.()}
+                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Save & Close
+                </Dialog.Close>
+              </div>
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+// ─── Add Activity Modal ───────────────────────────────────────────────────────
+
+function AddActivityModal({
+  open, onClose, onAdd,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (data: Omit<ResearchItem, 'id'>) => void;
+}) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [thumbnail, setThumbnail] = useState<string | undefined>();
+  const [thumbnailName, setThumbnailName] = useState('');
+  const [report, setReport] = useState<string | undefined>();
+  const [reportName, setReportName] = useState('');
+  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const reportInputRef = useRef<HTMLInputElement>(null);
+
+  const reset = () => {
+    setTitle(''); setDescription('');
+    setThumbnail(undefined); setThumbnailName('');
+    setReport(undefined); setReportName('');
+  };
+
+  const readFile = (file: File): Promise<string> =>
+    new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+
+  const handleThumbnail = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailName(file.name);
+    setThumbnail(await readFile(file));
+  };
+
+  const handleReport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReportName(file.name);
+    setReport(await readFile(file));
+  };
+
+  const handleSubmit = () => {
+    if (!title.trim()) return;
+    onAdd({ title, description, thumbnail, report: report ?? undefined, reportName: reportName || undefined });
+    reset();
+    onClose();
+  };
+
+  return (
+    <Dialog.Root open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="fixed inset-0 flex items-center justify-center z-50 p-6 outline-none"
+        >
+          <Dialog.Title className="sr-only">Add Artefact</Dialog.Title>
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-base font-semibold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Add Artefact
+              </h2>
+              <Dialog.Close className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4" />
+              </Dialog.Close>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Title */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Title <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="e.g. Competitive Analysis"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500/50 transition-colors"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Summary
+                </label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Brief description of this artefact..."
+                  rows={3}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500/50 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Thumbnail upload */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Thumbnail Photo
+                </label>
+                <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleThumbnail} className="hidden" />
+                <button
+                  onClick={() => thumbInputRef.current?.click()}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-white border border-slate-200 hover:border-blue-500/30 rounded-lg text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  {thumbnail ? (
+                    <>
+                      <img src={thumbnail} alt="thumb" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                      <span className="truncate text-slate-300">{thumbnailName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-4 h-4 flex-shrink-0" />
+                      <span>Upload thumbnail image…</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Report upload */}
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Report
+                </label>
+                <input ref={reportInputRef} type="file" accept=".pdf,.doc,.docx,.pptx,.xlsx,.png,.jpg,.jpeg" onChange={handleReport} className="hidden" />
+                <button
+                  onClick={() => reportInputRef.current?.click()}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-white border border-slate-200 hover:border-blue-500/30 rounded-lg text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  {report ? (
+                    <>
+                      <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      <span className="truncate text-slate-300">{reportName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 flex-shrink-0" />
+                      <span>Upload report (PDF, DOCX, PPTX…)</span>
+                    </>
+                  )}
+                </button>
+                <p className="text-[10px] text-slate-400 mt-1">Viewable later from "View details"</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-1">
+                <Dialog.Close className="px-4 py-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">
+                  Cancel
+                </Dialog.Close>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!title.trim()}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Add Artefact
+                </button>
+              </div>
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+// ─── Card components ──────────────────────────────────────────────────────────
+
+function HeroCard({ item, index, onOpen }: { item: ResearchItem; index: number; onOpen: () => void }) {
+  return (
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/10 flex flex-col lg:flex-row"
+    >
+      <div className="lg:w-[45%] relative h-64 lg:h-auto bg-slate-100 overflow-hidden flex-shrink-0">
+        <img
+          src={getImage(item)}
+          alt={item.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+        />
+        <div className="absolute inset-0 lg:hidden bg-gradient-to-t from-slate-50/80 to-transparent" />
+      </div>
+      <div className="flex-1 p-8 flex flex-col justify-center">
+        <div className="flex items-start justify-between mb-2">
+          <span
+            className={`inline-block text-[10px] font-semibold uppercase tracking-[0.15em] px-3 py-1 rounded-full border mb-4 ${getPhaseColor(index)}`}
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            {getPhaseLabel(index)}
+          </span>
+          <span className="text-xs text-slate-400 font-mono">01</span>
+        </div>
+        <h3 className="text-2xl font-semibold text-slate-900 mb-3 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+          {item.title || 'Untitled Artefact'}
+        </h3>
+        <p className="text-slate-400 text-sm leading-relaxed mb-6">
+          {item.description || 'No description yet.'}
+        </p>
+        {item.report && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 mb-3">
+            <FileText className="w-3 h-3" /> Report attached
+          </span>
+        )}
+        <div className="flex items-center gap-1.5 text-sm text-blue-400 font-medium group-hover:gap-2.5 transition-all duration-200">
+          View details
+          <ExternalLink className="w-3.5 h-3.5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GridCard({ item, index, onOpen }: { item: ResearchItem; index: number; onOpen: () => void }) {
+  return (
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/10 hover:-translate-y-0.5 flex flex-col"
+    >
+      <div className="relative h-44 bg-slate-100 overflow-hidden flex-shrink-0">
+        <img
+          src={getImage(item)}
+          alt={item.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
+        <div className="absolute top-3 left-3">
+          <span
+            className={`inline-block text-[9px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${getPhaseColor(index)}`}
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            {getPhaseLabel(index)}
+          </span>
+        </div>
+        {item.report && (
+          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+            <FileText className="w-3 h-3 text-emerald-400" />
+          </div>
+        )}
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+          {item.title || 'Untitled'}
+        </h3>
+        <p className="text-slate-400 text-xs leading-relaxed flex-1 line-clamp-3">
+          {item.description || 'No description yet.'}
+        </p>
+        <div className="mt-4 flex items-center gap-1 text-xs text-blue-400 font-medium group-hover:gap-2 transition-all duration-200">
+          View details
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListCard({ item, index, onOpen }: { item: ResearchItem; index: number; onOpen: () => void }) {
+  return (
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10 flex items-stretch"
+    >
+      <div className="relative w-32 flex-shrink-0 bg-slate-100 overflow-hidden">
+        <img
+          src={getImage(item)}
+          alt={item.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-75"
+        />
+      </div>
+      <div className="flex-1 px-5 py-4 flex flex-col justify-center">
+        <div className="flex items-center justify-between mb-1.5">
+          <span
+            className={`inline-block text-[9px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${getPhaseColor(index)}`}
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            {getPhaseLabel(index)}
+          </span>
+          <div className="flex items-center gap-2">
+            {item.report && <FileText className="w-3 h-3 text-emerald-400" />}
+            <span className="text-[10px] text-slate-400 font-mono">{String(index + 1).padStart(2, '0')}</span>
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-slate-900 mb-1 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+          {item.title || 'Untitled'}
+        </h3>
+        <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
+          {item.description || 'No description yet.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────
+
+export function MarketResearchGrid({ items, onUpdate, onDelete, onAdd, onSave, onOpenDetail }: MarketResearchGridProps) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleOpen = (id: string) => {
+    if (onOpenDetail && id === 'artefact-prototype') {
+      onOpenDetail(id);
+    } else {
+      setOpenId(id);
+    }
+  };
+
+  const handleSave = () => {
+    if (!onSave) return;
+    onSave();
+    setSaving(true);
+    setTimeout(() => setSaving(false), 1200);
+    toast.success('All changes saved', { description: 'Your artefacts have been saved to Firebase.', duration: 3000 });
+  };
+
+  // Pin artefact-prototype into the grid section regardless of its position in the array
+  const reordered = (() => {
+    const idx = items.findIndex(i => i.id === 'artefact-prototype');
+    if (idx <= 7) return items;
+    const copy = [...items];
+    const [proto] = copy.splice(idx, 1);
+    copy.splice(1, 0, proto);
+    return copy;
+  })();
+
+  const heroItem = reordered[0];
+  const gridItems = reordered.slice(1, 8);
+  const listItems = reordered.slice(8);
+
+  return (
+    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-400 mb-2"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          >
+            Research Agenda
+          </p>
+          <h2
+            className="text-3xl font-semibold text-slate-900 leading-tight"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Artefact Details
+          </h2>
+        </div>
+        <div className="flex items-center gap-3">
+          {onSave && (
+            <button
+              onClick={handleSave}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+                saving
+                  ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                  : 'bg-blue-600 hover:bg-blue-500 text-white'
+              }`}
+            >
+              <Save className={`w-4 h-4 transition-transform ${saving ? 'scale-110' : ''}`} />
+              {saving ? 'Saved ✓' : 'Save All Changes'}
+            </button>
+          )}
+          <button
+            onClick={() => setAddOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Activity
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {heroItem && (
+          <HeroCard item={heroItem} index={0} onOpen={() => handleOpen(heroItem.id)} />
+        )}
+
+        {gridItems.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {gridItems.map((item, i) => (
+              <GridCard key={item.id} item={item} index={i + 1} onOpen={() => handleOpen(item.id)} />
+            ))}
+          </div>
+        )}
+
+        {listItems.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span
+                className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                Additional Activities
+              </span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+            {listItems.map((item, i) => (
+              <ListCard key={item.id} item={item} index={i + 4} onOpen={() => handleOpen(item.id)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Detail modals for each item — prototype has its own detail view, skip modal */}
+      {items.filter(item => item.id !== 'artefact-prototype').map((item, index) => (
+        <ItemModal
+          key={item.id}
+          item={item}
+          index={index}
+          open={openId === item.id}
+          onClose={() => setOpenId(null)}
+          onUpdate={(field, value) => onUpdate(item.id, field, value)}
+          onDelete={() => onDelete(item.id)}
+          onSave={onSave}
+        />
+      ))}
+
+      {/* Add activity modal */}
+      <AddActivityModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onAdd={onAdd}
+      />
+    </div>
+  );
+}
