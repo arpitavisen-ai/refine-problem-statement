@@ -1,0 +1,7 @@
+packages:
+  - '.'
+allowBuilds:
+  '@firebase/util': false
+  '@tailwindcss/oxide': false
+  esbuild: false
+  protobufjs: false

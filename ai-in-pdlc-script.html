@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI in the PDLC — Presentation Script</title>
+<style>
+  :root {
+    --bg: #f9f8f6;
+    --surface: #ffffff;
+    --border: #e5e3de;
+    --accent: #1a1a2e;
+    --accent2: #4f46e5;
+    --accent3: #0ea5e9;
+    --accent4: #10b981;
+    --accent5: #f59e0b;
+    --text: #1c1b18;
+    --muted: #6b6760;
+    --tag-bg: #ede9fe;
+    --tag-text: #4f46e5;
+    --why-bg: #fef3c7;
+    --why-border: #f59e0b;
+    --implication-bg: #ecfdf5;
+    --implication-border: #10b981;
+    --ai-bg: #eff6ff;
+    --ai-border: #3b82f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f14;
+      --surface: #1a1a24;
+      --border: #2e2e3e;
+      --accent: #c7c3f7;
+      --accent2: #818cf8;
+      --text: #e8e6f0;
+      --muted: #8b8898;
+      --tag-bg: #2d2857;
+      --tag-text: #a5b4fc;
+      --why-bg: #2d2410;
+      --why-border: #d97706;
+      --implication-bg: #052e1e;
+      --implication-border: #059669;
+      --ai-bg: #0c1a2e;
+      --ai-border: #2563eb;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f9f8f6; --surface: #ffffff; --border: #e5e3de; --text: #1c1b18;
+    --muted: #6b6760; --tag-bg: #ede9fe; --tag-text: #4f46e5;
+    --why-bg: #fef3c7; --why-border: #f59e0b;
+    --implication-bg: #ecfdf5; --implication-border: #10b981;
+    --ai-bg: #eff6ff; --ai-border: #3b82f6;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f0f14; --surface: #1a1a24; --border: #2e2e3e; --text: #e8e6f0;
+    --muted: #8b8898; --tag-bg: #2d2857; --tag-text: #a5b4fc;
+    --why-bg: #2d2410; --why-border: #d97706;
+    --implication-bg: #052e1e; --implication-border: #059669;
+    --ai-bg: #0c1a2e; --ai-border: #2563eb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .overline {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 600px;
+  }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .toc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.25rem; }
+  .toc li { margin-bottom: 0.35rem; font-size: 14px; }
+  .toc a { color: var(--accent2); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .section-num-red { background: #dc2626; }
+  .section-num-purple { background: #7c3aed; }
+  .block-pm { background: var(--pm-bg); border-left: 3px solid var(--pm-border); }
+  :root { --pm-bg: #fdf4ff; --pm-border: #a855f7; }
+  :root[data-theme="dark"] { --pm-bg: #1e0d2e; --pm-border: #a855f7; }
+  @media (prefers-color-scheme: dark) { :root { --pm-bg: #1e0d2e; --pm-border: #a855f7; } }
+  .pdlc-stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .pdlc-stage-card .stage-title { font-weight: 700; font-size: 15px; margin-bottom: 0.5rem; }
+  .pdlc-stage-card p { font-size: 14px; color: var(--text); margin-bottom: 0.5rem; }
+  .pdlc-stage-card p:last-child { margin-bottom: 0; }
+  .pdlc-stage-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .pm-role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 600px) { .pm-role-grid { grid-template-columns: 1fr; } }
+  .pm-role-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    font-size: 13px;
+  }
+  .pm-role-item strong { display: block; font-size: 13px; margin-bottom: 0.3rem; color: var(--accent2); }
+  .pm-role-item p { color: var(--muted); margin: 0; font-size: 13px; }
+  .tco-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .tco-row { display: flex; align-items: center; gap: 0.75rem; font-size: 13px; }
+  .tco-label { width: 180px; flex-shrink: 0; color: var(--muted); }
+  .tco-track { flex: 1; background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+  .tco-fill { height: 100%; border-radius: 4px; background: #a855f7; }
+  .section-num-orange { background: #ea580c; }
+  .section-intro { font-size: 14px; color: var(--muted); margin-bottom: 1.25rem; }
+  .pm-quote {
+    border-left: 3px solid #a855f7;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text);
+    background: var(--pm-bg);
+    border-radius: 0 7px 7px 0;
+  }
+  .tco-intro { font-size: 14px; margin-top: 0.5rem; }
+  .tco-bar-stacked { margin-top: 0.75rem; }
+  .tco-fill-90 { width: 90%; }
+  .tco-fill-75 { width: 75%; }
+  .tco-fill-60 { width: 60%; }
+  .tco-fill-45 { width: 45%; }
+  .tco-fill-30 { width: 30%; }
+  .tco-caption { font-size: 13px; color: var(--muted); margin-top: 0.75rem; }
+  :root { --eff-bg: #f0fdf4; --eff-border: #16a34a; }
+  :root[data-theme="dark"] { --eff-bg: #052e16; --eff-border: #16a34a; }
+  @media (prefers-color-scheme: dark) { :root { --eff-bg: #052e16; --eff-border: #16a34a; } }
+  .block-efficiency {
+    background: var(--eff-bg);
+    border-left: 3px solid var(--eff-border);
+    border-radius: 7px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    margin-top: 0.75rem;
+  }
+  .eff-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+  }
+  .eff-chip {
+    background: var(--surface);
+    border: 1px solid var(--eff-border);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #16a34a;
+    white-space: nowrap;
+  }
+  .card-problem { border-left: 4px solid #dc2626; }
+  .card-problem-text { font-size: 16px; font-weight: 600; line-height: 1.6; }
+  .block-why + .block-why { margin-top: 0.75rem; }
+  .block-stacked { margin-top: 0.75rem; }
+  .persona-table-wrap { margin-top: 0.75rem; }
+  .block-label-mb { margin-bottom: 0.5rem; }
+
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-family: monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .card p { color: var(--text); font-size: 14px; margin-bottom: 0.5rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .block {
+    border-radius: 7px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    margin-top: 0.75rem;
+  }
+  .block-why {
+    background: var(--why-bg);
+    border-left: 3px solid var(--why-border);
+  }
+  .block-implication {
+    background: var(--implication-bg);
+    border-left: 3px solid var(--implication-border);
+  }
+  .block-ai {
+    background: var(--ai-bg);
+    border-left: 3px solid var(--ai-border);
+  }
+  .block-label {
+    font-size: 11px;
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+
+  .pdlc-stage {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 0 1rem;
+    margin-bottom: 1.25rem;
+    align-items: start;
+  }
+  .stage-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .dot-1 { background: #6366f1; }
+  .dot-2 { background: #0ea5e9; }
+  .dot-3 { background: #10b981; }
+  .dot-4 { background: #f59e0b; }
+  .dot-5 { background: #ec4899; }
+
+  .stage-body .stage-title { font-weight: 700; font-size: 14px; margin-bottom: 0.3rem; }
+  .stage-body p { font-size: 14px; color: var(--muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  td {
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 1rem; }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 14px;
+  }
+  .callout strong { display: block; margin-bottom: 0.35rem; font-size: 15px; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── TOC extras ── */
+  .toc-divider {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0.75rem 0 0.5rem;
+  }
+  .toc-deep { padding-left: 1.25rem; }
+  .toc-deep li { margin-bottom: 0.35rem; font-size: 14px; }
+
+  /* ── Section A: highlight grid ── */
+  .highlight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  @media (max-width: 640px) { .highlight-grid { grid-template-columns: 1fr; } }
+  .highlight-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+  }
+  .highlight-item .hi-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent2);
+    margin-bottom: 0.4rem;
+  }
+  .highlight-item .hi-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 0.35rem;
+  }
+  .highlight-item p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ── Section C: phase strip ── */
+  .phase-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+  }
+  .phase-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .phase-pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+  .phase-pill-strategy  { background: #6366f1; }
+  .phase-pill-discovery { background: #0ea5e9; }
+  .phase-pill-delivery  { background: #10b981; }
+  .phase-pill-ops       { background: #f59e0b; }
+  .phase-arrow {
+    font-size: 18px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* ── Section C: phase cards ── */
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    border-left-width: 4px;
+    border-left-style: solid;
+  }
+  .phase-card-strategy  { border-left-color: #6366f1; }
+  .phase-card-discovery { border-left-color: #0ea5e9; }
+  .phase-card-delivery  { border-left-color: #10b981; }
+  .phase-card-ops       { border-left-color: #f59e0b; }
+  .phase-card-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .phase-card ul {
+    padding-left: 1.2rem;
+    margin: 0.4rem 0 0.75rem;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .phase-card ul li { margin-bottom: 0.3rem; }
+  .phase-card .pm-note {
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .phase-card .pm-note strong { color: var(--text); }
+
+  /* ── Section C: role grid (efficiency gains) ── */
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 720px) { .role-grid { grid-template-columns: 1fr; } }
+  .role-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+  .role-col-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .role-col-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .role-col ul {
+    padding-left: 1.1rem;
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .role-col ul li { margin-bottom: 0.35rem; }
+
+  /* ── Section C & D: two-column compare ── */
+  .two-col-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 600px) { .two-col-compare { grid-template-columns: 1fr; } }
+  .col-label {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .two-col-compare ul {
+    padding-left: 1.1rem;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .two-col-compare ul li { margin-bottom: 0.3rem; }
+
+  /* ── Section D: next steps numbered list ── */
+  .next-step-list {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+    counter-reset: nsl;
+  }
+  .next-step-list li {
+    counter-increment: nsl;
+    display: flex;
+    gap: 0.9rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    align-items: flex-start;
+  }
+  .next-step-list li:last-child { border-bottom: none; }
+  .next-step-list li::before {
+    content: counter(nsl);
+    min-width: 24px;
+    height: 24px;
+    background: var(--accent2);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .next-step-list li .nsl-body { flex: 1; }
+  .next-step-list li .nsl-title { font-weight: 700; }
+
+  /* ── Dark-mode helpers for new sections ── */
+  :root {
+    --phase-intro-bg: #f5f3ff;
+    --highlight-intro-bg: #f0f9ff;
+  }
+  :root[data-theme="dark"] {
+    --phase-intro-bg: #1a1830;
+    --highlight-intro-bg: #0c1a2e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --phase-intro-bg: #1a1830;
+      --highlight-intro-bg: #0c1a2e;
+    }
+  }
+  .intro-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .intro-card p { margin-bottom: 0.6rem; }
+  .intro-card p:last-child { margin-bottom: 0; }
+  .section-label-alpha {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Helpers to replace remaining inline styles ── */
+  .achieve-list {
+    padding-left: 1.2rem;
+    font-size: 14px;
+    color: var(--text);
+    margin: 0.5rem 0 0;
+  }
+  .achieve-list li { margin-bottom: 0.5rem; }
+  .achieve-list li:last-child { margin-bottom: 0; }
+
+  .phase-contrib-label {
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+  }
+
+  .role-col-dot-sky     { background: #0ea5e9; }
+  .role-col-dot-emerald { background: #10b981; }
+  .role-col-dot-indigo  { background: #6366f1; }
+
+  .section-header-spaced { margin-top: 2rem; }
+
+  .block-spaced { margin-top: 1rem; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="overline">Product Discovery · PDLC · Decision Analysis</div>
+    <h1>AI in the PDLC — Presentation Script</h1>
+    <p class="subtitle">A complete narrative covering the objective, AI across the product lifecycle, efficiency gains, the evolving PM role, and next steps.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#sA">Overall Objective</a></li>
+      <li><a href="#sB">Objective of This Demo</a></li>
+      <li><a href="#sC">AI in the Product Development Lifecycle</a></li>
+      <li><a href="#sD">Final Takeaway &amp; Next Steps</a></li>
+    </ol>
+    <div class="toc-divider">—— Deep Dive ——</div>
+    <ol class="toc-deep">
+      <li><a href="#s0">The Problem Statement &amp; Why We Chose It</a></li>
+      <li><a href="#s1">AI Across the Five PDLC Stages</a></li>
+      <li><a href="#s2">Decision-by-Decision: Why &amp; What It Means</a></li>
+      <li><a href="#s3">Product Implications Summary</a></li>
+      <li><a href="#s4">Key Takeaways</a></li>
+      <li><a href="#s5">The Evolving PM Role in AI-Native Delivery</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION A — OVERALL OBJECTIVE -->
+  <section id="sA">
+    <div class="section-header">
+      <div class="section-label-alpha">A</div>
+      <h2>Overall Objective</h2>
+    </div>
+
+    <div class="intro-card">
+      <p>The purpose of this work is to demonstrate how AI can be applied throughout the entire Product Development Lifecycle — from discovery through strategy, design, delivery, testing and analytics — and to show how the role of Product Manager continues to evolve as AI becomes embedded in delivery practices.</p>
+      <p>This is not a technology demo. Every AI capability shown connects back to a product decision, a user outcome, or a business implication. The central question is not <strong>"what can AI do?"</strong> but <strong>"how do Product Managers create value in an AI-native delivery environment?"</strong></p>
+    </div>
+
+    <div class="highlight-grid">
+      <div class="highlight-item">
+        <div class="hi-num">01</div>
+        <div class="hi-title">AI across every PDLC phase</div>
+        <p>From discovery to ops, AI accelerates each stage of the product lifecycle.</p>
+      </div>
+      <div class="highlight-item">
+        <div class="hi-num">02</div>
+        <div class="hi-title">Product decisions, not just AI tools</div>
+        <p>Every technical choice has a product consequence — for users, teams, and the bottom line.</p>
+      </div>
+      <div class="highlight-item">
+        <div class="hi-num">03</div>
+        <div class="hi-title">PM role is expanding, not disappearing</div>
+        <p>New accountabilities in economics, orchestration, and value creation are being added to the role.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION B — OBJECTIVE OF THIS DEMO -->
+  <section id="sB">
+    <div class="section-header">
+      <div class="section-label-alpha">B</div>
+      <h2>Objective of This Demo</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Objective of This Demo</div>
+      <p>Primary goal: demonstrate how AI can be leveraged throughout the PDLC and show the evolving PM role at every stage. The NHS patient feedback analysis platform is the example use case — chosen because it is a realistic, high-value business problem where AI adds clear and demonstrable value.</p>
+      <p>The underlying challenge (processing large volumes of qualitative feedback to surface risks and insights) generalises across healthcare, telecoms, banking, and public sector.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What AI in PDLC Means</div>
+      <p>AI in PDLC is not a single tool or a coding assistant. It means AI is embedded as a continuous co-worker at every phase:</p>
+      <ul>
+        <li><strong>Discovery:</strong> synthesising research, building personas, generating strategy artefacts</li>
+        <li><strong>Design:</strong> prototyping, assumption testing, persona simulation, iterative refinement</li>
+        <li><strong>Delivery:</strong> repo setup, CI/CD, prompt review, code generation, documentation</li>
+        <li><strong>Testing:</strong> persona-based user testing, accessibility, behavioural coverage</li>
+        <li><strong>Operations:</strong> embedded intelligence, insight generation, anomaly detection, executive analytics</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How to Achieve It</div>
+      <p>Three enablers, implemented as sequential steps:</p>
+      <ol class="achieve-list">
+        <li><strong>Load all discovery artefacts</strong> (personas, PRD, OKRs, roadmap, strategy) into an AI instance that acts as a product co-worker — context stays available throughout the lifecycle.</li>
+        <li><strong>Use AI to challenge assumptions</strong> before real users see anything — persona simulation, journey testing, design critique.</li>
+        <li><strong>Embed AI into the product itself</strong>, not just the team's workflow — surface priority items, generate drafts, provide natural language analytics for executives.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Evolving Role of PM</div>
+      <p>Two paths are worth exploring:</p>
+      <ul>
+        <li><strong>New specialist role:</strong> AI workflow orchestrator / orchestration lead — someone who coordinates AI tools, agents and outputs across an organisation.</li>
+        <li><strong>Evolution of existing PM role:</strong> PMs expand into AI economics, workflow orchestration, tool selection strategy, and total cost of ownership management.</li>
+      </ul>
+      <div class="block block-implication">
+        <div class="block-label">Organisational context</div>
+        In startups and scale-ups, PMs already own build vs buy decisions, budgets, and TCO. In large enterprises (HMRC, NHS), architecture and governance teams own many of these — PMs influence through expertise and evidence. This presentation acknowledges both contexts.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION C — AI IN THE PDLC -->
+  <section id="sC">
+    <div class="section-header">
+      <div class="section-label-alpha">C</div>
+      <h2>AI in the Product Development Lifecycle</h2>
+    </div>
+
+    <p class="section-intro">AI operates as a continuous co-worker across every phase — not a one-off tool.</p>
+
+    <div class="phase-strip">
+      <span class="phase-pill phase-pill-strategy"><span class="phase-pill-dot"></span>Product Strategy</span>
+      <span class="phase-arrow">→</span>
+      <span class="phase-pill phase-pill-discovery"><span class="phase-pill-dot"></span>Product Discovery</span>
+      <span class="phase-arrow">→</span>
+      <span class="phase-pill phase-pill-delivery"><span class="phase-pill-dot"></span>Product Delivery</span>
+      <span class="phase-arrow">→</span>
+      <span class="phase-pill phase-pill-ops"><span class="phase-pill-dot"></span>Product Ops</span>
+    </div>
+
+    <!-- Phase 1: Strategy -->
+    <div class="phase-card phase-card-strategy">
+      <div class="phase-card-title">
+        <div class="stage-dot dot-1">1</div>
+        Product Strategy
+      </div>
+      <p class="phase-contrib-label"><strong>AI contributions:</strong></p>
+      <ul>
+        <li><strong>Market research:</strong> analysed NHS trust information, public feedback sources, competitor offerings, industry trends</li>
+        <li><strong>Competitive analysis:</strong> identified gaps vs Qualtrics, Civica, Cemplicity, NRC Health, and in-house Power BI solutions</li>
+        <li><strong>Vision, mission, VMOS:</strong> AI generated structured strategic artefacts as starting points for team refinement</li>
+        <li><strong>OKRs and roadmap:</strong> structured objectives and key results generated from discovery evidence</li>
+        <li><strong>Problem statement synthesis:</strong> three-force framing (financial materiality, broken tools, market window) emerged from AI synthesis of policy docs, interviews, and competitor data</li>
+      </ul>
+      <div class="pm-note"><strong>PM role:</strong> validate strategic outputs, connect market evidence to product decisions, ensure OKRs are measurable and tied to user outcomes.</div>
+    </div>
+
+    <!-- Phase 2: Discovery -->
+    <div class="phase-card phase-card-discovery">
+      <div class="phase-card-title">
+        <div class="stage-dot dot-2">2</div>
+        Product Discovery
+      </div>
+      <p class="phase-contrib-label"><strong>AI contributions:</strong></p>
+      <ul>
+        <li><strong>Persona generation:</strong> three detailed personas (Chief Nurse, Quality Manager, Ward Manager) built from public NHS data, feedback trends, and interview synthesis</li>
+        <li><strong>Prototype creation:</strong> initial prototype generated from personas, research findings, and product requirements</li>
+        <li><strong>Assumption testing:</strong> AI identified embedded assumptions (information hierarchy, journey correctness, persona differentiation) before any real user saw the design</li>
+        <li><strong>Persona simulation:</strong> separate AI instances assumed each persona identity and challenged design from that perspective</li>
+        <li><strong>AI-assisted user research:</strong> during sessions, feedback can be captured, processed, and incorporated into updated prototypes in real time — replacing multi-round research cycles with a single, richer session</li>
+        <li><strong>Service blueprint generation:</strong> personas, journeys, requirements and workflows used to auto-generate service blueprints</li>
+      </ul>
+      <div class="pm-note"><strong>PM role:</strong> define research questions, validate AI-generated personas against real evidence, curate prototype iterations, decide what goes into user research.</div>
+    </div>
+
+    <!-- Phase 3: Delivery -->
+    <div class="phase-card phase-card-delivery">
+      <div class="phase-card-title">
+        <div class="stage-dot dot-3">3</div>
+        Product Delivery
+      </div>
+      <p class="phase-contrib-label"><strong>AI contributions:</strong></p>
+      <ul>
+        <li><strong>Repository setup:</strong> project structure created by AI</li>
+        <li><strong>CI/CD pipeline:</strong> deployment pipeline generated including Vercel integration, GitHub Actions, preview/production promotion gate</li>
+        <li><strong>Rules and governance:</strong> documentation establishing delivery expectations, deployment expectations, validation requirements</li>
+        <li><strong>Prompt review:</strong> a dedicated AI instance acting as senior technical co-worker reviewed prompts before they went to coding agents — improving output quality and reducing wasted effort</li>
+        <li><strong>Code generation:</strong> React + Vite frontend, Firebase sync hooks, drag-and-drop Kanban, rich text editing — all generated</li>
+        <li><strong>Acceptance tests:</strong> Playwright test suite created and run against deployed preview URLs</li>
+        <li><strong>DECISIONS.md as a release gate:</strong> CI fails if the decisions doc is out of date — documentation enforced automatically</li>
+      </ul>
+      <div class="pm-note"><strong>PM role:</strong> define acceptance criteria, own the promote gate (review at localhost before production deploy), maintain DECISIONS.md, evaluate architectural decisions for TCO implications.</div>
+    </div>
+
+    <!-- Phase 4: Ops -->
+    <div class="phase-card phase-card-ops">
+      <div class="phase-card-title">
+        <div class="stage-dot dot-4">4</div>
+        Product Ops
+      </div>
+      <p class="phase-contrib-label"><strong>AI contributions:</strong></p>
+      <ul>
+        <li><strong>Embedded intelligence:</strong> the dashboard surfaces priority items, identifies critical cases, explains why they matter, suggests next actions — users don't navigate raw data</li>
+        <li><strong>Insight-to-action flow:</strong> user sees case → AI generates response draft → user reviews and acts — reducing administration time</li>
+        <li><strong>AI-powered analytics:</strong> rather than showing charts, the system explains whether objectives are being achieved, whether performance is improving, whether risks are emerging — natural language intelligence above traditional dashboards</li>
+        <li><strong>Anomaly detection:</strong> AI flags deteriorating wards before they appear in operational metrics</li>
+        <li><strong>Persona-based testing in production:</strong> AI assumes user persona identities to generate ongoing behavioural test coverage</li>
+      </ul>
+      <div class="pm-note"><strong>PM role:</strong> define the intelligence layer (what should be surfaced, in what format, at what threshold), monitor AI cost per operation, evaluate model performance, own the TCO of running the AI product.</div>
+    </div>
+
+    <!-- Sub-section 3a: Efficiency Gains -->
+    <div class="section-header">
+      <h2>Efficiency Gains by Role</h2>
+    </div>
+
+    <div class="role-grid">
+      <div class="role-col">
+        <div class="role-col-title">
+          <span class="role-col-dot role-col-dot-sky"></span>
+          UX / User Research
+        </div>
+        <ul>
+          <li><strong>Persona synthesis:</strong> days → hours; AI processes 100% of research notes, not a sampled subset</li>
+          <li><strong>Prototype generation:</strong> design intent → working prototype in one session</li>
+          <li><strong>Assumption testing:</strong> AI challenges the design before users see it, raising quality</li>
+          <li><strong>AI-assisted research sessions:</strong> prototype updated while the session is live — compressed decision cycles</li>
+          <li><strong>Service blueprint creation:</strong> auto-generated from artefacts, then refined — workshop effort reduced significantly</li>
+        </ul>
+      </div>
+      <div class="role-col">
+        <div class="role-col-title">
+          <span class="role-col-dot role-col-dot-emerald"></span>
+          Engineering
+        </div>
+        <ul>
+          <li><strong>Repo + CI/CD setup:</strong> hours not days — structure, pipeline, documentation generated together</li>
+          <li><strong>Prompt review gate:</strong> AI senior co-worker reviews prompts before coding agents execute — less rework, cleaner output</li>
+          <li><strong>Acceptance test suite:</strong> generated alongside code, run against real deployed builds</li>
+          <li><strong>Documentation as a release gate:</strong> DECISIONS.md enforced by CI — stays current automatically</li>
+          <li><strong>Overall:</strong> 3–4 engineering sprints → 1 sprint for a full production-quality stack</li>
+        </ul>
+      </div>
+      <div class="role-col">
+        <div class="role-col-title">
+          <span class="role-col-dot role-col-dot-indigo"></span>
+          Product Management
+        </div>
+        <ul>
+          <li><strong>Strategy artefacts:</strong> market research, OKRs, roadmap — generated from discovery evidence, not blank-page effort</li>
+          <li><strong>Discovery synthesis:</strong> personas, pain points, opportunities — built from evidence, not assumptions</li>
+          <li><strong>Scope decisions accelerated:</strong> AI helps evaluate each hypothesis against cost, user value, and strategic fit simultaneously</li>
+          <li><strong>TCO visibility:</strong> AI gives PMs visibility of architectural cost implications earlier — before decisions are locked in</li>
+          <li><strong>Decision documentation automated:</strong> DECISIONS.md maintained as a living artefact, not a post-hoc writeup</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sub-section 3b: Evolving PM Role -->
+    <div class="section-header section-header-spaced">
+      <h2>The Evolving PM Role</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">From traditional to AI-native PM</div>
+      <div class="two-col-compare">
+        <div>
+          <div class="col-label">Traditional PM accountabilities</div>
+          <ul>
+            <li>Product strategy</li>
+            <li>Customer value</li>
+            <li>Delivery prioritisation</li>
+            <li>Stakeholder alignment</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-label">New AI-native PM accountabilities</div>
+          <ul>
+            <li>AI workflow orchestration</li>
+            <li>Tool selection economics</li>
+            <li>Agent cost modelling</li>
+            <li>Total cost of ownership</li>
+            <li>Cost-to-serve optimisation</li>
+            <li>AI output governance</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block block-implication block-spaced">
+        <div class="block-label">Key insight</div>
+        These are additions to the role, not replacements. The PM remains the person connecting technology decisions to product and business outcomes.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Forward Deployed PM</div>
+      <p><strong>Umang's framing:</strong> Forward Deployed PMs sit at the intersection of product, technology, solution design, and commercial understanding. They bridge customer problems, solution design, and implementation.</p>
+      <p><strong>Arpita's extension:</strong> Add a fourth accountability — AI economics. Future PMs will be workflow optimisers, AI economics specialists, tool-selection strategists, and cost optimisation leaders — while still owning traditional product responsibilities.</p>
+      <div class="block block-why">
+        <div class="block-label">Organisational context</div>
+        In startups and scale-ups, PMs own build vs buy, budgets, and TCO directly. In large enterprises, these may sit with architecture and governance — but PMs must still understand and influence these decisions through expertise, evidence, and strategic insight.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION D — FINAL TAKEAWAY & NEXT STEPS -->
+  <section id="sD">
+    <div class="section-header">
+      <div class="section-label-alpha">D</div>
+      <h2>Final Takeaway &amp; Next Steps</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The central message</div>
+      <p>AI can support every phase of the Product Development Lifecycle — from discovery through strategy, design, delivery, testing and analytics. But AI does not remove PM accountability. It <strong>expands</strong> it.</p>
+      <p>Product Managers who understand AI economics, workflow orchestration, and total cost of ownership will be better positioned to build products that are not just valuable but sustainably profitable at scale.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What PMs need to do</div>
+      <ol class="next-step-list">
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Own the AI economics conversation</span> — understand cost per query, agent execution costs, model selection trade-offs, and total cost of ownership. Ask: "What is the total cost of running this product, and how can we reduce it without reducing value?"
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Get involved in technical discovery</span> — architectural decisions made at this stage lock in TCO for years. PMs who wait until delivery miss the moment when costs are determined.
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Use AI to accelerate discovery, not skip it</span> — AI can generate personas, research, OKRs and strategy artefacts faster, but they still need PM validation, curation, and connection to real user evidence.
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Treat AI outputs as starting points, not finished products</span> — AI drafts are high quality but require PM judgement to validate, prioritise, and connect to business outcomes.
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Build with AI embedded in the product, not just the team</span> — the most durable value comes from embedding AI intelligence into the user experience itself: surfacing insights, drafting responses, explaining metrics, detecting risks.
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Advocate for lean AI architectures</span> — fewer tokens, cleaner code, leaner workflows. Small efficiencies at development time compound into significant operational savings.
+          </div>
+        </li>
+        <li>
+          <div class="nsl-body">
+            <span class="nsl-title">Evolve your role proactively</span> — whether in a startup or a large enterprise, understand AI workflow orchestration enough to influence decisions, even if you don't own them directly.
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The NHS platform as a reusable framework</div>
+      <p>The platform built for this demo is not a one-off. It is the beginning of a reusable framework for demonstrating AI value across discovery, design, delivery and operations. As new use cases are added (telecoms, banking, public sector), the framework becomes richer.</p>
+      <p>The same fundamental capability — processing large volumes of qualitative feedback, surfacing risks, generating insight — applies across any organisation that interacts directly with customers or citizens at scale.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 0 — PROBLEM STATEMENT -->
+  <section id="s0">
+    <div class="section-header">
+      <div class="section-num section-num-red">0</div>
+      <h2>The Problem Statement &amp; Why We Chose It</h2>
+    </div>
+
+    <div class="card card-problem">
+      <div class="block-label block-label-mb">The Problem</div>
+      <p class="card-problem-text">
+        NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. The 10 Year Health Plan (July 2025) directly ties trust income to patient ratings through clinical team payments, patient power payments, and publicly published league tables updated quarterly from summer 2025. Yet most trusts still rely on manual coding, sampled data, and disconnected reporting systems that prevent timely action. There is no NHS-native platform that combines AI-powered theme classification, closed-loop feedback management, and integration with clinical systems — leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why this problem — and why now</div>
+      <p>Three forces converged to make this the right problem to solve at this moment:</p>
+
+      <div class="block block-why block-stacked">
+        <div class="block-label">Force 1 · Financial materiality just changed</div>
+        The 10 Year Health Plan (July 2025) made patient feedback financially consequential for the first time. Trust income is now directly linked to patient ratings via three mechanisms: clinical team payments, patient power payments, and public quarterly league tables. A poor feedback quarter has a direct, quantifiable income consequence. This moved patient experience from a compliance checkbox to a board-level financial risk.
+      </div>
+
+      <div class="block block-why block-stacked">
+        <div class="block-label">Force 2 · Current tools are structurally broken</div>
+        The dominant "solution" is a Quality Manager spending 2–3 days every quarter manually coding NHS Friends &amp; Family Test (FFT) free-text in Excel — on a 10–20% sample. That means 80–90% of patient feedback is never read. Issues surface weeks or months after they occur, from complaints or press coverage rather than from data. No existing NHS-native platform combines AI theme classification, risk alerting, and closed-loop action management.
+      </div>
+
+      <div class="block block-why block-stacked">
+        <div class="block-label">Force 3 · An 18–24 month window before the market closes</div>
+        311 NHS trusts represent an £18–40M ARR addressable market. The Medium Term Planning Framework (October 2025) already mandates near-real-time feedback capture on at least 5 wards before discharge — a current compliance requirement. US competitors (NRC Health, Qualtrics) have not yet made a serious NHS push. The combination of regulatory pressure, unmet need, and absent NHS-native competition creates a rare entry window.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Who bears this problem</div>
+      <p class="persona-table-wrap">Three distinct personas are directly affected — each experiencing the same data gap differently:</p>
+      <div class="table-wrap persona-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Persona</th><th>Core pain</th><th>What they need from an MVP</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Chief Nurse / Director of Patient Experience</strong></td>
+              <td>Finds out about ward problems from press or complaints — never from data. Board packs take 2–3 days to compile manually per quarter.</td>
+              <td>24-hour risk alerts when a ward crosses a threshold. Auto-generated board pack (PDF). One-click CQC evidence export.</td>
+            </tr>
+            <tr>
+              <td><strong>Quality Manager / Patient Experience Lead</strong></td>
+              <td>Manually codes 10–20% of FFT free-text. Real issues go undetected. Cannot prove to the board that feedback led to measurable improvement.</td>
+              <td>AI theme classification on 100% of comments. Top-3 deteriorating wards dashboard. 3-click drilldown: alert → theme → verbatim.</td>
+            </tr>
+            <tr>
+              <td><strong>Ward Manager / Service Line Lead</strong></td>
+              <td>Feedback arrives 4–6 weeks after a patient's stay. Aggregated scores say nothing specific. Cannot engage with another system during a 12-hour shift.</td>
+              <td>One weekly digest email (Monday 08:00). Top 2 concerns + top 2 positives + 1 verbatim. No login required. One-tap share with team.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why this problem is the right scope for discovery</div>
+      <div class="block block-implication">
+        <div class="block-label">Scope rationale</div>
+        The problem is large enough to be commercially meaningful (£18–40M ARR, 311 trusts) but narrow enough to be solvable with a focused MVP. The three personas have clearly differentiated needs that map to three distinct product surfaces: an executive dashboard, an analyst workflow, and a ward-facing digest. This clean segmentation made it possible to define MVP scope without endless stakeholder negotiation — each persona gets one core outcome, not everything at once.
+      </div>
+      <div class="block block-ai block-stacked">
+        <div class="block-label">AI's role in refining the problem statement</div>
+        AI synthesised the problem statement from raw interview notes, NHS policy documents (10YHP, MTPF), FFT data analysis, and competitive research. It identified the three-force structure (financial materiality, broken tools, market window) as the clearest way to communicate urgency to both clinical and commercial audiences. The final statement was iterated with the team until it could be read cold by a board member and immediately understood.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>AI Across the Five PDLC Stages</h2>
+    </div>
+
+    <p class="section-intro">
+      The project's discovery workflow was structured around five sequential stages. AI accelerated each stage in a distinct way.
+    </p>
+
+    <div class="pdlc-stage-card">
+      <div class="pdlc-stage-header">
+        <div class="stage-dot dot-1">1</div>
+        <div class="stage-title">User Interviews</div>
+      </div>
+      <p>AI assisted in synthesising raw interview notes into structured personas. The three seed personas in the app were shaped by AI-driven thematic analysis — identifying common pain points, motivations, and contexts across interviewees. Optional video URL fields on each persona allow attaching actual interview recordings, keeping AI-generated summaries anchored to source evidence.</p>
+      <div class="block block-efficiency">
+        <div class="block-label">Efficiency gains</div>
+        Manual persona synthesis from multiple interviews typically takes 2–3 days of a researcher's time — identifying themes, clustering pain points, writing up structured outputs. AI reduced this to a single session: transcripts in, structured personas out, with video evidence attached for traceability. The team spent their time reviewing and refining rather than building from scratch.
+        <div class="eff-metrics">
+          <span class="eff-chip">2–3 days → hours</span>
+          <span class="eff-chip">3 personas synthesised in one session</span>
+          <span class="eff-chip">100% of interview notes processed</span>
+          <span class="eff-chip">Evidence-linked via video URL fields</span>
+        </div>
+      </div>
+      <div class="block block-pm block-stacked">
+        <div class="block-label">PM cost lens — what a future PM tracks here</div>
+        User interview synthesis is typically one of the most token-intensive discovery activities. A PM accountable for AI economics asks: how many tokens did it cost to process raw interview transcripts into structured personas? Could a smaller, fine-tuned model do this more cheaply? Could interview guides be designed upfront to reduce the volume of unstructured text the AI needs to process? At this stage, the PM is already thinking about cost-to-insight, not just insight quality.
+      </div>
+    </div>
+
+    <div class="pdlc-stage-card">
+      <div class="pdlc-stage-header">
+        <div class="stage-dot dot-2">2</div>
+        <div class="stage-title">Feedback Analysis</div>
+      </div>
+      <p>AI was used to ingest and parse NHS Friends &amp; Family Test (FFT) data. The client-side Excel/CSV parser (using the <code>xlsx</code> library) combined with AI-assisted deduplication logic allowed rapid triage of patient feedback — categorising responses and surfacing patterns without a backend. This directly informed the MVP problem statement.</p>
+      <div class="block block-efficiency">
+        <div class="block-label">Efficiency gains</div>
+        The existing NHS process coded 10–20% of FFT free-text manually over 2–3 days per quarter. AI-assisted analysis covered 100% of comments, identified themes, and surfaced patterns in a fraction of the time — and without any server infrastructure. Deduplication logic that would have required custom backend development was generated and tested in a single session.
+        <div class="eff-metrics">
+          <span class="eff-chip">10–20% sample → 100% coverage</span>
+          <span class="eff-chip">2–3 days manual → hours automated</span>
+          <span class="eff-chip">Zero backend infrastructure</span>
+          <span class="eff-chip">Dedup logic generated &amp; tested in one session</span>
+        </div>
+      </div>
+      <div class="block block-pm block-stacked">
+        <div class="block-label">PM cost lens — what a future PM tracks here</div>
+        Running LLM theme classification across 100% of FFT comments (rather than a 10–20% sample) is the core product value — but it is also a recurring cost driver. A PM owns the question: what is the cost per 1,000 comments classified? Can we batch classify overnight rather than in real-time to use lower-cost inference tiers? Can we reduce token consumption by preprocessing comments (stripping boilerplate, normalising encoding) before they reach the model? The decision to parse client-side (using <code>xlsx</code> with no backend) was also a cost decision: it eliminated server-side compute entirely for the ingest step.
+      </div>
+    </div>
+
+    <div class="pdlc-stage-card">
+      <div class="pdlc-stage-header">
+        <div class="stage-dot dot-3">3</div>
+        <div class="stage-title">Technical Discovery</div>
+      </div>
+      <p>AI was used to generate the Technical Discovery Report — a seeded artefact covering NHS infrastructure constraints (HSCN, N3, network proxies, data residency, identity/access), MVP architecture proposals, and reusable component patterns. This gave the team a structured starting point for technical scoping without weeks of manual research.</p>
+      <div class="block block-efficiency">
+        <div class="block-label">Efficiency gains</div>
+        A traditional technical discovery scoping NHS infrastructure constraints — HSCN, N3, data residency, proxy environments, identity/access — typically takes 2–4 weeks of an architect's time. AI generated a structured, detailed Technical Discovery Report covering all of these areas in a single session, ready for team review and iteration. The report was seeded directly into the app as an artefact, visible to all stakeholders immediately.
+        <div class="eff-metrics">
+          <span class="eff-chip">2–4 weeks → 1 session</span>
+          <span class="eff-chip">NHS infra constraints fully documented</span>
+          <span class="eff-chip">MVP architecture proposed &amp; structured</span>
+          <span class="eff-chip">Report auto-seeded to all users</span>
+        </div>
+      </div>
+      <div class="block block-pm block-stacked">
+        <div class="block-label">PM cost lens — what a future PM tracks here</div>
+        Technical discovery is where architectural decisions lock in the total cost of ownership for years. A forward-deployed PM sits in this phase and asks: if we choose this architecture, what are the ongoing agent-processing costs? NHS infrastructure constraints (HSCN, data residency, proxy environments) affect which cloud services and AI APIs can be called — and therefore which cost optimisations are available. A PM who only reviews features at this stage misses the moment when TCO is determined. The choice of Firebase over a custom backend, for example, eliminated an entire class of server-side compute costs.
+      </div>
+    </div>
+
+    <div class="pdlc-stage-card">
+      <div class="pdlc-stage-header">
+        <div class="stage-dot dot-4">4</div>
+        <div class="stage-title">Ideation &amp; Hypotheses</div>
+      </div>
+      <p>AI helped the team move from raw discovery findings to structured OKRs and a prioritised roadmap. The Artefacts tab stores all discovery outputs — OKRs, research plan, findings — as rich HTML content, allowing AI-drafted content to be iterated and refined collaboratively in real time.</p>
+      <div class="block block-efficiency">
+        <div class="block-label">Efficiency gains</div>
+        Translating raw discovery findings into OKRs, a research plan, and a prioritised roadmap typically requires multiple facilitated workshops and several rounds of written synthesis. AI produced first-draft versions of all three outputs from discovery inputs, collapsing what would normally be 1–2 weeks of facilitation and write-up into an afternoon. The team's role shifted from drafting to curating — a fundamentally faster loop.
+        <div class="eff-metrics">
+          <span class="eff-chip">1–2 weeks → afternoon</span>
+          <span class="eff-chip">OKRs, roadmap &amp; research plan drafted in one pass</span>
+          <span class="eff-chip">Team curates rather than drafts</span>
+          <span class="eff-chip">All outputs live-editable &amp; Firebase-persisted</span>
+        </div>
+      </div>
+      <div class="block block-pm block-stacked">
+        <div class="block-label">PM cost lens — what a future PM tracks here</div>
+        Ideation is where scope decisions multiply future costs. Every hypothesis that makes it into the roadmap becomes a feature that needs AI workflows to support it. A PM with cost accountability evaluates each hypothesis not just on user value, but on its agent economics: does this feature require a real-time LLM call on every user action, or can it be run asynchronously? Does it need a large model, or would a smaller, cheaper model be sufficient? Removing the Ingest tab from MVP scope (DD-06) was exactly this kind of decision — it eliminated a recurring cost with no demo value, freeing budget for higher-value AI workflows.
+      </div>
+    </div>
+
+    <div class="pdlc-stage-card">
+      <div class="pdlc-stage-header">
+        <div class="stage-dot dot-5">5</div>
+        <div class="stage-title">Design Prototypes</div>
+      </div>
+      <p>AI generated the React + Vite frontend, the Figma-to-code component pipeline (via Figma MCP), and the UI design system — Playfair Display for authority, DM Sans for clarity, JetBrains Mono for metadata — directly from design intent. This collapsed what would normally be a multi-sprint frontend build into a single discovery sprint.</p>
+      <div class="block block-efficiency">
+        <div class="block-label">Efficiency gains</div>
+        Building a production-quality React prototype with Firebase sync, drag-and-drop Kanban, rich text editing, an acceptance test suite, and a full CI/CD pipeline would typically take 3–4 engineering sprints. AI delivered the entire stack — components, hooks, seed data, Playwright tests, CI pipeline, and deployment config — in a single discovery sprint. The Figma MCP integration further eliminated the design-to-code translation step entirely.
+        <div class="eff-metrics">
+          <span class="eff-chip">3–4 sprints → 1 sprint</span>
+          <span class="eff-chip">Full React stack generated end-to-end</span>
+          <span class="eff-chip">CI/CD + Playwright tests included</span>
+          <span class="eff-chip">Figma → code with zero manual translation</span>
+          <span class="eff-chip">Production deployed on Vercel</span>
+        </div>
+      </div>
+      <div class="block block-pm block-stacked">
+        <div class="block-label">PM cost lens — what a future PM tracks here</div>
+        This is the compounding efficiency argument in practice. AI-generated code that is leaner and more consistent produces less code overall — less code to review, less code passing through CI/CD pipelines, fewer lines analysed by AI code-review agents, and therefore lower ongoing agent-processing costs. A PM who selects tools that generate less code is not just reducing immediate development time — they are reducing the total volume of AI-assisted review, testing, and maintenance work that will be incurred every sprint for the life of the product. Small tooling choices at prototype stage compound into significant cost differences at scale.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Decision-by-Decision: Why &amp; What It Means</h2>
+    </div>
+    <p class="section-intro">
+      Each architectural, design, and coding decision was made intentionally. Here is the reasoning and the product consequence for each.
+    </p>
+
+    <!-- AD-01 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-01</span> Firebase Realtime Database as the persistence layer</div>
+      <p>All app state is persisted to Firebase Realtime Database — not Firestore, not a REST API, not localStorage.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Realtime sync via <code>onValue</code> listeners required zero backend infrastructure. The app's flat key-value data shape matched Firebase's model perfectly. Firestore's querying power would have been wasted overhead.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Any team member opening the app sees live updates within milliseconds. This made the tool genuinely collaborative during workshop sessions — a presenter could update PDLC cards and all participants would see changes instantly. The trade-off: no per-user isolation means everyone shares the same data, which is intentional for a single-team tool but would need revisiting at scale.
+      </div>
+      <div class="block block-ai">
+        <div class="block-label">AI role</div>
+        AI generated the <code>useFirebaseSync</code> hook, the debouncing logic, and the JSON serialisation strategy — turning a complex real-time sync problem into a reusable, tested abstraction in hours.
+      </div>
+    </div>
+
+    <!-- AD-02 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-02</span> Store all Firebase values as JSON strings</div>
+      <p>Every value written to Firebase is <code>JSON.stringify</code>-d on write and <code>JSON.parse</code>-d on read.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Firebase silently mutates arrays — it strips holes and converts numeric-keyed arrays to objects. Serialising to strings guarantees exact round-trips for nested arrays, typed fields, and complex structures.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Users can reorder Kanban cards, edit persona bullet lists, and update PDLC phase descriptions without their work being silently corrupted by Firebase's type coercion. This was a discovered-in-production bug that AI helped diagnose and resolve systematically.
+      </div>
+    </div>
+
+    <!-- AD-03 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-03</span> Seed-if-empty — never overwrite user data</div>
+      <p>Default content only writes to Firebase if a path does not already exist. <code>SEED_VERSION</code> signals "check for new empty paths," not "reset everything."</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        The original implementation used unconditional <code>set()</code> — every version bump reverted all in-app edits. The fix (seed-if-empty + merge-by-ID for arrays) was discovered after real user data was lost.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Teams can safely workshop content in the app across multiple sessions. Updating the app to add new artefacts does not wipe existing work. This was critical for maintaining credibility during live stakeholder demos.
+      </div>
+      <div class="block block-ai">
+        <div class="block-label">AI role</div>
+        AI identified the root cause of the overwrite bug and generated the merge-by-ID strategy for <code>marketResearch</code> arrays — a non-trivial upsert pattern implemented correctly on the first attempt.
+      </div>
+    </div>
+
+    <!-- AD-04 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-04</span> Debounced writes + local pending flag</div>
+      <p>Local state updates are immediate. Firebase writes are debounced 800ms. A <code>localPendingRef</code> suppresses remote echoes while a write is in flight.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Without debouncing, every keystroke in an editable field triggers a Firebase write. Without the pending flag, Firebase echoes the write back to the originating client, overwriting in-progress input.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Editing feels instant and local. Users experience zero lag while typing, yet all changes are durably saved. The <code>flush()</code> method on save buttons ensures nothing is lost on tab switches.
+      </div>
+    </div>
+
+    <!-- AD-05 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-05</span> No user authentication</div>
+      <p>No login. All users share full read/write access to the same Firebase database.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Auth adds friction and complexity with no benefit for a single internal discovery team. Speed of iteration mattered more than access control at this stage.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Any team member can open the URL and start contributing immediately — no onboarding barrier. The known risk (anyone with the URL can edit everything) is acceptable for current scope. If the tool is opened to wider NHS stakeholders, Firebase Auth would be the natural next step.
+      </div>
+    </div>
+
+    <!-- AD-06 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-06</span> Secrets in GitHub Actions — never committed</div>
+      <p>All tokens (Vercel, Atlassian, Figma) live in GitHub Secrets or local <code>.env</code> files. Nothing is committed to the repo.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        A Figma token (<code>figd_...</code>) and Atlassian token were accidentally committed to <code>README.md</code>. GitHub's secret scanning blocked the push entirely. Both tokens were revoked and removed — the incident enforced the policy.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        The CI/CD pipeline can be shared, forked, or handed over to another team without risk of credential exposure. The incident response (revoke → remove → allow-list → policy) is documented so the team doesn't repeat it.
+      </div>
+    </div>
+
+    <!-- AD-07 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-07</span> develop → main promotion gate</div>
+      <p>Production deploys only happen through <code>npm run promote</code>, which enforces: build passes → local review at localhost:5173 → merge → CI deploy.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Playwright tests catch functional regressions, but not visual or UX issues. The local review step catches problems that automated tests miss.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Stakeholders always see a reviewed, tested version of the product. No half-finished feature or broken layout has ever reached the production demo URL. The promote script makes the review step unavoidable — it's enforced, not aspirational.
+      </div>
+    </div>
+
+    <!-- AD-08 -->
+    <div class="card">
+      <div class="card-title"><span class="tag">AD-08</span> Client-side password gate (session-only)</div>
+      <p>A <code>PasswordGate</code> component wraps the app. Password stored in <code>sessionStorage</code> — gate re-appears on tab close.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Keeps casual visitors out of the demo without Firebase Auth overhead. The password is intentionally in the JS bundle — accepted for a low-stakes internal demo.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        The production URL can be shared freely with the team without risk of anonymous public edits. The session-only storage means each browser tab session gets a fresh gate — users can't accidentally stay authenticated across days.
+      </div>
+    </div>
+
+    <!-- DD decisions -->
+    <div class="card">
+      <div class="card-title"><span class="tag">DD-01</span> Static config / editable data split in PDLC</div>
+      <p>Icons and colours are static (<code>PHASE_CONFIG</code>); titles, descriptions, bullets are editable and persisted (<code>EditablePhase</code>).</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        React nodes (icons) can't be serialised to Firebase. Design constants (gradients, colours) shouldn't be user-editable — they represent the product's visual identity.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Teams can fully customise PDLC content without breaking the visual design. The app stays on-brand regardless of what text a user enters. AI-generated the initial PDLC content structure and default phase text.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="tag">DD-02</span> Flip card progressive disclosure for PDLC activities</div>
+      <p>Card front: title + tag. Card back: description + bullets. "Edit &amp; view all" opens a full modal.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        The PDLC grid is used as a presentation artefact. Keeping the default view scannable prevents information overload during demos.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        During stakeholder demos, the presenter can walk through the PDLC at a high level and drill into any card on demand. The interaction pattern mirrors how the product team thinks — overview first, detail on request.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="tag">DD-03</span> Discovery cards ordered by execution sequence</div>
+      <p>User Interviews → Feedback Analysis → Tech Discovery → Ideation → Design Prototypes — in the order the team actually executes them.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        The PDLC section is both documentation and a presentation tool. Execution order makes it readable as a plan, not just a list.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        New team members can read the PDLC section and immediately understand the discovery sequence. Stakeholders can follow the narrative from left to right during demos.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="tag">DD-06</span> Ingest tab removed from MVP demo scope</div>
+      <p>The NHS FFT Data Ingest tab and all related components were removed. Default tab is now User Analysis.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        The Ingest tab was an internal utility, not part of the demo narrative. Including it distracted from the core story: personas, discovery artefacts, PDLC, and delivery backlog.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Demos are tighter and more focused. The app's default state opens on User Analysis — the most compelling starting point for stakeholders who care about patient outcomes. This is a classic product decision: what you remove matters as much as what you keep.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="tag">CD-09</span> DECISIONS.md as a release gate</div>
+      <p>CI fails if DECISIONS.md is missing, structurally invalid, or out of date relative to changed architectural files.</p>
+      <div class="block block-why">
+        <div class="block-label">Why this decision</div>
+        Documentation that isn't enforced becomes stale within weeks. Tying it to the release gate makes the friction intentional — the build breaks, or the doc gets updated.
+      </div>
+      <div class="block block-implication">
+        <div class="block-label">Product implication</div>
+        Any future maintainer — or AI agent — can read DECISIONS.md and understand exactly why the system is the way it is. This reduces onboarding time and prevents "why is this here?" archaeology through git history.
+      </div>
+      <div class="block block-ai">
+        <div class="block-label">AI role</div>
+        The CI check, the Playwright static test, and the DECISIONS.md content itself were all generated by AI — creating a self-reinforcing documentation loop where AI writes decisions and then verifies they are kept current.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Product Implications Summary</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Decision</th>
+            <th>Primary Product Benefit</th>
+            <th>Known Trade-off</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Firebase Realtime (AD-01)</strong></td>
+            <td>Live collaborative editing — all users see changes instantly</td>
+            <td>No per-user isolation; shared data only</td>
+          </tr>
+          <tr>
+            <td><strong>JSON string storage (AD-02)</strong></td>
+            <td>Data integrity — no silent Firebase type coercion</td>
+            <td>All values are strings in Firebase; harder to query</td>
+          </tr>
+          <tr>
+            <td><strong>Seed-if-empty (AD-03)</strong></td>
+            <td>User edits survive app updates; safe to deploy</td>
+            <td>Pushing content updates to existing users requires manual Firebase edits</td>
+          </tr>
+          <tr>
+            <td><strong>Debounced writes (AD-04)</strong></td>
+            <td>Instant-feeling edits with durable persistence</td>
+            <td>800ms delay before Firebase write (negligible in practice)</td>
+          </tr>
+          <tr>
+            <td><strong>No auth (AD-05)</strong></td>
+            <td>Zero onboarding friction; anyone on the team can contribute</td>
+            <td>Anyone with the URL can edit everything</td>
+          </tr>
+          <tr>
+            <td><strong>Secrets in CI (AD-06)</strong></td>
+            <td>Safe to share, fork, or hand over the repository</td>
+            <td>Local dev requires manual <code>.env</code> setup</td>
+          </tr>
+          <tr>
+            <td><strong>Promote gate (AD-07)</strong></td>
+            <td>Production always contains a reviewed, tested build</td>
+            <td>Slightly slower release cycle (intentional friction)</td>
+          </tr>
+          <tr>
+            <td><strong>Password gate (AD-08)</strong></td>
+            <td>Demo URL shareable without public edit risk</td>
+            <td>Password in JS bundle; security through obscurity</td>
+          </tr>
+          <tr>
+            <td><strong>Flip card PDLC (DD-02)</strong></td>
+            <td>Scannable grid; detail on demand in demos</td>
+            <td>Two-step interaction to reach edit mode</td>
+          </tr>
+          <tr>
+            <td><strong>Ingest tab removed (DD-06)</strong></td>
+            <td>Tighter demo narrative; default opens on User Analysis</td>
+            <td>FFT upload utility no longer accessible in UI</td>
+          </tr>
+          <tr>
+            <td><strong>DECISIONS.md gate (CD-09)</strong></td>
+            <td>Living, enforced documentation; low onboarding cost</td>
+            <td>CI fails if doc isn't updated — intentional friction</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Key Takeaways</h2>
+    </div>
+
+    <div class="callout">
+      <strong>AI compressed a multi-sprint build into a single discovery sprint</strong>
+      The React frontend, Firebase sync layer, Playwright test suite, CI pipeline, and all seed content were AI-generated. What would typically take 3–4 sprints of engineering was completed in one, freeing the team to focus on discovery outcomes rather than implementation.
+    </div>
+
+    <div class="callout">
+      <strong>Decisions were made to serve the demo narrative, not engineering ideals</strong>
+      No auth, client-side password, shared database, ingest tab removed — every "shortcut" was a deliberate product choice to keep the demo focused and accessible. The trade-offs are documented explicitly so they can be revisited when the tool scales.
+    </div>
+
+    <div class="callout">
+      <strong>AI-generated documentation enforces itself</strong>
+      DECISIONS.md was written by AI, verified by AI (Playwright static test), and gated by CI. This creates a self-reinforcing loop: decisions are documented, enforced, and kept current automatically — reducing the invisible maintenance cost that kills most decision logs.
+    </div>
+
+    <div class="callout">
+      <strong>The PDLC section is both a tool and a presentation artefact</strong>
+      The five-stage discovery sequence (User Interviews → Feedback Analysis → Tech Discovery → Ideation → Design Prototypes) is reflected in the app's card order, the seed artefacts, and the discovery research plan. AI helped align these three layers into a coherent narrative that works in a live demo.
+    </div>
+  </section>
+
+  <!-- SECTION 5 — EVOLVING PM ROLE -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num section-num-purple">5</div>
+      <h2>The Evolving PM Role in AI-Native Delivery</h2>
+    </div>
+
+    <p class="section-intro">
+      In the final part of the discussion with Umang, the question shifted from what AI can do in the PDLC to what the PM role becomes when AI is embedded throughout it. The conclusion: the PM accountability surface needs to expand significantly.
+    </p>
+
+    <div class="card">
+      <div class="card-title">The core argument</div>
+      <p>Product Managers should become accountable not just for product outcomes, but for the <strong>total cost of developing, operating, and maintaining AI-powered products</strong>. The traditional PM scope — features, user value, delivery prioritisation — is necessary but no longer sufficient.</p>
+      <p>The PM's question shifts from <em>"what should we build next?"</em> to:</p>
+      <blockquote class="pm-quote">
+        "What is the total cost of running this product, and how can we reduce it without reducing value?"
+      </blockquote>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What the expanded PM cost visibility covers</div>
+      <div class="pm-role-grid">
+        <div class="pm-role-item">
+          <strong>LLM query costs</strong>
+          <p>Cost per inference call, model selection, token consumption per workflow — tracked per feature, not just in aggregate.</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>Agent orchestration costs</strong>
+          <p>Cost of chaining agents, retry logic, tool calls, and intermediate steps — often the hidden cost in multi-agent workflows.</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>Discovery &amp; delivery activity costs</strong>
+          <p>AI-assisted research, synthesis, code generation, review — the cost of building the product, not just running it.</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>Ongoing maintenance costs</strong>
+          <p>Prompt updates, model migrations, fine-tuning, anomaly investigation — the invisible recurring spend after launch.</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>Failure &amp; anomaly costs</strong>
+          <p>Cost of hallucinations, misclassifications, agent failures — including the human time to detect, triage, and fix them.</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>Product lifecycle economics</strong>
+          <p>Total cost of ownership from first commit to decommission — including the compounding costs of technical and AI debt.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The compounding efficiency argument — illustrated</div>
+      <p class="section-intro">Small tooling choices at development time compound into significant cost differences during operation. This was illustrated with a concrete example:</p>
+      <div class="block block-pm">
+        <div class="block-label">Example · Tool selection → token reduction → downstream cost chain</div>
+        <p class="tco-intro">A tool that generates <strong>less code</strong> creates a chain of savings:</p>
+        <div class="tco-bar tco-bar-stacked">
+          <div class="tco-row"><span class="tco-label">Code written</span><div class="tco-track"><div class="tco-fill tco-fill-90"></div></div></div>
+          <div class="tco-row"><span class="tco-label">Code reviewed (human)</span><div class="tco-track"><div class="tco-fill tco-fill-75"></div></div></div>
+          <div class="tco-row"><span class="tco-label">CI/CD pipeline runs</span><div class="tco-track"><div class="tco-fill tco-fill-60"></div></div></div>
+          <div class="tco-row"><span class="tco-label">AI code-review agent cost</span><div class="tco-track"><div class="tco-fill tco-fill-45"></div></div></div>
+          <div class="tco-row"><span class="tco-label">Ongoing maintenance load</span><div class="tco-track"><div class="tco-fill tco-fill-30"></div></div></div>
+        </div>
+        <p class="tco-caption">Each bar represents the downstream cost impact of the original tooling choice. A PM who selects a leaner code-generation tool at prototype stage is compressing every bar in this chain — across every sprint, for the entire product lifetime.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The Forward Deployed PM — building on Umang's framing</div>
+      <p>This builds on Umang's earlier concept of <strong>Forward Deployed Product Managers / Engineers</strong> — PMs who sit at the intersection of product, technology, and business. The cost accountability dimension adds a fourth lens:</p>
+      <div class="pm-role-grid">
+        <div class="pm-role-item">
+          <strong>Traditional PM scope</strong>
+          <p>Product strategy · Customer value · Delivery prioritisation · Stakeholder alignment</p>
+        </div>
+        <div class="pm-role-item">
+          <strong>AI-native PM scope (added)</strong>
+          <p>AI workflow orchestration · Tool selection economics · Agent cost modelling · Total cost of ownership management · Cost-to-serve optimisation</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What this looked like on this project</div>
+      <p class="section-intro">Several decisions in this project already reflected this expanded accountability — even if not framed that way at the time:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Decision</th><th>Traditional PM view</th><th>AI economics PM view</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Firebase over custom backend (AD-01)</strong></td>
+              <td>Faster to ship, no infra to manage</td>
+              <td>Eliminated server-side compute cost permanently; zero ongoing infra spend</td>
+            </tr>
+            <tr>
+              <td><strong>Client-side FFT parsing (CD-06)</strong></td>
+              <td>Simpler architecture, no API needed</td>
+              <td>Zero LLM cost for the ingest step; parsing is deterministic, not generative</td>
+            </tr>
+            <tr>
+              <td><strong>Ingest tab removed (DD-06)</strong></td>
+              <td>Out of demo scope, reduces complexity</td>
+              <td>Removed a recurring AI workflow with no demo ROI; freed agent budget for higher-value features</td>
+            </tr>
+            <tr>
+              <td><strong>Debounced writes, 800ms (AD-04)</strong></td>
+              <td>Better UX, prevents write storms</td>
+              <td>Reduces Firebase operation count; fewer writes = lower database cost at scale</td>
+            </tr>
+            <tr>
+              <td><strong>Seed-if-empty pattern (AD-03)</strong></td>
+              <td>Preserves user data, safer deploys</td>
+              <td>Eliminates costly re-seeding operations on every deploy; reduces unnecessary Firebase reads/writes</td>
+            </tr>
+            <tr>
+              <td><strong>DECISIONS.md as CI gate (CD-09)</strong></td>
+              <td>Documentation stays current</td>
+              <td>Reduces future agent onboarding cost — AI agents reading DECISIONS.md need fewer exploratory queries to understand the system</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Strategic takeaway</strong>
+      The emerging PM role in AI-native organisations is not a narrower specialisation — it is a broader one. PMs who can hold product strategy, customer value, delivery prioritisation, <em>and</em> AI workflow economics simultaneously will be the ones who build products that are not just valuable, but sustainably profitable at scale.
+    </div>
+  </section>
+
+  <footer>
+    AI in the PDLC · NHS Patient Feedback Platform · Arpita Visen &amp; Umang · 2026
+  </footer>
+
+</div>
+</body>
+</html>
