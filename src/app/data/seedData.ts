@@ -1,5 +1,258 @@
 export const SEED_VERSION = 8;
 
+export interface ScriptBlock {
+  id: string;
+  label: string;
+  title: string;
+  body: string;
+  accent: string;
+}
+
+export const SEED_DRAFT_SCRIPT: ScriptBlock[] = [
+  {
+    id: 'block-a',
+    label: 'A',
+    title: 'Overall Objective',
+    accent: 'indigo',
+    body: `<p>The purpose of this work is to demonstrate how AI can be applied throughout the entire Product Development Lifecycle — from discovery through strategy, design, delivery, testing and analytics — and to show how the role of Product Manager continues to evolve as AI becomes embedded in delivery practices.</p>
+<p>This is not a technology demo. Every AI capability shown connects back to a product decision, a user outcome, or a business implication. The central question is not <strong>"what can AI do?"</strong> but <strong>"how do Product Managers create value in an AI-native delivery environment?"</strong></p>
+<h3>Three things the audience should take away</h3>
+<ul>
+<li><strong>AI across every PDLC phase</strong> — from discovery to ops, AI accelerates each stage in a distinct way</li>
+<li><strong>Product decisions, not just AI tools</strong> — every technical choice has a product consequence</li>
+<li><strong>PM role is expanding, not disappearing</strong> — new accountabilities in economics, orchestration, and value</li>
+</ul>`
+  },
+  {
+    id: 'block-b1',
+    label: 'B1',
+    title: 'Objective of This Demo',
+    accent: 'sky',
+    body: `<p>Primary goal: demonstrate how AI can be leveraged throughout the PDLC and show the evolving PM role at every stage.</p>
+<p>The NHS patient feedback analysis platform is the example use case — chosen because it is a realistic, high-value business problem where AI adds clear and demonstrable value.</p>
+<h3>Why this use case</h3>
+<ul>
+<li>NHS organisations receive large volumes of patient feedback they cannot analyse at scale</li>
+<li>Trust income, reputation, and service quality are increasingly linked to patient experience measures</li>
+<li>No native NHS capability combines feedback management, AI-powered theme detection, and clinical insight generation</li>
+<li>The underlying challenge generalises across healthcare, telecoms, banking, and public sector</li>
+</ul>`
+  },
+  {
+    id: 'block-b2',
+    label: 'B2',
+    title: 'What AI in PDLC Means',
+    accent: 'sky',
+    body: `<p>AI in PDLC is not a single tool or a coding assistant. It means AI is embedded as a <strong>continuous co-worker at every phase</strong>:</p>
+<ul>
+<li><strong>Discovery</strong> — synthesising research, building personas, generating strategy artefacts</li>
+<li><strong>Design</strong> — prototyping, assumption testing, persona simulation, iterative refinement</li>
+<li><strong>Delivery</strong> — repo setup, CI/CD, prompt review, code generation, documentation</li>
+<li><strong>Testing</strong> — persona-based user testing, accessibility, behavioural coverage</li>
+<li><strong>Operations</strong> — embedded intelligence, insight generation, anomaly detection, executive analytics</li>
+</ul>
+<p>The shift is from AI as a productivity tool to AI as a persistent delivery partner with context across the entire lifecycle.</p>`
+  },
+  {
+    id: 'block-b3',
+    label: 'B3',
+    title: 'How to Achieve It',
+    accent: 'sky',
+    body: `<h3>Three enablers</h3>
+<ol>
+<li><strong>Load all discovery artefacts into a persistent AI instance</strong> — personas, PRD, OKRs, roadmap, strategy — so context stays available throughout the lifecycle rather than being lost between phases</li>
+<li><strong>Use AI to challenge assumptions before real users see anything</strong> — persona simulation, journey testing, design critique — so research sessions start from a stronger base</li>
+<li><strong>Embed AI in the product itself, not just the team's workflow</strong> — surface priority items, generate drafts, provide natural language analytics for executives — so end users benefit too</li>
+</ol>`
+  },
+  {
+    id: 'block-b4',
+    label: 'B4',
+    title: 'Evolving Role of PM',
+    accent: 'purple',
+    body: `<h3>Two paths explored</h3>
+<p><strong>New specialist role</strong>: AI workflow orchestrator / orchestration lead — someone who coordinates AI tools, agents and outputs across the lifecycle.</p>
+<p><strong>Evolution of existing PM role</strong>: PMs expand into AI economics, workflow orchestration, tool selection strategy, and total cost of ownership management — while retaining traditional product responsibilities.</p>
+<h3>Organisational context matters</h3>
+<ul>
+<li><strong>Startups &amp; scale-ups</strong>: PMs already own build vs buy, budgets, TCO — natural fit for AI economics ownership</li>
+<li><strong>Large enterprises (HMRC, NHS)</strong>: architecture and governance teams own many decisions — PMs influence through expertise and evidence rather than direct ownership</li>
+</ul>
+<p>The presentation acknowledges both contexts. Responsibilities vary significantly by organisation type.</p>`
+  },
+  {
+    id: 'block-c1',
+    label: 'C1',
+    title: 'AI in PDLC — Product Strategy',
+    accent: 'indigo',
+    body: `<h3>What AI contributes</h3>
+<ul>
+<li><strong>Market research</strong>: analysed NHS trust information, public feedback sources, competitor offerings, industry trends</li>
+<li><strong>Competitive analysis</strong>: identified gaps vs Qualtrics, Civica, Cemplicity, NRC Health, in-house Power BI</li>
+<li><strong>Vision, mission, VMOS</strong>: AI generated structured strategic artefacts as starting points for team refinement</li>
+<li><strong>OKRs and roadmap</strong>: structured objectives and key results generated from discovery evidence</li>
+<li><strong>Problem statement synthesis</strong>: three-force framing (financial materiality, broken tools, market window) emerged from AI synthesis of policy docs, interviews, and competitor data</li>
+</ul>
+<h3>PM's role at this stage</h3>
+<p>Validate strategic outputs, connect market evidence to product decisions, ensure OKRs are measurable and tied to user outcomes.</p>`
+  },
+  {
+    id: 'block-c2',
+    label: 'C2',
+    title: 'AI in PDLC — Product Discovery',
+    accent: 'sky',
+    body: `<h3>What AI contributes</h3>
+<ul>
+<li><strong>Persona generation</strong>: three detailed personas built from public NHS data, feedback trends, and interview synthesis</li>
+<li><strong>Prototype creation</strong>: initial prototype generated from personas, research findings, and product requirements</li>
+<li><strong>Assumption testing</strong>: AI identified embedded assumptions before any real user saw the design</li>
+<li><strong>Persona simulation</strong>: separate AI instances assumed each persona identity and challenged the design from that perspective</li>
+<li><strong>AI-assisted user research</strong>: during sessions, feedback can be captured, processed, and incorporated into updated prototypes in real time — compressing multi-round research cycles</li>
+<li><strong>Service blueprint generation</strong>: personas, journeys, and requirements used to auto-generate service blueprints</li>
+</ul>
+<h3>PM's role at this stage</h3>
+<p>Define research questions, validate AI-generated personas against real evidence, curate prototype iterations, decide what goes into user research.</p>`
+  },
+  {
+    id: 'block-c3',
+    label: 'C3',
+    title: 'AI in PDLC — Product Delivery',
+    accent: 'emerald',
+    body: `<h3>What AI contributes</h3>
+<ul>
+<li><strong>Repository setup</strong>: project structure created by AI</li>
+<li><strong>CI/CD pipeline</strong>: deployment pipeline generated — Vercel, GitHub Actions, preview/production promotion gate</li>
+<li><strong>Prompt review</strong>: dedicated AI instance acting as senior technical co-worker reviewed prompts before coding agents executed — improving quality and reducing wasted effort</li>
+<li><strong>Code generation</strong>: React + Vite frontend, Firebase sync hooks, drag-and-drop Kanban, rich text editing</li>
+<li><strong>Acceptance tests</strong>: Playwright suite created and run against real deployed builds</li>
+<li><strong>Decision documentation</strong>: DECISIONS.md maintained as a release gate — CI fails if out of date</li>
+</ul>
+<h3>Efficiency gain</h3>
+<p>3–4 engineering sprints → 1 sprint for a full production-quality stack.</p>
+<h3>PM's role at this stage</h3>
+<p>Define acceptance criteria, own the promote gate, maintain DECISIONS.md, evaluate architectural decisions for TCO implications.</p>`
+  },
+  {
+    id: 'block-c4',
+    label: 'C4',
+    title: 'AI in PDLC — Product Ops',
+    accent: 'amber',
+    body: `<h3>What AI contributes</h3>
+<ul>
+<li><strong>Embedded intelligence</strong>: dashboard surfaces priority items, identifies critical cases, explains why they matter, suggests next actions</li>
+<li><strong>Insight-to-action flow</strong>: user sees case → AI generates response draft → user reviews and acts — reducing administration time</li>
+<li><strong>AI-powered analytics</strong>: rather than showing charts, the system explains whether objectives are being achieved, whether risks are emerging — natural language above traditional dashboards</li>
+<li><strong>Anomaly detection</strong>: AI flags deteriorating wards before they appear in operational metrics</li>
+<li><strong>Persona-based testing in production</strong>: AI assumes user persona identities for ongoing behavioural test coverage</li>
+</ul>
+<h3>PM's role at this stage</h3>
+<p>Define the intelligence layer (what to surface, in what format, at what threshold), monitor AI cost per operation, evaluate model performance, own the TCO of running the AI product.</p>`
+  },
+  {
+    id: 'block-3a',
+    label: '3a',
+    title: 'Efficiency Gains by Role',
+    accent: 'emerald',
+    body: `<h3>UX / User Research</h3>
+<ul>
+<li>Persona synthesis: days → hours. AI processes 100% of research notes, not a sampled subset</li>
+<li>Prototype generation: design intent → working prototype in one session</li>
+<li>Assumption testing before user research: AI challenges the design first, improving quality of what users see</li>
+<li>AI-assisted research sessions: prototype updated while the session is live — compressed decision cycles</li>
+<li>Service blueprint creation: auto-generated from artefacts, then refined — workshop effort significantly reduced</li>
+</ul>
+<h3>Engineering</h3>
+<ul>
+<li>Repo + CI/CD setup: hours not days — structure, pipeline, documentation generated together</li>
+<li>Prompt review gate: AI senior co-worker reviews prompts before coding agents execute — less rework, cleaner output</li>
+<li>Acceptance test suite: generated alongside code, run against real deployed builds</li>
+<li>Documentation as a release gate: DECISIONS.md enforced by CI — documentation stays current automatically</li>
+<li>Overall: 3–4 engineering sprints → 1 sprint for a full production-quality stack</li>
+</ul>
+<h3>Product Management</h3>
+<ul>
+<li>Strategy artefacts: market research, competitor analysis, vision, OKRs, roadmap — generated from discovery evidence, not blank-page effort</li>
+<li>Discovery synthesis: personas, pain points, opportunities — built from evidence, not assumptions</li>
+<li>Scope decisions accelerated: AI helps evaluate each hypothesis against cost, user value, and strategic fit simultaneously</li>
+<li>TCO visibility: AI gives PMs visibility of architectural cost implications earlier — before decisions are locked in</li>
+<li>Decision documentation automated: DECISIONS.md maintained as a living artefact, not a post-hoc writeup</li>
+</ul>`
+  },
+  {
+    id: 'block-3b',
+    label: '3b',
+    title: 'Evolving Role of Product Managers',
+    accent: 'purple',
+    body: `<h3>Traditional PM accountabilities</h3>
+<ul>
+<li>Product strategy</li>
+<li>Customer value</li>
+<li>Delivery prioritisation</li>
+<li>Stakeholder alignment</li>
+</ul>
+<h3>New AI-native PM accountabilities (additions, not replacements)</h3>
+<ul>
+<li>AI workflow orchestration</li>
+<li>Tool selection economics</li>
+<li>Agent cost modelling</li>
+<li>Total cost of ownership management</li>
+<li>Cost-to-serve optimisation</li>
+<li>AI output governance</li>
+</ul>
+<h3>Forward Deployed PM — Umang's framing + Arpita's extension</h3>
+<p><strong>Umang:</strong> Forward Deployed PMs sit at the intersection of product, technology, solution design, and commercial understanding. They bridge customer problems, solution design, and implementation.</p>
+<p><strong>Arpita's extension:</strong> Add a fourth accountability — AI economics. Future PMs will be workflow optimisers, AI economics specialists, tool-selection strategists, and cost optimisation leaders.</p>
+<h3>The key question PMs should ask continuously</h3>
+<p><em>"What is the total cost of running this product, and how can we reduce it without reducing value?"</em></p>`
+  },
+  {
+    id: 'block-d1',
+    label: 'D1',
+    title: 'Final Takeaway',
+    accent: 'rose',
+    body: `<p>AI can support every phase of the Product Development Lifecycle — from discovery through strategy, design, delivery, testing and analytics.</p>
+<p>But AI does not remove PM accountability. <strong>It expands it.</strong></p>
+<p>Product Managers who understand AI economics, workflow orchestration, and total cost of ownership will be better positioned to build products that are not just valuable but sustainably profitable at scale.</p>
+<h3>What changes</h3>
+<ul>
+<li>PMs evolve from traditional requirements and roadmap owners into <strong>AI-enabled decision-makers</strong></li>
+<li>From delivery prioritisers into <strong>workflow orchestrators</strong></li>
+<li>From feature owners into <strong>product intelligence leaders</strong></li>
+<li>From cost-unaware into <strong>cost and value optimisers</strong></li>
+</ul>`
+  },
+  {
+    id: 'block-d2',
+    label: 'D2',
+    title: 'Next Steps — What PMs Need to Do',
+    accent: 'rose',
+    body: `<ol>
+<li><strong>Own the AI economics conversation</strong> — understand cost per query, agent execution costs, model selection trade-offs, and total cost of ownership. Ask: "What is the total cost of running this product, and how can we reduce it without reducing value?"</li>
+<li><strong>Get involved in technical discovery</strong> — architectural decisions made at this stage lock in TCO for years. PMs who wait until delivery miss the moment when costs are determined</li>
+<li><strong>Use AI to accelerate discovery, not skip it</strong> — AI can generate personas, research, OKRs, and strategy artefacts faster, but they still need PM validation, curation, and connection to real user evidence</li>
+<li><strong>Treat AI outputs as starting points, not finished products</strong> — AI drafts are high quality but require PM judgement to validate, prioritise, and connect to business outcomes</li>
+<li><strong>Build with AI embedded in the product, not just the team</strong> — the most durable value comes from embedding AI intelligence into the user experience: surfacing insights, drafting responses, explaining metrics, detecting risks</li>
+<li><strong>Advocate for lean AI architectures</strong> — fewer tokens, cleaner code, leaner workflows. Small efficiencies at development time compound into significant operational savings</li>
+<li><strong>Evolve your role proactively</strong> — whether in a startup or a large enterprise, understand AI workflow orchestration enough to influence decisions, even if you don't own them directly</li>
+</ol>`
+  },
+  {
+    id: 'block-d3',
+    label: 'D3',
+    title: 'The NHS Platform as a Reusable Framework',
+    accent: 'slate',
+    body: `<p>The platform built for this demo is not a one-off. It is the beginning of a <strong>reusable framework</strong> for demonstrating AI value across discovery, design, delivery, and operations.</p>
+<p>As new use cases are added, the framework becomes richer and more representative of how AI can support product development across different sectors.</p>
+<h3>Where the same pattern applies</h3>
+<ul>
+<li><strong>Telecommunications</strong> — processing customer feedback at scale, detecting churn signals early</li>
+<li><strong>Banking</strong> — complaints analysis, risk detection, regulatory reporting</li>
+<li><strong>Public sector</strong> — citizen feedback, service improvement, ministerial reporting</li>
+</ul>
+<p>Any organisation that interacts directly with customers or citizens at scale and receives large volumes of qualitative feedback faces the same fundamental challenge the NHS platform solves.</p>`
+  },
+];
+
 export const SEED_PROBLEM_STATEMENT = `NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. The 10 Year Health Plan (July 2025) directly ties trust income to patient ratings through clinical team payments, patient power payments, and publicly published league tables updated quarterly from summer 2025. Yet most trusts still rely on manual coding, sampled data, and disconnected reporting systems that prevent timely action. There is no NHS-native platform that combines AI-powered theme classification, closed-loop feedback management, and integration with clinical systems — leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards.`;
 
 export const SEED_USER_SEGMENTS = {

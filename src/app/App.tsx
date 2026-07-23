@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Activity, BarChart2 } from 'lucide-react';
+import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Activity, BarChart2, FileText } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -12,9 +12,10 @@ import { ProgressTracker } from './components/ProgressTracker';
 import { MarketResearchGrid } from './components/MarketResearchGrid';
 import { PrototypeDetailView } from './components/PrototypeDetailView';
 import { PDLCSection } from './components/PDLCSection';
+import { DraftScript } from './components/DraftScript';
 import { PasswordGate } from './components/PasswordGate';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
-import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH } from './data/seedData';
+import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH, SEED_DRAFT_SCRIPT } from './data/seedData';
 
 const NhsStartPage = lazy(() =>
   import('../microsites/nhs-dashboard/NhsStartPage').then(m => ({ default: m.NhsStartPage }))
@@ -35,7 +36,7 @@ export default function App() {
     SEED_PROBLEM_STATEMENT
   );
   const [editingStatement, setEditingStatement] = useState(false);
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('pdlc');
   const [nhsView, setNhsView] = useState<'start' | 'dashboard'>('start');
   const [nhsAnalyticsView, setNhsAnalyticsView] = useState<'start' | 'dashboard'>('start');
   const [artefactDetailId, setArtefactDetailId] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export default function App() {
         await Promise.all([
           seedIfEmpty('problemStatement', SEED_PROBLEM_STATEMENT),
           seedIfEmpty('userSegments', SEED_USER_SEGMENTS),
+          seedIfEmpty('draftScript', SEED_DRAFT_SCRIPT),
           mergeMarketResearch(),
         ]);
         await set(versionRef, SEED_VERSION);
@@ -244,6 +246,7 @@ export default function App() {
                 { value: 'research', label: 'Artefacts', Icon: TrendingUp },
                 { value: 'pdlc', label: 'AI in PDLC', Icon: Layers },
                 { value: 'tasks', label: 'Tasks', Icon: ListChecks },
+                { value: 'script', label: 'Draft Script', Icon: FileText },
               ].map(({ value, label, Icon }) => (
                 <Tabs.Trigger
                   key={value}
@@ -358,6 +361,11 @@ export default function App() {
                 <ProgressTracker />
                 <KanbanBoard />
               </div>
+            </Tabs.Content>
+
+            {/* Draft Script */}
+            <Tabs.Content value="script">
+              <DraftScript />
             </Tabs.Content>
 
             {/* NHS Platform — content renders as a full-screen overlay (see below) */}

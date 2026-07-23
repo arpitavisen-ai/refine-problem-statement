@@ -114,6 +114,16 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-12 · Client-side password gate (session-only)
+**Status:** Active  
+**Date:** 2026-07-03  
+**Decision:** A `PasswordGate` component wraps the entire app. On first visit the user sees a password prompt; the session token is stored in `sessionStorage` (not `localStorage`) so the gate re-appears when the browser tab is closed.  
+**Password:** `spe2026` — hardcoded in `PasswordGate.tsx`.  
+**Rationale:** Keeps casual visitors out of the demo without adding Firebase Auth overhead. Acknowledged limitation: the password is visible in the JS bundle — this is intentional for a low-stakes internal demo. If the data ever becomes sensitive, replace with Firebase Auth (see AD-05).  
+**Where:** `src/app/components/PasswordGate.tsx`, wraps `<DndProvider>` in `App.tsx`.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -189,6 +199,15 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 **Decision:** Clicking the Prototype card in the Artefacts tab replaces the `MarketResearchGrid` with a `PrototypeDetailView` component, controlled by `artefactDetailId` state in `App.tsx`. A back button returns to the grid. The Prototype card does not open the standard `ItemModal`; `MarketResearchGrid` intercepts its click via an `onOpenDetail` callback and the modal is skipped by filtering `artefact-prototype` from the modals render.  
 **Rationale:** The app has no router. An in-tab state switch is the established pattern (matches how the app handles all "navigation") and requires no new dependencies. The same `onOpenDetail` callback is available for future artefacts that need their own detail views.  
 **Trade-off:** The back button does not update the URL, so deep-linking is not possible. Acceptable for a demo tool; if URL-based navigation is added later, this state can be promoted to a query param.
+
+---
+
+### DD-10 · Persona video embed in User Analysis
+**Status:** Active  
+**Date:** 2026-07-06  
+**Decision:** Each persona card in the User Analysis tab has an optional `videoUrl` field. When set, a video player is shown inside the persona detail modal. YouTube URLs are converted to embed URLs; direct `.mp4`/`.webm`/`.ogg` links are played via a native `<video>` element. The field is editable in-app and persisted to Firebase via `onUpdate`.  
+**Rationale:** Allows user research recordings or stakeholder interview clips to be attached directly to the persona they relate to — keeping evidence alongside analysis in one place.  
+**Where:** `src/app/components/PersonaCard.tsx` (`toEmbedUrl` helper + video section in modal); `videoUrl: ""` added to all three personas in `seedData.ts`.
 
 ---
 
@@ -294,5 +313,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite — second decoupled iframe embed, sixth nav tab, chart.js + Lucide bundled locally; added AD-11 canned AI responses; Playwright specs AC-17/18/19 added)*  
+*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
