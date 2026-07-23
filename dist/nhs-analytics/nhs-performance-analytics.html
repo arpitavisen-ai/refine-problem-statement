@@ -388,7 +388,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
     <button class="cat-tab" data-cat="signals" data-testid="analytics-cat-tab-signals" onclick="switchCat('signals',this)">
       <div class="cat-dot" style="background:#f472b6"></div>
       AI signals archive
-      <span style="background:#da291c;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px">5</span>
+      <span style="background:#da291c;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px">5 unread</span>
     </button>
   </div>
 </nav>
@@ -1153,6 +1153,191 @@ var SIGNALS = [
 <h3>Decision required — AI accuracy validation</h3>
 <div class="warn-block"><strong>This requires a decision from product leadership.</strong> The platform's AI classification is operating at 83.4% mean confidence — but we have no labelled validation set to measure actual accuracy. We are claiming 91%+ accuracy to trusts without having measured it. Estimated effort: 3–5 days of clinical reviewer time on a sample of ~500 comments.</div>
 <div class="ai-note">✶ AI-generated executive summary. The governance risk flagged in this summary reflects a real unresolved decision.</div>`
+  },
+  {
+    id:7, type:'pm', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 21 Jul 2026',
+    preview:'38 actions logged. Trust C Week 2 momentum holding. Time-to-action improved to 15h.',
+    time:'Mon 21 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">38</span> themes acted on</span> as of Monday morning. Trust C is in week 2 of live operation — 8 actions logged in its first fortnight, ahead of the Trust A onboarding curve at the same stage.</p>
+<h3>Time to action</h3>
+<p>Median time from signal surfaced to action logged: <span class="metric-inline val-green">15 hours</span>. Improved from 19h at launch. The drop correlates with Quality Managers opening signals on the same day they are published — a behaviour shift from the first two weeks of operation.</p>
+<h3>Engagement by persona</h3>
+<table>
+  <tr><th>Persona</th><th>Signals opened</th><th>Actions logged</th><th>Trend</th></tr>
+  <tr><td>Chief Nurse</td><td>74</td><td>16</td><td style="color:var(--nhsd-green);font-weight:700">&uarr; +8 vs last week</td></tr>
+  <tr><td>Quality Manager</td><td>103</td><td>21</td><td style="color:var(--nhsd-green);font-weight:700">&uarr; +5 vs last week</td></tr>
+  <tr><td>Ward Manager</td><td>11</td><td>3</td><td style="color:var(--nhsd-orange);font-weight:700">Flat — digest still pending</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated daily snapshot. Data sourced from platform instrumentation as of 06:14 Mon 21 Jul.</div>`
+  },
+  {
+    id:8, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 21 Jul 2026',
+    preview:'All green. Trust D DSP Toolkit submission received — compliance pipeline initiated.',
+    time:'Mon 21 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: All green</strong><br>All 6 foundation metrics within target across all 3 live trusts. Weekend batch runs completed without incident.</div>
+<h3>Foundation metrics — 21 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">99.4%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 09m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.2%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.6s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<h3>Trust D — compliance pipeline initiated</h3>
+<p>Trust D submitted their DSP Toolkit self-assessment on Friday 18 Jul. The compliance pipeline has been initiated — estimated 2-week review. No engineering action required at this stage; IG lead to coordinate with Trust D data governance team.</p>
+<div class="ai-note">✶ AI-generated technical snapshot. 3 live trusts, 1 in compliance pipeline, 2 in procurement. No anomalies detected.</div>`
+  },
+  {
+    id:9, type:'p1', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🔴 P2 ALERT — Trust A classification accuracy dropped to 79%',
+    preview:'Claude confidence mean fell to 79.1% for Trust A overnight batch — below the 83% amber threshold. Manual review recommended.',
+    time:'Fri 18 Jul, 06:52',
+    to:'Engineering team + Product Manager',
+    tags:['P2 ALERT','AI QUALITY','TRUST A'],
+    tagStyles:['ib-p1','ib-exec','ib-tech'],
+    body:`<div class="alert-block"><strong>&#9888; P2 — Requires attention within 24 hours</strong><br>Trust A overnight batch returned a mean AI confidence of <strong class="val-red">79.1%</strong>, below the amber threshold of 83%. This is the first confidence breach across any live trust.</div>
+<h3>What we know</h3>
+<p>The Trust A batch run (02:00, 18 Jul) processed 3,218 comments. Mean Claude confidence across the batch was 79.1%, down from 84.2% in Wednesday's run. The drop is concentrated in two care settings: <strong>Maternity</strong> (72.4% mean confidence, 847 comments) and <strong>Mental Health</strong> (78.8%, 412 comments).</p>
+<h3>Likely cause</h3>
+<p>Trust A introduced a new comment collection template in week of 14 Jul that includes free-text follow-up prompts. These produce longer, multi-topic comments that the classification model handles with lower confidence than single-topic short-form FFT responses. This is a distribution shift, not a model regression.</p>
+<h3>Impact</h3>
+<ul>
+  <li>Dashboard signals for Trust A Maternity and Mental Health wards may surface lower-confidence classifications</li>
+  <li>No patient data affected — all comments classified, just with lower certainty scores</li>
+  <li>If confidence stays below 83% for two consecutive runs, an automatic P1 will be raised</li>
+</ul>
+<h3>Recommended actions</h3>
+<ul>
+  <li>Engineering: flag the distribution shift to the model team — no immediate code change needed but log for next model review</li>
+  <li>PM: notify Trust A QM that Maternity and Mental Health signals this week carry lower AI confidence — advise manual spot-check of 10–15 comments</li>
+  <li>Watch Friday and Monday batch runs — if confidence recovers to &ge;83%, no further action needed</li>
+</ul>
+<div class="ai-note">✶ This alert was generated automatically when batch mean confidence breached the 83% amber threshold. Root cause analysis is AI-inferred — engineering verification recommended.</div>`
+  },
+  {
+    id:10, type:'pm', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 18 Jul 2026',
+    preview:'33 actions logged. Trust C onboarding ahead of schedule. AI confidence amber for Trust A — P2 raised separately.',
+    time:'Fri 18 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">33</span> themes acted on</span> as of Friday. Weekly run rate is tracking to deliver 45–50 by month end, ahead of the 40-action July target set at sprint planning.</p>
+<h3>Trust C onboarding — ahead of schedule</h3>
+<div class="ok-block"><strong>Trust C is performing ahead of the onboarding curve.</strong> 5 actions logged in week 1 (target: 3). Quality Manager has opened 22 of 24 signals delivered so far — the highest engagement rate of any trust at week 1.</div>
+<h3>AI confidence — Trust A</h3>
+<p>Mean AI confidence for Trust A dropped to 79.1% overnight. A P2 alert has been raised separately with the engineering team. From a product perspective: notify Trust A Quality Manager that Maternity and Mental Health signals this week should be spot-checked manually before actions are logged.</p>
+<div class="ai-note">✶ AI-generated daily snapshot. North star count reflects confirmed actions logged by clinicians — not AI-suggested actions.</div>`
+  },
+  {
+    id:11, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 18 Jul 2026',
+    preview:'P2 raised for Trust A confidence drop. All infrastructure metrics green. Trust D DSP Toolkit expected today.',
+    time:'Fri 18 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="alert-block" style="background:#fff7ed;border-color:#f97316;color:#7c2d12"><strong>&#9888; Platform status: Amber (AI quality — Trust A)</strong><br>Infrastructure all green. Trust A classification confidence below amber threshold — P2 raised at 06:52.</div>
+<h3>Foundation metrics — 18 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">99.6%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 22m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.1%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>AI confidence (Trust A)</td><td class="val-amber">79.1%</td><td>&ge;83%</td><td>&#9888; P2 raised</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated technical snapshot. P2 alert includes root cause analysis and recommended actions.</div>`
+  },
+  {
+    id:12, type:'exec', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📋 Weekly exec summary — w/e 13 Jul 2026',
+    preview:'North star at 28 actions. Trust C onboarding confirmed for week of 14 Jul. Ward digest decision still outstanding.',
+    time:'Mon 14 Jul, 08:00',
+    to:'Product Head',
+    tags:['EXEC WEEKLY','STRATEGIC'],
+    tagStyles:['ib-exec','ib-exec'],
+    body:`<h3>Executive summary — week ending 13 Jul 2026</h3>
+<p>Solid week operationally. The north star metric is on trajectory and Trust C onboarding is confirmed. One outstanding decision on Ward Manager digest continues to block a structurally important engagement channel.</p>
+<h3>North star</h3>
+<p><span class="metric-inline val-green">28 actions</span> logged as of Sunday — on track for the 40-action July target. Trusts A and B are operating steadily; Trust C begins live operation Monday 14 Jul.</p>
+<h3>Trust C — onboarding confirmed</h3>
+<div class="ok-block"><strong>Trust C is live as of Monday 14 Jul.</strong> Initial batch run completed successfully overnight — 1,874 comments ingested. Quality Manager briefed and has acknowledged the first 3 signals. This brings the platform to 3 live trusts ahead of the original Q3 schedule.</div>
+<h3>Outstanding decision — Ward Manager digest</h3>
+<div class="warn-block"><strong>Ward Manager digest email has not been scoped or prioritised.</strong> Without it, Ward Manager engagement will remain structurally low (&lt;15 signals opened per week). This is the single highest-leverage action available to increase the north star metric before month end. Request: product leadership to confirm prioritisation this week.</div>
+<div class="ai-note">✶ AI-generated executive summary. North star count and trust onboarding status sourced from platform instrumentation.</div>`
+  },
+  {
+    id:13, type:'pm', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 16 Jul 2026',
+    preview:'Trust C first week: 3 actions logged. North star at 29. Quality Manager engagement strong across all 3 trusts.',
+    time:'Wed 16 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">29</span> themes acted on</span> as of Wednesday. Trust C has added 3 actions in its first 3 days of operation — the fastest early ramp of any trust, likely driven by an engaged Quality Manager who has reviewed every signal within 4 hours of delivery.</p>
+<h3>Trust C — first week highlights</h3>
+<table>
+  <tr><th>Metric</th><th>Trust A</th><th>Trust B</th><th>Trust C (wk 1)</th></tr>
+  <tr><td>Signals delivered</td><td>18</td><td>16</td><td>9</td></tr>
+  <tr><td>Signals opened</td><td>14</td><td>12</td><td>9</td></tr>
+  <tr><td>Actions logged</td><td>8</td><td>6</td><td>3</td></tr>
+  <tr><td>Open rate</td><td>78%</td><td>75%</td><td style="color:var(--nhsd-green);font-weight:700">100%</td></tr>
+</table>
+<h3>Risk watch</h3>
+<p>Trust B signal-to-action conversion has dipped to 37.5% (6 of 16). Historically this has preceded a short engagement trough — likely a capacity issue on the QM side. No action needed unless it persists into next week.</p>
+<div class="ai-note">✶ AI-generated daily snapshot. Trust C week-1 data reflects 3 days of operation (14–16 Jul).</div>`
+  },
+  {
+    id:14, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 14 Jul 2026',
+    preview:'Trust C batch run 1 completed successfully. 1,874 comments ingested. All metrics green.',
+    time:'Mon 14 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: All green — Trust C live</strong><br>First batch run for Trust C completed successfully overnight. 3 trusts now in live operation. All foundation metrics within target.</div>
+<h3>Trust C — first batch run</h3>
+<ul>
+  <li>Batch window: 02:00–03:47 Mon 14 Jul</li>
+  <li>Comments submitted: 1,874</li>
+  <li>Successfully ingested: 1,874 (100%)</li>
+  <li>Mean AI confidence: 84.7% — above the 83% amber threshold</li>
+  <li>Adapter: RLDatix v1 — nominal</li>
+</ul>
+<h3>Foundation metrics — 14 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">100%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 31m</td><td>&lt;4h</td><td>&#10003; Green — 3-trust load</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.0%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.9s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated technical snapshot. Trust C first batch is a milestone — all 3 contracted trusts now in live operation.</div>`
   }
 ];
 
