@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
@@ -25,9 +27,21 @@ jobs:
       - name: Deploy preview to Vercel
         id: preview
         run: |
-          DEPLOY_OUTPUT=$(npx vercel --token "${{ secrets.VERCEL_TOKEN }}" --yes 2>&1)
-          echo "$DEPLOY_OUTPUT"
-          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app' | grep -v 'inspect' | tail -1)
+          set +e
+          npx vercel --token "${{ secrets.VERCEL_TOKEN }}" --yes > /tmp/vercel_out.txt 2>&1
+          VERCEL_EXIT=$?
+          set -e
+          cat /tmp/vercel_out.txt
+          if [ $VERCEL_EXIT -ne 0 ]; then
+            echo "❌ Vercel deploy failed with exit code $VERCEL_EXIT (see output above)."
+            exit $VERCEL_EXIT
+          fi
+          PREVIEW_URL=$(grep -oP 'https://[^\s]+\.vercel\.app' /tmp/vercel_out.txt | grep -v 'inspect' | tail -1)
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "❌ Could not extract the Vercel preview URL from deploy output."
+            exit 1
+          fi
+          echo "🔗 Preview URL: $PREVIEW_URL"
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -70,7 +84,9 @@ jobs:
           echo "✅ DECISIONS.md check passed."
 
       - name: Run Playwright tests against preview
-        run: npx playwright test --config=playwright.config.ts
+        run: |
+          echo "🔗 Running Playwright against: $BASE_URL"
+          npx playwright test --config=playwright.config.ts
         env:
           BASE_URL: ${{ steps.preview.outputs.url }}
 

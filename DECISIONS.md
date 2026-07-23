@@ -96,6 +96,34 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-10 · NHS Performance Analytics microsite added as a second decoupled microsite
+**Status:** Active  
+**Date:** 2026-07-23  
+**Decision:** The NHS Performance Analytics dashboard (`nhs-performance-analytics-v3.html` prototype) is deployed as a second self-contained microsite at `src/microsites/nhs-analytics/`. It follows the same iframe-embed architecture as the NHS Patient Feedback Platform (AD-08): a GDS-style service start page (`NhsAnalyticsStartPage.tsx`) loads first, and "View analytics" opens the prototype in a full-screen iframe (`NhsAnalyticsDashboardPage.tsx`). A sixth tab — "Performance analytics" with a `BarChart2` icon and "Built" badge — appears after the NHS platform tab in the host nav. Chart.js 4.5.1 (UMD) and Lucide vanilla UMD are bundled locally into `public/nhs-analytics/lib/` rather than loaded from CDN at runtime. All HTML special characters use named entities to ensure UTF-8 fidelity. Playwright acceptance tests added in `17-nhs-analytics-smoke.spec.ts`, `18-nhs-analytics-landing.spec.ts`, and `19-nhs-analytics-dashboard.spec.ts`.  
+**Rationale:** The iframe approach is consistent with AD-08 and keeps the React bundle free of chart.js initialisation complexity. Bundling libs locally satisfies the "no CDN at runtime" constraint and makes the microsite self-contained. The start-page-first pattern gives stakeholders context before entering the dense analytics view.  
+**Trade-off:** The iframe limits deep-linking into specific analytics panels, but for a showcase context this is acceptable. Lucide vanilla (not lucide-react) was required for the HTML file; it is a separate package from the host's `lucide-react` dependency.
+
+---
+
+### AD-11 · Analytics AI assistant uses canned interactive responses (Option B)
+**Status:** Active  
+**Date:** 2026-07-23  
+**Decision:** The AI assistant in the Performance Analytics dashboard returns pre-scripted responses for the four suggestion chips rather than making live calls to the Anthropic API. Free-text queries not matching a chip receive a polite demo notice. The `sendMessage` function uses `setTimeout` (700–1 300 ms) to simulate a typing delay. The `CANNED_RESPONSES` object, `conversationHistory`, `SYSTEM_CONTEXT`, and `fetch()` call to `api.anthropic.com` are all absent from the shipped HTML.  
+**Rationale:** A public showcase with no auth layer cannot safely expose an API key. Option B eliminates key management, serverless function overhead, and any risk of abuse or unexpected cost — with zero loss of demo value, since the four chip answers cover every question a stakeholder is likely to ask. Deterministic responses also make the showcase more reliable in live demos.  
+**Trade-off:** The assistant cannot answer novel free-text questions. The canned responses are curated to match the most impactful questions; the demo notice for other queries sets expectations correctly.
+
+---
+
+### AD-12 · Client-side password gate (session-only)
+**Status:** Active  
+**Date:** 2026-07-03  
+**Decision:** A `PasswordGate` component wraps the entire app. On first visit the user sees a password prompt; the session token is stored in `sessionStorage` (not `localStorage`) so the gate re-appears when the browser tab is closed.  
+**Password:** `spe2026` — hardcoded in `PasswordGate.tsx`.  
+**Rationale:** Keeps casual visitors out of the demo without adding Firebase Auth overhead. Acknowledged limitation: the password is visible in the JS bundle — this is intentional for a low-stakes internal demo. If the data ever becomes sensitive, replace with Firebase Auth (see AD-05).  
+**Where:** `src/app/components/PasswordGate.tsx`, wraps `<DndProvider>` in `App.tsx`.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -171,6 +199,15 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 **Decision:** Clicking the Prototype card in the Artefacts tab replaces the `MarketResearchGrid` with a `PrototypeDetailView` component, controlled by `artefactDetailId` state in `App.tsx`. A back button returns to the grid. The Prototype card does not open the standard `ItemModal`; `MarketResearchGrid` intercepts its click via an `onOpenDetail` callback and the modal is skipped by filtering `artefact-prototype` from the modals render.  
 **Rationale:** The app has no router. An in-tab state switch is the established pattern (matches how the app handles all "navigation") and requires no new dependencies. The same `onOpenDetail` callback is available for future artefacts that need their own detail views.  
 **Trade-off:** The back button does not update the URL, so deep-linking is not possible. Acceptable for a demo tool; if URL-based navigation is added later, this state can be promoted to a query param.
+
+---
+
+### DD-10 · Persona video embed in User Analysis
+**Status:** Active  
+**Date:** 2026-07-06  
+**Decision:** Each persona card in the User Analysis tab has an optional `videoUrl` field. When set, a video player is shown inside the persona detail modal. YouTube URLs are converted to embed URLs; direct `.mp4`/`.webm`/`.ogg` links are played via a native `<video>` element. The field is editable in-app and persisted to Firebase via `onUpdate`.  
+**Rationale:** Allows user research recordings or stakeholder interview clips to be attached directly to the persona they relate to — keeping evidence alongside analysis in one place.  
+**Where:** `src/app/components/PersonaCard.tsx` (`toEmbedUrl` helper + video section in modal); `videoUrl: ""` added to all three personas in `seedData.ts`.
 
 ---
 
@@ -276,5 +313,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-16 (added CD-11 test maintenance policy; CI workflow hardened — fetch-depth 2, visible Vercel output, URL validation; added AC-16 Prototype editing tests; data-testids added to PrototypeDetailView)*  
+*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

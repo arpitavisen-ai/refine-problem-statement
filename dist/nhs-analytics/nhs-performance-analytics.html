@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Analytics — NHS Patient Feedback Intelligence Platform</title>
+<script src="/nhs-analytics/lib/chart.umd.min.js"></script>
+<script src="/nhs-analytics/lib/lucide.min.js"></script>
+<style>
+:root {
+  --nhsd-blue:       #005EB8;
+  --nhsd-dark-blue:  #003087;
+  --nhsd-green:      #007f3b;
+  --nhsd-red:        #da291c;
+  --nhsd-orange:     #ed8b00;
+  --nhsd-yellow:     #ffb81c;
+  --nhsd-purple:     #330072;
+  --nhsd-black:      #231f20;
+  --nhsd-dark-grey:  #3f525f;
+  --nhsd-mid-grey:   #768692;
+  --nhsd-pale-grey:  #e8edee;
+  --nhsd-white:      #ffffff;
+  --surface:         #f0f4f5;
+  --border:          #d4dce0;
+  --ai-bg:           #ece7f7;
+  --ai-border:       #5a0fa0;
+  --ai-text:         #3b0d6b;
+  --focus:           #ffb81c;
+
+  --cat-system:   #005EB8;
+  --cat-product:  #007f3b;
+  --cat-ai:       #330072;
+  --cat-compliance: #ed8b00;
+
+  --r: 4px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{background:var(--surface);color:var(--nhsd-dark-grey);font-family:"Arial",sans-serif;line-height:1.5;min-height:100vh}
+*:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+
+/* DEMO BANNER */
+.demo-banner{background:var(--nhsd-black);border-bottom:3px solid var(--nhsd-yellow);padding:5px 24px;display:flex;align-items:center;gap:8px;font-size:11px;color:#f0f0f0;letter-spacing:.06em}
+.demo-dot{width:6px;height:6px;border-radius:50%;background:var(--nhsd-yellow);animation:blink 1.8s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* NHS HEADER */
+.nhs-header{background:var(--nhsd-blue)}
+.nhs-header-inner{max-width:1440px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.nhs-logo{display:flex;align-items:center;gap:12px}
+.nhs-logo-mark{background:#fff;color:var(--nhsd-blue);font-size:18px;font-weight:700;padding:3px 9px;letter-spacing:-.02em;line-height:1}
+.nhs-logo-text{color:#fff;font-size:17px;font-weight:700}
+.nhs-logo-sub{color:rgba(255,255,255,.7);font-size:11px;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-badge{background:rgba(255,255,255,.15);color:#fff;font-size:11px;padding:4px 10px;border:1px solid rgba(255,255,255,.25);letter-spacing:.06em}
+.ai-pill{display:inline-flex;align-items:center;gap:5px;background:var(--nhsd-purple);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;letter-spacing:.08em}
+
+/* CATEGORY NAV */
+.cat-nav{background:var(--nhsd-dark-blue);border-bottom:1px solid rgba(255,255,255,.1)}
+.cat-nav-inner{max-width:1440px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:0}
+.cat-tab{display:flex;align-items:center;gap:7px;padding:12px 20px;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);border:none;background:none;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.01em}
+.cat-tab:hover{color:#fff;background:rgba(255,255,255,.06)}
+.cat-tab.active{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.09)}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cd-system{background:#60a5fa}
+.cd-product{background:#34d399}
+.cd-ai{background:#c084fc}
+.cd-compliance{background:#fbbf24}
+
+/* PAGE HEADER */
+.page-header{background:#fff;border-bottom:1px solid var(--border);padding:18px 24px}
+.page-header-inner{max-width:1440px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-title{font-size:20px;font-weight:700;color:var(--nhsd-black)}
+.page-sub{font-size:12px;color:var(--nhsd-mid-grey);margin-top:3px}
+.freshness-row{display:flex;align-items:center;gap:6px;font-size:12px}
+.freshness-dot{width:9px;height:9px;border-radius:50%}
+.fd-green{background:var(--nhsd-green)}
+.freshness-meta{font-size:11px;color:var(--nhsd-mid-grey);margin-top:3px;text-align:right}
+
+/* MAIN LAYOUT */
+.main-wrap{max-width:1440px;margin:0 auto;padding:24px;display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
+.metrics-col{}
+.ai-col{position:sticky;top:16px}
+
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:24px}
+.sh:first-child{margin-top:0}
+.sh-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;white-space:nowrap}
+.shb-system{background:#dbeafe;color:#1d4ed8}
+.shb-product{background:#dcfce7;color:#166534}
+.shb-ai{background:#f3e8ff;color:#6b21a8}
+.shb-compliance{background:#fef3c7;color:#92400e}
+.sh-line{flex:1;height:1px;background:var(--border)}
+
+/* NORTH STAR CARD */
+.ns-card{background:#fff;border:1px solid var(--border);border-left:4px solid var(--nhsd-blue);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.ns-main{flex:1;min-width:180px}
+.ns-overline{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--nhsd-blue);margin-bottom:6px}
+.ns-value{font-size:48px;font-weight:700;color:var(--nhsd-blue);line-height:1;letter-spacing:-.02em}
+.ns-label{font-size:13px;color:var(--nhsd-dark-grey);margin-top:5px}
+.ns-delta{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:12px;font-weight:700;color:var(--nhsd-green)}
+.ns-caveat-inline{font-size:10px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:6px}
+
+/* METRIC GRID */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.metric-grid-3{grid-template-columns:1fr 1fr 1fr}
+.metric-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative}
+.mc-leading{border-left:3px solid var(--nhsd-blue)}
+.mc-lagging{border-left:3px solid var(--nhsd-mid-grey)}
+.mc-system{border-left:3px solid #60a5fa}
+.mc-compliance{border-left:3px solid var(--nhsd-orange)}
+.metric-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;margin-bottom:8px}
+.pill-leading{background:#dbeafe;color:#1e40af}
+.pill-lagging{background:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey)}
+.pill-system{background:#e0f2fe;color:#0369a1}
+.metric-name{font-size:12px;font-weight:700;color:var(--nhsd-black);margin-bottom:2px}
+.metric-desc{font-size:10px;color:var(--nhsd-mid-grey);margin-bottom:10px;line-height:1.4}
+.big-num{font-size:36px;font-weight:700;color:var(--nhsd-black);line-height:1;letter-spacing:-.02em}
+.big-num.green{color:var(--nhsd-green)}
+.big-num.amber{color:var(--nhsd-orange)}
+.big-num.red{color:var(--nhsd-red)}
+.big-num.blue{color:var(--nhsd-blue)}
+.metric-sub{font-size:10px;color:var(--nhsd-mid-grey);margin-top:3px}
+.status-dot{position:absolute;top:12px;right:12px;width:9px;height:9px;border-radius:50%}
+.sd-green{background:var(--nhsd-green)}
+.sd-amber{background:var(--nhsd-orange)}
+.sd-red{background:var(--nhsd-red)}
+
+/* PROGRESS BAR */
+.prog-wrap{margin-top:10px}
+.prog-label-row{display:flex;justify-content:space-between;font-size:10px;color:var(--nhsd-mid-grey);margin-bottom:3px}
+.prog-track{height:7px;background:var(--nhsd-pale-grey);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px}
+.pf-green{background:var(--nhsd-green)}
+.pf-amber{background:var(--nhsd-orange)}
+.pf-red{background:var(--nhsd-red)}
+.pf-blue{background:var(--nhsd-blue)}
+
+/* PERSONA BARS */
+.persona-bars{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.pb-row{display:flex;align-items:center;gap:8px;font-size:10px}
+.pb-label{width:100px;color:var(--nhsd-dark-grey);flex-shrink:0}
+.pb-track{flex:1;height:10px;background:var(--nhsd-pale-grey);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;border-radius:3px}
+.pb-val{width:26px;text-align:right;font-weight:700;color:var(--nhsd-black)}
+
+/* TTA BARS */
+.tta-bars{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+.tta-row{display:flex;align-items:center;gap:8px;font-size:10px}
+.tta-label{width:76px;color:var(--nhsd-mid-grey);text-align:right;flex-shrink:0}
+.tta-track{flex:1;height:9px;background:var(--nhsd-pale-grey);border-radius:3px;overflow:hidden;position:relative}
+.tta-fill{height:100%;border-radius:3px}
+.tta-target{position:absolute;top:0;bottom:0;width:2px;background:var(--nhsd-green)}
+.tta-val{width:32px;font-weight:700;color:var(--nhsd-black)}
+
+/* PIPELINE */
+.pipeline{display:flex;align-items:center;margin-top:10px;flex-wrap:nowrap;overflow-x:auto;gap:0}
+.pl-stage{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:62px}
+.pl-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid;flex-shrink:0}
+.pld-done{background:var(--nhsd-green);border-color:var(--nhsd-green);color:#fff}
+.pld-active{background:#fff;border-color:var(--nhsd-blue);color:var(--nhsd-blue)}
+.pld-pending{background:#fff;border-color:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey)}
+.pl-name{font-size:8px;color:var(--nhsd-mid-grey);text-align:center;line-height:1.3;max-width:58px}
+.pl-line{flex:1;height:2px;background:var(--nhsd-pale-grey);min-width:8px;margin-bottom:14px}
+.pl-line.done{background:var(--nhsd-green)}
+
+/* GAUGE */
+.gauge-wrap{display:flex;align-items:center;gap:16px;margin-top:10px}
+.gauge-legend{font-size:10px;color:var(--nhsd-mid-grey);display:flex;flex-direction:column;gap:5px}
+.gl-item{display:flex;align-items:center;gap:5px}
+.gl-dot{width:8px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* NO DATA */
+.no-data{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r);padding:14px;text-align:center;margin-top:10px}
+.nd-title{font-size:12px;font-weight:700;color:var(--nhsd-mid-grey);margin-bottom:3px}
+.nd-desc{font-size:10px;color:var(--nhsd-mid-grey);line-height:1.4}
+.nd-cta{display:inline-block;margin-top:6px;font-size:10px;color:var(--nhsd-blue);text-decoration:underline;cursor:pointer}
+
+/* AI LAYER STRIP */
+.ai-layer-strip{background:#fff;border:1px solid var(--ai-border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.als-header{background:var(--ai-bg);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--ai-border)}
+.als-title{font-size:12px;font-weight:700;color:var(--ai-text)}
+.als-stages{display:flex;gap:0}
+.als-stage{flex:1;padding:14px 16px;border-right:1px solid var(--border)}
+.als-stage:last-child{border-right:none}
+.als-num{font-size:9px;color:var(--nhsd-mid-grey);letter-spacing:.1em;margin-bottom:4px;font-weight:700}
+.als-name{font-size:12px;font-weight:700;color:var(--nhsd-black);margin-bottom:3px}
+.als-desc{font-size:10px;color:var(--nhsd-mid-grey);margin-bottom:8px;line-height:1.4}
+.stage-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.06em}
+.st-built{background:#e8f5ec;color:var(--nhsd-green);border:1px solid var(--nhsd-green)}
+.st-progress{background:#fff3e0;color:var(--nhsd-orange);border:1px solid var(--nhsd-orange)}
+.st-pending{background:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey);border:1px solid var(--border)}
+.als-constraint{margin-top:8px;font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;border-top:1px solid var(--border);padding-top:8px;line-height:1.4}
+
+/* VANITY BOX */
+.vanity-box{background:#fff8f8;border:1px solid #f8d7d4;border-radius:var(--r);padding:14px 18px;margin-top:16px}
+.vb-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--nhsd-red);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.vb-tags{display:flex;flex-wrap:wrap;gap:6px}
+.vb-tag{background:#fde8e7;border:1px solid #f5c6c4;color:#7a0000;font-size:10px;padding:2px 8px;border-radius:2px;text-decoration:line-through}
+
+/* CHART */
+.chart-wrap{position:relative;margin-top:10px}
+.ch-sm{height:90px}
+.ch-md{height:120px}
+
+/* AI QUERY PANEL */
+.ai-panel{background:#fff;border:1px solid var(--ai-border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.ai-panel-header{background:var(--nhsd-purple);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.ai-panel-title{color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ai-panel-sub{color:rgba(255,255,255,.65);font-size:10px;margin-top:2px}
+.ai-provenance{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-size:9px;padding:2px 8px;border-radius:2px;letter-spacing:.06em}
+
+.ai-messages{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:320px;max-height:420px;overflow-y:auto}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:100%}
+.msg-user{align-items:flex-end}
+.msg-ai{align-items:flex-start}
+.msg-bubble{padding:10px 13px;border-radius:6px;font-size:12px;line-height:1.55;max-width:92%}
+.mb-user{background:var(--nhsd-blue);color:#fff;border-bottom-right-radius:2px}
+.mb-ai{background:var(--ai-bg);color:var(--nhsd-black);border:1px solid rgba(90,15,160,.15);border-bottom-left-radius:2px}
+.mb-ai strong{color:var(--ai-text)}
+.msg-meta{font-size:9px;color:var(--nhsd-mid-grey);display:flex;align-items:center;gap:4px}
+.ai-spark-mark{color:var(--nhsd-purple);font-size:9px;font-weight:700}
+
+.ai-typing{display:flex;gap:4px;align-items:center;padding:10px 13px;background:var(--ai-bg);border:1px solid rgba(90,15,160,.15);border-radius:6px;border-bottom-left-radius:2px;width:56px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--nhsd-purple);animation:typing .9s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{opacity:.25;transform:scale(.8)}30%{opacity:1;transform:scale(1)}}
+
+.ai-suggestions{padding:10px 14px;border-top:1px solid var(--border);background:var(--surface)}
+.sug-label{font-size:9px;color:var(--nhsd-mid-grey);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-weight:700}
+.sug-chips{display:flex;flex-direction:column;gap:5px}
+.sug-chip{background:#fff;border:1px solid var(--border);border-radius:3px;padding:6px 10px;font-size:11px;color:var(--nhsd-blue);text-align:left;cursor:pointer;transition:background .12s,border-color .12s;line-height:1.3}
+.sug-chip:hover{background:var(--ai-bg);border-color:var(--ai-border)}
+
+.ai-input-row{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px}
+.ai-input{flex:1;border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;font-size:12px;font-family:inherit;color:var(--nhsd-black);resize:none;line-height:1.4;min-height:38px;max-height:100px}
+.ai-input:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--nhsd-blue)}
+.ai-input::placeholder{color:var(--nhsd-mid-grey)}
+.ai-send{background:var(--nhsd-purple);color:#fff;border-radius:var(--r);padding:9px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:background .15s}
+.ai-send:hover{background:#4a0099}
+.ai-send:disabled{opacity:.5;cursor:not-allowed}
+
+/* CATEGORY PANELS */
+.cat-panel{display:none}
+.cat-panel.active{display:block}
+
+/* SIGNALS ARCHIVE */
+.signals-layout{display:grid;grid-template-columns:340px 1fr;gap:0;background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-height:620px}
+
+/* Inbox sidebar */
+.inbox-sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column}
+.inbox-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surface)}
+.inbox-search{flex:1;border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-size:11px;font-family:inherit;color:var(--nhsd-black);background:#fff}
+.inbox-search:focus{outline:2px solid var(--nhsd-blue);outline-offset:1px}
+.inbox-filters{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;background:#fff}
+.inf-chip{font-size:10px;padding:3px 9px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--nhsd-dark-grey);cursor:pointer;transition:all .12s;font-weight:500}
+.inf-chip:hover{border-color:var(--nhsd-blue);color:var(--nhsd-blue)}
+.inf-chip.active{background:var(--nhsd-blue);color:#fff;border-color:var(--nhsd-blue)}
+.inf-chip.pm{background:#e8f5ec;color:#166534;border-color:#86efac}
+.inf-chip.tech{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.inf-chip.p1{background:#fde8e7;color:#7a0000;border-color:#fca5a5}
+.inf-chip.exec{background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe}
+.inbox-list{flex:1;overflow-y:auto}
+.inbox-item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;display:flex;gap:10px;align-items:flex-start;position:relative}
+.inbox-item:hover{background:var(--surface)}
+.inbox-item.active{background:#e8f4ff;border-left:3px solid var(--nhsd-blue)}
+.inbox-item.unread .ii-subject{font-weight:700}
+.ii-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.av-pm{background:#dcfce7;color:#166534}
+.av-tech{background:#dbeafe;color:#1d4ed8}
+.av-p1{background:#fde8e7;color:#9b1c1c}
+.av-exec{background:#f3e8ff;color:#6b21a8}
+.ii-body{flex:1;min-width:0}
+.ii-from{font-size:11px;color:var(--nhsd-mid-grey);margin-bottom:1px}
+.ii-subject{font-size:12px;color:var(--nhsd-black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.ii-preview{font-size:11px;color:var(--nhsd-mid-grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ii-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.ii-time{font-size:10px;color:var(--nhsd-mid-grey);white-space:nowrap}
+.ii-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:10px;letter-spacing:.04em;white-space:nowrap}
+.ib-pm{background:#dcfce7;color:#166534}
+.ib-tech{background:#dbeafe;color:#1d4ed8}
+.ib-p1{background:#fde8e7;color:#9b1c1c}
+.ib-exec{background:#f3e8ff;color:#6b21a8}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--nhsd-blue);position:absolute;left:5px;top:50%;transform:translateY(-50%)}
+
+/* Message detail */
+.msg-detail{display:flex;flex-direction:column;background:#fff}
+.md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--nhsd-mid-grey);gap:10px;padding:40px}
+.md-empty-icon{opacity:.35}
+.md-empty-text{font-size:13px}
+.md-header{padding:20px 24px;border-bottom:1px solid var(--border)}
+.md-subject{font-size:17px;font-weight:700;color:var(--nhsd-black);margin-bottom:10px;line-height:1.3}
+.md-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.md-from{display:flex;align-items:center;gap:8px}
+.md-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.md-sender{font-size:12px;font-weight:700;color:var(--nhsd-black)}
+.md-sender-sub{font-size:11px;color:var(--nhsd-mid-grey)}
+.md-timestamp{font-size:11px;color:var(--nhsd-mid-grey);margin-left:auto}
+.md-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.md-tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.06em}
+.md-body{padding:20px 24px;flex:1;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--nhsd-dark-grey)}
+.md-body h3{font-size:13px;font-weight:700;color:var(--nhsd-black);margin:16px 0 6px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.md-body h3:first-child{margin-top:0}
+.md-body p{margin-bottom:10px}
+.md-body ul{margin:6px 0 10px 18px}
+.md-body li{margin-bottom:4px}
+.md-body .metric-inline{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--nhsd-black)}
+.md-body .val-green{color:var(--nhsd-green)}
+.md-body .val-amber{color:var(--nhsd-orange)}
+.md-body .val-red{color:var(--nhsd-red)}
+.md-body .val-blue{color:var(--nhsd-blue)}
+.md-body .ai-note{background:var(--ai-bg);border-left:3px solid var(--ai-border);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:12px;color:var(--ai-text);margin:12px 0}
+.md-body .alert-block{background:#fde8e7;border-left:3px solid var(--nhsd-red);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:12px;color:#7a0000;margin:12px 0}
+.md-body .ok-block{background:#e8f5ec;border-left:3px solid var(--nhsd-green);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:12px;color:#003d16;margin:12px 0}
+.md-body .warn-block{background:#fff3e0;border-left:3px solid var(--nhsd-orange);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:12px;color:#6b3a00;margin:12px 0}
+.md-body table{width:100%;border-collapse:collapse;font-size:11px;margin:10px 0}
+.md-body th{background:var(--surface);padding:7px 10px;text-align:left;font-weight:700;border:1px solid var(--border)}
+.md-body td{padding:7px 10px;border:1px solid var(--border)}
+.md-provenance{padding:12px 24px;border-top:1px solid var(--border);background:var(--ai-bg);display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ai-text)}
+
+@media(max-width:900px){
+  .signals-layout{grid-template-columns:1fr}
+  .inbox-sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:320px}
+  .msg-detail{min-height:400px}
+}
+
+@media(max-width:1100px){
+  .main-wrap{grid-template-columns:1fr;padding:16px}
+  .ai-col{position:static}
+  .ai-messages{max-height:280px}
+  .als-stages{flex-direction:column}
+  .als-stage{border-right:none;border-bottom:1px solid var(--border)}
+  .als-stage:last-child{border-bottom:none}
+}
+@media(max-width:700px){
+  .metric-grid{grid-template-columns:1fr}
+  .metric-grid-3{grid-template-columns:1fr}
+  .ns-card{flex-direction:column;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner" data-testid="analytics-demo-banner">
+  <div class="demo-dot"></div>
+  PROTOTYPE &middot; DEMO DATA ONLY &middot; NHS Patient Feedback Intelligence Platform &middot; Accenture S&amp;PE &middot; July 2026
+</div>
+
+<!-- NHS HEADER -->
+<header class="nhs-header" data-testid="analytics-nhs-header">
+  <div class="nhs-header-inner">
+    <div class="nhs-logo">
+      <div class="nhs-logo-mark">NHS</div>
+      <div>
+        <div class="nhs-logo-text">Patient Feedback Intelligence</div>
+        <div class="nhs-logo-sub">Performance Analytics &middot; Accenture S&amp;PE</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="header-badge">JULY 2026</span>
+      <span class="ai-pill"><i data-lucide="zap" style="width:10px;height:10px"></i> AI-AUGMENTED</span>
+    </div>
+  </div>
+</header>
+
+<!-- CATEGORY NAV -->
+<nav class="cat-nav" data-testid="analytics-cat-nav">
+  <div class="cat-nav-inner">
+    <button class="cat-tab active" data-cat="product" data-testid="analytics-cat-tab-product" onclick="switchCat('product',this)">
+      <div class="cat-dot cd-product"></div>
+      Product metrics
+    </button>
+    <button class="cat-tab" data-cat="system" data-testid="analytics-cat-tab-system" onclick="switchCat('system',this)">
+      <div class="cat-dot cd-system"></div>
+      System health
+    </button>
+    <button class="cat-tab" data-cat="ai" data-testid="analytics-cat-tab-ai" onclick="switchCat('ai',this)">
+      <div class="cat-dot cd-ai"></div>
+      AI quality
+    </button>
+    <button class="cat-tab" data-cat="compliance" data-testid="analytics-cat-tab-compliance" onclick="switchCat('compliance',this)">
+      <div class="cat-dot cd-compliance"></div>
+      Compliance &amp; coverage
+    </button>
+    <button class="cat-tab" data-cat="signals" data-testid="analytics-cat-tab-signals" onclick="switchCat('signals',this)">
+      <div class="cat-dot" style="background:#f472b6"></div>
+      AI signals archive
+      <span style="background:#da291c;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px">5 unread</span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title" id="pageTitle">Product metrics</div>
+      <div class="page-sub" id="pageSub">Is the product delivering value to users? &middot; Owned by product &middot; Reviewed monthly</div>
+    </div>
+    <div>
+      <div class="freshness-row">
+        <div class="freshness-dot fd-green"></div>
+        <span style="font-size:12px;font-weight:700;color:var(--nhsd-green)">Pipeline healthy</span>
+      </div>
+      <div class="freshness-meta">Last ingestion: 2h 14m ago &middot; Next run: 5h 46m</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- LEFT: METRIC PANELS -->
+  <div class="metrics-col">
+
+    <!-- PRODUCT METRICS -->
+    <div class="cat-panel active" id="panel-product">
+
+      <!-- North Star -->
+      <div class="sh" style="margin-top:0">
+        <span class="sh-badge shb-product">North star</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="ns-card" data-testid="analytics-north-star">
+        <div class="ns-main">
+          <div class="ns-overline">North star metric</div>
+          <div class="ns-value">47</div>
+          <div class="ns-label">Feedback themes acted on &middot; this month &middot; across 3 trusts</div>
+          <div class="ns-delta"><i data-lucide="trending-up" style="width:13px;height:13px"></i> +12 vs last month</div>
+          <div class="ns-caveat-inline">The moment AI insight becomes a human decision. Depends on action logging being live across all trusts.</div>
+        </div>
+        <div>
+          <canvas id="sparkChart" width="200" height="64"></canvas>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);text-align:center;margin-top:3px">12-month trend</div>
+        </div>
+      </div>
+
+      <!-- Engagement pair -->
+      <div class="sh">
+        <span class="sh-badge shb-product">Engagement</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card mc-leading">
+          <span class="metric-pill pill-leading">Leading</span>
+          <div class="metric-name">Prioritised signals opened</div>
+          <div class="metric-desc">Signal tiles clicked by persona &middot; 30-day rolling &middot; event: signal_opened</div>
+          <div class="big-num blue">214</div>
+          <div class="metric-sub">opens this month</div>
+          <div class="persona-bars">
+            <div class="pb-row">
+              <div class="pb-label">Chief Nurse</div>
+              <div class="pb-track"><div class="pb-fill" style="width:38%;background:var(--nhsd-blue)"></div></div>
+              <div class="pb-val">81</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Quality Manager</div>
+              <div class="pb-track"><div class="pb-fill" style="width:55%;background:var(--nhsd-orange)"></div></div>
+              <div class="pb-val">118</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-label">Ward Manager</div>
+              <div class="pb-track"><div class="pb-fill" style="width:7%;background:var(--nhsd-green)"></div></div>
+              <div class="pb-val">15</div>
+            </div>
+          </div>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:8px">Ward Manager low: digest email not yet live.</div>
+        </div>
+        <div class="metric-card mc-lagging">
+          <span class="metric-pill pill-lagging">Lagging</span>
+          <div class="metric-name">Actions logged</div>
+          <div class="metric-desc">Actions recorded against a theme &middot; per trust &middot; event: action_logged</div>
+          <div class="big-num green">47</div>
+          <div class="metric-sub">this month &middot; 3 trusts</div>
+          <div class="chart-wrap ch-md"><canvas id="actionsChart"></canvas></div>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:6px">Dashed line = Trust C onboarded (wk 9)</div>
+        </div>
+      </div>
+
+      <!-- Outcome pair -->
+      <div class="sh">
+        <span class="sh-badge shb-product">Outcome</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card mc-leading">
+          <span class="metric-pill pill-leading">Leading</span>
+          <div class="metric-name">Time to action (median)</div>
+          <div class="metric-desc">Signal surfaced &rarr; action logged &middot; median hours &middot; clock starts at ingest receipt</div>
+          <div class="big-num amber">14h</div>
+          <div class="metric-sub">target &lt; 24h &middot; 3-trust median</div>
+          <div class="tta-bars">
+            <div class="tta-row">
+              <div class="tta-label">This month</div>
+              <div class="tta-track"><div class="tta-fill" style="width:58%;background:var(--nhsd-orange)"></div><div class="tta-target" style="left:58.3%"></div></div>
+              <div class="tta-val">14h</div>
+            </div>
+            <div class="tta-row">
+              <div class="tta-label">Last month</div>
+              <div class="tta-track"><div class="tta-fill" style="width:79%;background:var(--nhsd-pale-grey)"></div><div class="tta-target" style="left:58.3%"></div></div>
+              <div class="tta-val" style="color:var(--nhsd-mid-grey)">19h</div>
+            </div>
+            <div class="tta-row">
+              <div class="tta-label">Target</div>
+              <div class="tta-track"><div class="tta-fill" style="width:58.3%;background:rgba(0,127,59,.15)"></div><div class="tta-target" style="left:58.3%"></div></div>
+              <div class="tta-val" style="color:var(--nhsd-green)">24h</div>
+            </div>
+          </div>
+        </div>
+        <div class="metric-card mc-lagging">
+          <span class="metric-pill pill-lagging">Lagging</span>
+          <div class="metric-name">Score recovery</div>
+          <div class="metric-desc">Sentiment change (pp) in cycle after action logged &middot; per actioned theme</div>
+          <div class="no-data">
+            <i data-lucide="clock" style="width:18px;height:18px;color:var(--nhsd-mid-grey);margin-bottom:6px"></i>
+            <div class="nd-title">Not enough data yet</div>
+            <div class="nd-desc">Requires one full ingestion cycle after action logged. 3 themes in cycle &mdash; results expected 21 Jul 2026.</div>
+          </div>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:8px">Score movement after an action is correlation, not causation.</div>
+        </div>
+      </div>
+
+      <div class="vanity-box">
+        <div class="vb-title"><i data-lucide="x-circle" style="width:12px;height:12px"></i> Excluded &mdash; vanity metrics</div>
+        <div class="vb-tags">
+          <span class="vb-tag">Dashboard page views</span>
+          <span class="vb-tag">Total responses processed</span>
+          <span class="vb-tag">Trust count as growth funnel</span>
+        </div>
+      </div>
+    </div><!-- /panel-product -->
+
+    <!-- SYSTEM HEALTH -->
+    <div class="cat-panel" id="panel-system">
+      <div class="sh" style="margin-top:0">
+        <span class="sh-badge shb-system">Foundation &mdash; instrument first</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="metric-grid metric-grid-3">
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-amber"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Ingestion success rate</div>
+          <div class="metric-desc">Comments ingested &divide; submitted &middot; per trust &middot; weekly batch</div>
+          <div class="big-num amber">98.7%</div>
+          <div class="metric-sub">Target &ge; 99%</div>
+          <div class="prog-wrap">
+            <div class="prog-label-row"><span>Current</span><span>99%</span></div>
+            <div class="prog-track"><div class="prog-fill pf-amber" style="width:98.7%"></div></div>
+          </div>
+          <div style="font-size:9px;color:var(--nhsd-orange);margin-top:6px">Trust B: 96.2% &mdash; below threshold</div>
+        </div>
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-green"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Processing latency (ours)</div>
+          <div class="metric-desc">Ingest receipt &rarr; themes available &middot; excludes ingestion lag</div>
+          <div class="big-num green">2h 14m</div>
+          <div class="metric-sub">Target &lt; 4h</div>
+          <div class="prog-wrap">
+            <div class="prog-label-row"><span>Current</span><span>4h target</span></div>
+            <div class="prog-track"><div class="prog-fill pf-green" style="width:56%"></div></div>
+          </div>
+        </div>
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-green"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Pipeline error rate</div>
+          <div class="metric-desc">Failed ingestion jobs &divide; total jobs &middot; platform-wide &middot; daily</div>
+          <div class="big-num green">0.3%</div>
+          <div class="metric-sub">Target &lt; 1%</div>
+          <div class="prog-wrap">
+            <div class="prog-label-row"><span>Current</span><span>1% max</span></div>
+            <div class="prog-track"><div class="prog-fill pf-green" style="width:30%"></div></div>
+          </div>
+        </div>
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-green"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Export success rate</div>
+          <div class="metric-desc">Board pack + CQC CSV exports succeeded &divide; attempted &middot; weekly</div>
+          <div class="big-num green">100%</div>
+          <div class="metric-sub">Target &ge; 98% &middot; 14 exports this month</div>
+        </div>
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-green"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Dashboard uptime</div>
+          <div class="metric-desc">Minutes available &divide; minutes in period &middot; platform &middot; weekly</div>
+          <div class="big-num green">99.9%</div>
+          <div class="metric-sub">Target &ge; 99.5%</div>
+        </div>
+        <div class="metric-card mc-system">
+          <div class="status-dot sd-green"></div>
+          <span class="metric-pill pill-system">Live</span>
+          <div class="metric-name">Page load P95</div>
+          <div class="metric-desc">95th percentile load time &middot; per persona view &middot; weekly</div>
+          <div class="big-num green">1.8s</div>
+          <div class="metric-sub">Target &lt; 2s</div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--nhsd-black);margin-bottom:8px">Ingestion latency &mdash; last 12 weeks</div>
+        <div class="chart-wrap ch-md"><canvas id="latencyChart"></canvas></div>
+        <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:6px">Processing latency (our responsibility) shown in blue. Ingestion lag (trust batch cadence, not ours to control) excluded.</div>
+      </div>
+    </div><!-- /panel-system -->
+
+    <!-- AI QUALITY -->
+    <div class="cat-panel" id="panel-ai">
+      <div class="sh" style="margin-top:0">
+        <span class="sh-badge shb-ai">AI quality &mdash; between system and product</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card" style="border-left:3px solid var(--nhsd-purple)">
+          <span class="metric-pill" style="background:#f3e8ff;color:#6b21a8">Leading proxy</span>
+          <div class="metric-name">AI confidence score (mean)</div>
+          <div class="metric-desc">Mean model confidence across all classified comments &middot; this month &middot; 47,832 comments</div>
+          <div class="gauge-wrap" data-testid="analytics-ai-confidence-gauge">
+            <svg width="130" height="70" viewBox="0 0 130 70">
+              <path d="M 8 66 A 57 57 0 0 1 122 66" fill="none" stroke="#e8edee" stroke-width="11" stroke-linecap="round"/>
+              <path d="M 8 66 A 57 57 0 0 1 122 66" fill="none" stroke="#330072" stroke-width="11" stroke-linecap="round" stroke-dasharray="179" stroke-dashoffset="31" opacity=".85"/>
+              <text x="65" y="56" text-anchor="middle" font-size="20" font-weight="700" fill="#231f20" font-family="Arial">83.4%</text>
+              <text x="65" y="67" text-anchor="middle" font-size="8" fill="#768692" font-family="Arial">mean confidence</text>
+              <line x1="110" y1="26" x2="118" y2="18" stroke="#007f3b" stroke-width="1.5" stroke-linecap="round"/>
+              <text x="119" y="16" font-size="7" fill="#007f3b" font-family="Arial">91%</text>
+            </svg>
+            <div class="gauge-legend">
+              <div class="gl-item"><div class="gl-dot" style="background:var(--nhsd-purple)"></div><span>Current 83.4%</span></div>
+              <div class="gl-item"><div class="gl-dot" style="background:var(--nhsd-green)"></div><span>Target 91%</span></div>
+              <div style="font-size:9px;color:var(--nhsd-orange);font-weight:700;margin-top:2px">7.6pp below target</div>
+            </div>
+          </div>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">Confidence is a proxy only. A miscalibrated model can be confidently wrong. Do not report this as accuracy.</div>
+        </div>
+        <div class="metric-card" style="border-left:3px solid var(--nhsd-mid-grey)">
+          <span class="metric-pill" style="background:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey)">Lagging</span>
+          <div class="metric-name">AI classification accuracy</div>
+          <div class="metric-desc">Agreement with clinical reviewer on labelled validation set &middot; target &ge; 91% &middot; quarterly</div>
+          <div class="no-data">
+            <i data-lucide="flask-conical" style="width:18px;height:18px;color:var(--nhsd-mid-grey);margin-bottom:6px"></i>
+            <div class="nd-title">No baseline yet</div>
+            <div class="nd-desc">Requires a labelled clinical validation set. Until it exists, this metric is unknown &mdash; not zero.</div>
+            <span class="nd-cta">&uarr; Initiate validation set</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI LAYER ROADMAP -->
+      <div class="sh">
+        <span class="sh-badge shb-ai">AI layer build sequence</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="ai-layer-strip" data-testid="analytics-ai-layer-strip">
+        <div class="als-header">
+          <i data-lucide="cpu" style="width:14px;height:14px;color:var(--ai-text)"></i>
+          <div class="als-title">Baseline first, AI second &mdash; never skip the sequence</div>
+        </div>
+        <div class="als-stages">
+          <div class="als-stage">
+            <div class="als-num">STAGE 01</div>
+            <div class="als-name">Signal Detection</div>
+            <div class="als-desc">Flags wards deteriorating beyond threshold vs prior period. Shows: threshold, % change, comment count.</div>
+            <span class="stage-tag st-built"><i data-lucide="check-circle" style="width:9px;height:9px"></i> BUILT</span>
+          </div>
+          <div class="als-stage">
+            <div class="als-num">STAGE 02</div>
+            <div class="als-name">Narrative Summary</div>
+            <div class="als-desc">Plain-English readout per persona. Must cite underlying numbers &mdash; no invented claims. ✦ AI provenance always marked.</div>
+            <span class="stage-tag st-progress"><i data-lucide="clock" style="width:9px;height:9px"></i> IN PROGRESS</span>
+          </div>
+          <div class="als-stage">
+            <div class="als-num">STAGE 03</div>
+            <div class="als-name">Predictive Analytics</div>
+            <div class="als-desc">Forecasts wards at risk of breaching threshold. Requires confidence intervals and full traceability.</div>
+            <span class="stage-tag st-pending">NOT STARTED</span>
+            <div class="als-constraint"><i data-lucide="alert-triangle" style="width:9px;height:9px;display:inline;vertical-align:middle"></i> Do not activate without &ge; 3 ingestion cycles of history. Running it before that is theatre, not insight.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vanity-box" style="margin-top:12px">
+        <div class="vb-title"><i data-lucide="x-circle" style="width:12px;height:12px"></i> Excluded</div>
+        <div class="vb-tags">
+          <span class="vb-tag">AI confidence % standalone</span>
+          <span class="vb-tag">Accuracy before validation set exists</span>
+        </div>
+      </div>
+    </div><!-- /panel-ai -->
+
+    <!-- COMPLIANCE & COVERAGE -->
+    <div class="cat-panel" id="panel-compliance">
+      <div class="sh" style="margin-top:0">
+        <span class="sh-badge shb-compliance">Coverage &mdash; is data flowing in?</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card mc-leading">
+          <span class="metric-pill pill-leading">Leading</span>
+          <div class="metric-name">% comments successfully ingested</div>
+          <div class="metric-desc">Comments ingested &divide; submitted by trust &middot; per trust &middot; weekly batch</div>
+          <div class="big-num amber">98.7%</div>
+          <div class="metric-sub">Trust B below threshold: 96.2%</div>
+          <div class="prog-wrap">
+            <div class="prog-label-row"><span>Current</span><span>Target 99%</span></div>
+            <div class="prog-track"><div class="prog-fill pf-amber" style="width:98.7%"></div></div>
+          </div>
+        </div>
+        <div class="metric-card mc-lagging" style="border-left:3px solid var(--nhsd-orange)">
+          <span class="metric-pill" style="background:#fef3c7;color:#92400e">Lagging</span>
+          <div class="metric-name">Trusts live</div>
+          <div class="metric-desc">Trusts past all compliance gates with active data flow &middot; not counting trusts in pipeline</div>
+          <div class="big-num" style="color:var(--nhsd-orange)">3</div>
+          <div class="metric-sub">2 further trusts in compliance pipeline</div>
+          <div class="pipeline">
+            <div class="pl-stage"><div class="pl-dot pld-done"><i data-lucide="check" style="width:10px;height:10px"></i></div><div class="pl-name">Data agreement</div></div>
+            <div class="pl-line done"></div>
+            <div class="pl-stage"><div class="pl-dot pld-done"><i data-lucide="check" style="width:10px;height:10px"></i></div><div class="pl-name">DPIA</div></div>
+            <div class="pl-line done"></div>
+            <div class="pl-stage"><div class="pl-dot pld-active">3</div><div class="pl-name">DSP Toolkit</div></div>
+            <div class="pl-line"></div>
+            <div class="pl-stage"><div class="pl-dot pld-pending">4</div><div class="pl-name">Adapter build</div></div>
+            <div class="pl-line"></div>
+            <div class="pl-stage"><div class="pl-dot pld-pending">5</div><div class="pl-name">Live</div></div>
+          </div>
+          <div style="font-size:9px;color:var(--nhsd-mid-grey);font-style:italic;margin-top:8px">A trust in DPIA review is not a live trust. Each gate takes 2&ndash;4 weeks.</div>
+        </div>
+      </div>
+
+      <div class="sh">
+        <span class="sh-badge shb-compliance">Per-trust status</span>
+        <div class="sh-line"></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden" data-testid="analytics-trust-table">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:var(--surface);border-bottom:1px solid var(--border)">
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--nhsd-black)">Trust</th>
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--nhsd-black)">Gate stage</th>
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--nhsd-black)">Ingestion</th>
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--nhsd-black)">Adapter</th>
+              <th style="padding:10px 14px;text-align:left;font-weight:700;color:var(--nhsd-black)">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;font-weight:700">Trust A</td>
+              <td style="padding:10px 14px">Live</td>
+              <td style="padding:10px 14px;color:var(--nhsd-green);font-weight:700">99.4%</td>
+              <td style="padding:10px 14px">RLDatix v1</td>
+              <td style="padding:10px 14px"><span style="background:#e8f5ec;color:var(--nhsd-green);font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px">LIVE</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;font-weight:700">Trust B</td>
+              <td style="padding:10px 14px">Live</td>
+              <td style="padding:10px 14px;color:var(--nhsd-orange);font-weight:700">96.2%</td>
+              <td style="padding:10px 14px">Datix v1</td>
+              <td style="padding:10px 14px"><span style="background:#fff3e0;color:var(--nhsd-orange);font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px">&#9888; DEGRADED</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;font-weight:700">Trust C</td>
+              <td style="padding:10px 14px">Live</td>
+              <td style="padding:10px 14px;color:var(--nhsd-green);font-weight:700">99.1%</td>
+              <td style="padding:10px 14px">RLDatix v1</td>
+              <td style="padding:10px 14px"><span style="background:#e8f5ec;color:var(--nhsd-green);font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px">LIVE</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;font-weight:700">Trust D</td>
+              <td style="padding:10px 14px">DSP Toolkit</td>
+              <td style="padding:10px 14px;color:var(--nhsd-mid-grey)">&mdash;</td>
+              <td style="padding:10px 14px;color:var(--nhsd-mid-grey)">Not started</td>
+              <td style="padding:10px 14px"><span style="background:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey);font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px">IN PIPELINE</span></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;font-weight:700">Trust E</td>
+              <td style="padding:10px 14px">DPIA</td>
+              <td style="padding:10px 14px;color:var(--nhsd-mid-grey)">&mdash;</td>
+              <td style="padding:10px 14px;color:var(--nhsd-mid-grey)">Not started</td>
+              <td style="padding:10px 14px"><span style="background:var(--nhsd-pale-grey);color:var(--nhsd-mid-grey);font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px">IN PIPELINE</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /panel-compliance -->
+
+    <!-- SIGNALS ARCHIVE -->
+    <div class="cat-panel" id="panel-signals" data-testid="analytics-signals-panel">
+      <div class="sh" style="margin-top:0">
+        <span class="sh-badge" style="background:#fce7f3;color:#9d174d">AI signals archive</span>
+        <div class="sh-line"></div>
+        <span style="font-size:10px;color:var(--nhsd-mid-grey);white-space:nowrap">✦ All messages AI-generated and routed automatically</span>
+      </div>
+
+      <div class="signals-layout">
+        <!-- INBOX SIDEBAR -->
+        <div class="inbox-sidebar">
+          <div class="inbox-toolbar">
+            <i data-lucide="inbox" style="width:14px;height:14px;color:var(--nhsd-mid-grey);flex-shrink:0"></i>
+            <input class="inbox-search" id="inboxSearch" data-testid="analytics-inbox-search" placeholder="Search signals&hellip;" oninput="filterInbox()" />
+          </div>
+          <div class="inbox-filters">
+            <button class="inf-chip active" onclick="filterByType('all',this)">All</button>
+            <button class="inf-chip pm" onclick="filterByType('pm',this)">PM daily</button>
+            <button class="inf-chip tech" onclick="filterByType('tech',this)">Tech snapshot</button>
+            <button class="inf-chip p1" onclick="filterByType('p1',this)">P1 alert</button>
+            <button class="inf-chip exec" onclick="filterByType('exec',this)">Exec weekly</button>
+          </div>
+          <div class="inbox-list" id="inboxList" data-testid="analytics-inbox-list"></div>
+        </div>
+
+        <!-- MESSAGE DETAIL -->
+        <div class="msg-detail" id="msgDetail" data-testid="analytics-msg-detail">
+          <div class="md-empty">
+            <i data-lucide="mail" style="width:40px;height:40px" class="md-empty-icon"></i>
+            <div class="md-empty-text">Select a signal to read it</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /panel-signals -->
+
+  </div><!-- /metrics-col -->
+
+  <!-- RIGHT: AI QUERY PANEL -->
+  <div class="ai-col">
+    <div class="ai-panel" data-testid="analytics-ai-panel">
+      <div class="ai-panel-header">
+        <div>
+          <div class="ai-panel-title">
+            <i data-lucide="message-square" style="width:15px;height:15px"></i>
+            Analytics assistant
+          </div>
+          <div class="ai-panel-sub">Ask anything about the performance data in plain English</div>
+        </div>
+        <span class="ai-provenance" data-testid="analytics-ai-provenance">✦ AI</span>
+      </div>
+
+      <div class="ai-messages" id="aiMessages" data-testid="analytics-ai-messages">
+        <div class="msg msg-ai">
+          <div class="msg-bubble mb-ai">
+            <strong>Hello.</strong> I have full context on this platform&rsquo;s performance data &mdash; system health, product metrics, AI quality, and compliance pipeline.<br><br>
+            Ask me anything. For example: <em>&ldquo;Why is the north star going up?&rdquo;</em> or <em>&ldquo;Which trust is at risk?&rdquo;</em>
+          </div>
+          <div class="msg-meta"><span class="ai-spark-mark">✦</span> AI-generated &middot; based on demo data</div>
+        </div>
+      </div>
+
+      <div class="ai-suggestions" id="aiSuggestions" data-testid="analytics-ai-suggestions">
+        <div class="sug-label">Suggested questions</div>
+        <div class="sug-chips" data-testid="analytics-sug-chips">
+          <button class="sug-chip" onclick="sendSuggestion(this)">Why is the north star metric going up this month?</button>
+          <button class="sug-chip" onclick="sendSuggestion(this)">Which trust is most at risk right now?</button>
+          <button class="sug-chip" onclick="sendSuggestion(this)">Is our AI confident enough to trust?</button>
+          <button class="sug-chip" onclick="sendSuggestion(this)">What's blocking more trusts from going live?</button>
+        </div>
+      </div>
+
+      <div class="ai-input-row">
+        <textarea class="ai-input" id="aiInput" data-testid="analytics-ai-input" placeholder="Ask about any metric&hellip;" rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="ai-send" id="aiSend" data-testid="analytics-ai-send" onclick="sendMessage()">
+          <i data-lucide="send" style="width:13px;height:13px"></i>
+          Ask
+        </button>
+      </div>
+    </div>
+  </div><!-- /ai-col -->
+
+</div><!-- /main-wrap -->
+
+<script>
+lucide.createIcons();
+
+// CATEGORY SWITCHING
+const catMeta = {
+  product:    { title: 'Product metrics',           sub: 'Is the product delivering value to users? · Owned by product · Reviewed monthly' },
+  system:     { title: 'System health metrics',     sub: 'Is the platform technically reliable? · Owned by engineering · Monitored continuously' },
+  ai:         { title: 'AI quality metrics',        sub: 'Is the AI trustworthy and accurate? · Owned jointly by engineering and clinical reviewers' },
+  compliance: { title: 'Compliance & coverage',     sub: 'Is the data pipeline legally and contractually sound? · Owned by delivery lead · Moves slowly — gated by external bodies' },
+  signals:    { title: 'AI signals archive',         sub: 'Routine AI-generated signals sent to the right people at the right cadence · Daily snapshots · P1 alerts · Weekly exec summaries' }
+};
+function switchCat(cat, btn) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + cat).classList.add('active');
+  document.getElementById('pageTitle').textContent = catMeta[cat].title;
+  document.getElementById('pageSub').textContent = catMeta[cat].sub;
+  lucide.createIcons();
+}
+
+// CHARTS
+(function(){
+  new Chart(document.getElementById('sparkChart').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:['Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul'],
+      datasets:[{data:[8,11,14,19,18,22,27,31,30,35,41,47],borderColor:'#005EB8',borderWidth:2,fill:true,backgroundColor:'rgba(0,94,184,0.08)',tension:0.4,pointRadius:0}]
+    },
+    options:{responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}
+  });
+
+  Chart.register({
+    id:'trustAnnotation',
+    afterDatasetsDraw(chart){
+      if(chart.canvas.id!=='actionsChart') return;
+      const {ctx:c,chartArea,scales}=chart;
+      const x=scales.x.getPixelForValue(8);
+      c.save();c.beginPath();c.moveTo(x,chartArea.top);c.lineTo(x,chartArea.bottom);
+      c.strokeStyle='#ed8b00';c.lineWidth=1.5;c.setLineDash([3,3]);c.stroke();c.setLineDash([]);
+      c.fillStyle='#ed8b00';c.font='8px Arial';c.fillText('Trust C',x+3,chartArea.top+9);
+      c.restore();
+    }
+  });
+  new Chart(document.getElementById('actionsChart').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+      datasets:[{data:[2,3,2,4,3,5,4,6,5,9,11,13],borderColor:'#007f3b',backgroundColor:'rgba(0,127,59,0.08)',borderWidth:2,tension:0.3,fill:true,pointRadius:2,pointBackgroundColor:'#007f3b'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8},color:'#768692'},grid:{display:false}},y:{ticks:{font:{size:8},color:'#768692'},grid:{color:'rgba(0,0,0,0.04)'}}}}
+  });
+
+  const latencyCtx = document.getElementById('latencyChart');
+  if(latencyCtx){
+    new Chart(latencyCtx.getContext('2d'),{
+      type:'bar',
+      data:{
+        labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+        datasets:[{label:'Processing latency (hrs)',data:[3.1,2.8,3.4,2.9,3.1,2.6,2.4,2.7,2.3,2.2,2.1,2.2],backgroundColor:'rgba(0,94,184,0.65)',borderRadius:2}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'h'}}},scales:{x:{ticks:{font:{size:8},color:'#768692'},grid:{display:false}},y:{ticks:{font:{size:8},color:'#768692',callback:v=>v+'h'},grid:{color:'rgba(0,0,0,0.04)'},max:5}}}
+    });
+  }
+})();
+
+// AI QUERY PANEL — Option B: canned interactive responses (no live API call)
+// Canned answers drawn from platform demo data context.
+var CANNED_RESPONSES = {
+  'Why is the north star metric going up this month?':
+    '✶ The north star — <strong>47 feedback themes acted on</strong> across 3 trusts — is up <strong>+12 versus last month</strong>. The growth is driven almost entirely by Trust C going live in week 9, which contributed 14 new actions in its first three weeks. Quality Managers account for roughly half the total. The underlying engagement trend is healthy; Ward Manager actions remain structurally low until the weekly digest email is built.',
+  'Which trust is most at risk right now?':
+    '✶ <strong>Trust B</strong> is the most at risk. Its ingestion success rate has dropped to <strong>96.2%</strong> — below the 99% SLA threshold — due to a Datix v1 schema mismatch affecting Community Nursing records. 81 comments are unprocessed and held in the retry queue. This is the second such incident this month, suggesting the adapter field normalisation fix was not sufficiently broad.',
+  'Is our AI confident enough to trust?':
+    '✶ Mean AI confidence is <strong>83.4%</strong> — 7.6 percentage points below the 91% target, across 47,832 classified comments. More critically: <strong>confidence is not accuracy</strong>. A miscalibrated model can be confidently wrong. There is no labelled validation set to measure actual classification accuracy — meaning we cannot evidence the 91% accuracy claim to trusts. Estimated fix: 3–5 days of clinical reviewer time on ~500 labelled comments.',
+  'What\'s blocking more trusts from going live?':
+    '✶ Two trusts are in the compliance pipeline: <strong>Trust D</strong> at DSP Toolkit stage and <strong>Trust E</strong> at DPIA stage. Each gate takes 2–4 weeks — Trust D could be live within a month of sign-off; Trust E is 4–8 weeks out. The bottleneck is external — regulatory and legal gates, not engineering. Once Trust D’s DSP sign-off is confirmed, the adapter build needs scoping and sprint sequencing.'
+};
+
+var isThinking = false;
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,100)+'px';
+}
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+function sendSuggestion(btn){
+  document.getElementById('aiInput').value = btn.textContent.trim();
+  document.getElementById('aiSuggestions').style.display='none';
+  sendMessage();
+}
+
+function appendMessage(role, text){
+  var msgs = document.getElementById('aiMessages');
+  var div = document.createElement('div');
+  div.className = 'msg msg-'+role;
+  if(role==='user'){
+    div.innerHTML='<div class="msg-bubble mb-user">'+escHtml(text)+'</div>';
+  } else {
+    div.innerHTML='<div class="msg-bubble mb-ai">'+text+'</div><div class="msg-meta"><span class="ai-spark-mark">✶</span> AI-generated · based on demo data</div>';
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function showTyping(){
+  var msgs = document.getElementById('aiMessages');
+  var t = document.createElement('div');
+  t.className='msg msg-ai';t.id='typingIndicator';
+  t.innerHTML='<div class="ai-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){
+  var t=document.getElementById('typingIndicator');
+  if(t) t.remove();
+}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function formatResponse(text){
+  return text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+}
+
+function sendMessage(){
+  if(isThinking) return;
+  var input = document.getElementById('aiInput');
+  var query = input.value.trim();
+  if(!query) return;
+
+  isThinking=true;
+  input.value='';input.style.height='auto';
+  document.getElementById('aiSend').disabled=true;
+  document.getElementById('aiSuggestions').style.display='none';
+
+  appendMessage('user', query);
+  showTyping();
+
+  var reply = CANNED_RESPONSES[query] ||
+    '✶ This is a demo assistant — try one of the suggested questions above to see the platform’s analytics insights.';
+
+  setTimeout(function(){
+    removeTyping();
+    appendMessage('ai', formatResponse(reply));
+    isThinking=false;
+    document.getElementById('aiSend').disabled=false;
+    lucide.createIcons();
+  }, 700 + Math.random()*600);
+}
+
+// SIGNALS ARCHIVE DATA
+var SIGNALS = [
+  {
+    id:1, type:'p1', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🔴 P1 ALERT — Trust B ingestion degraded below threshold',
+    preview:'Trust B ingestion rate has dropped to 96.2%, below the 99% SLA threshold. Immediate investigation required.',
+    time:'Today, 06:47',
+    to:'Engineering team + Delivery lead',
+    tags:['P1 ALERT','SYSTEM HEALTH','TRUST B'],
+    tagStyles:['ib-p1','ib-tech','ib-tech'],
+    body:`<div class="alert-block"><strong>&#9888; P1 — Requires immediate attention</strong><br>Trust B ingestion success rate has dropped to <strong class="val-red">96.2%</strong>, breaching the 99% SLA threshold. This has been sustained across the last two batch runs (06:00 and 02:00 today).</div>
+<h3>What we know</h3>
+<p>The Datix v1 adapter for Trust B began returning partial payloads at approximately 01:48. Out of 2,140 comments submitted in the overnight batch, 81 failed to ingest. The failed records share a common field: <code>care_setting = "Community Nursing"</code> — suggesting a schema mapping issue introduced in the latest Datix export format.</p>
+<h3>Impact assessment</h3>
+<ul>
+  <li>81 patient comments from Trust B not processed — themes for Community Nursing ward will be incomplete this cycle</li>
+  <li>Quality Manager dashboard for Trust B will show incomplete data until resolved</li>
+  <li>North star metric may undercount by approximately 3–5 actions this week if the gap persists</li>
+  <li>No data loss — failed records are held in the retry queue for up to 72 hours</li>
+</ul>
+<h3>Recommended actions</h3>
+<ul>
+  <li>Engineering: inspect Datix v1 adapter field mapping for <code>care_setting</code> — compare current Datix export schema against adapter spec</li>
+  <li>Delivery lead: notify Trust B data lead — flag that this week’s Community Nursing theme report may be delayed by up to 24 hours</li>
+  <li>Do not re-run the failed batch until the root cause is confirmed — duplicate ingestion risk</li>
+</ul>
+<div class="ai-note">✶ This signal was generated automatically when ingestion success rate breached the 99% threshold on two consecutive batch runs. Root cause analysis above is AI-inferred from error log patterns — engineering verification required before action.</div>`
+  },
+  {
+    id:2, type:'pm', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 23 Jul 2026',
+    preview:'North star up 12 vs last month. Ward Manager engagement remains low — digest email is the blocker.',
+    time:'Today, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">47</span> themes acted on this month</span> — up <strong class="val-green">+12 vs June</strong>. On track. The uplift is driven almost entirely by Trust C onboarding in week 9, which added 14 actions in its first three weeks live.</p>
+<h3>Engagement</h3>
+<table>
+  <tr><th>Persona</th><th>Signals opened</th><th>Actions logged</th><th>Status</th></tr>
+  <tr><td>Chief Nurse</td><td>81</td><td>19</td><td style="color:var(--nhsd-green);font-weight:700">Healthy</td></tr>
+  <tr><td>Quality Manager</td><td>118</td><td>23</td><td style="color:var(--nhsd-green);font-weight:700">Healthy</td></tr>
+  <tr><td>Ward Manager</td><td>15</td><td>5</td><td style="color:var(--nhsd-orange);font-weight:700">Low — digest not live</td></tr>
+</table>
+<h3>Key risk to watch</h3>
+<div class="warn-block"><strong>Ward Manager engagement is structurally blocked.</strong> 15 signals opened is not a user behaviour problem — the weekly digest email (Monday 08:00, magic link, no login required) has not been built yet. Ward Managers cannot engage with a pull interface during a 12-hour shift. Until the digest is live, this metric will not move.</div>
+<h3>Time to action</h3>
+<p>Median time from signal surfaced to action logged: <span class="metric-inline val-amber">14 hours</span>. Down from 19h last month. Target is &lt;24h — we are within target. No action needed today.</p>
+<div class="ai-note">✶ AI-generated daily snapshot. Data sourced from platform instrumentation as of 06:14 today. Ward Manager note is flagged as a structural blocker, not a behavioural metric.</div>`
+  },
+  {
+    id:3, type:'tech', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 23 Jul 2026',
+    preview:'All systems green except Trust B ingestion (96.2%). P1 raised separately. Processing latency 2h 14m.',
+    time:'Today, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: Degraded (1 trust affected)</strong><br>5 of 6 foundation metrics are green. Trust B ingestion is below threshold — P1 raised at 06:47.</div>
+<h3>Foundation metrics — 23 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-amber">98.7%</td><td>&ge;99%</td><td>&#9888; Trust B: 96.2%</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 14m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.3%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">99.9%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.8s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<h3>Batch run summary — overnight</h3>
+<ul>
+  <li>Trust A: 3,412 comments ingested — 0 failures. RLDatix v1 adapter nominal.</li>
+  <li>Trust B: 2,059 of 2,140 ingested — 81 failures. Datix v1 adapter — Community Nursing schema mismatch. P1 open.</li>
+  <li>Trust C: 1,874 comments ingested — 0 failures. RLDatix v1 adapter nominal.</li>
+</ul>
+<div class="ai-note">✶ AI-generated technical snapshot. All values sourced from ingestion logs and monitoring instrumentation. Trust B P1 flagged to engineering team and delivery lead in a separate alert at 06:47.</div>`
+  },
+  {
+    id:4, type:'pm', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 22 Jul 2026',
+    preview:'Actions logged holding at 42. Score recovery data expected this week for first 3 themes.',
+    time:'Yesterday, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">42</span> themes acted on</span> as of yesterday. On track for month-end target. Trust C continues to ramp — 3 actions logged in its second week, up from 5 in week 1.</p>
+<h3>Score recovery — first data incoming</h3>
+<div class="warn-block"><strong>Watch this week:</strong> The first 3 actioned themes have now completed one full ingestion cycle since the action was logged. Score recovery data will be available in Wednesday's batch run (expected ~23 Jul). This will be the first real signal on whether the platform is driving measurable improvement.</div>
+<div class="ai-note">✶ AI-generated daily snapshot for PM. Confidence note is flagged as a governance risk, not a technical metric.</div>`
+  },
+  {
+    id:5, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 22 Jul 2026',
+    preview:'All green. Latency improved to 2h 18m. Trust D DSP Toolkit submission pending.',
+    time:'Yesterday, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: All green</strong><br>All 6 foundation metrics within target. No incidents in last 24 hours.</div>
+<h3>Foundation metrics — 22 Jul 2026</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">99.2%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 18m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.2%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.7s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated technical snapshot. No anomalies detected across 3 live trust batch runs.</div>`
+  },
+  {
+    id:6, type:'exec', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📋 Weekly exec summary — w/e 20 Jul 2026',
+    preview:'North star +34% month on month. Trust C live. AI accuracy validation remains unstarted — governance risk.',
+    time:'Mon 21 Jul, 08:00',
+    to:'Product Head',
+    tags:['EXEC WEEKLY','STRATEGIC'],
+    tagStyles:['ib-exec','ib-exec'],
+    body:`<h3>Executive summary — week ending 20 Jul 2026</h3>
+<p>The platform is performing ahead of trajectory on the north star metric and is operationally stable across all three live trusts. One governance risk requires a decision from product leadership this week.</p>
+<h3>North star — themes acted on per trust per month</h3>
+<p><span class="metric-inline val-green">41 actions</span> logged as of Sunday, on track for a July close of ~48. This represents a <strong class="val-green">+34% increase</strong> month on month, driven by Trust C going live in week 9.</p>
+<h3>Decision required — AI accuracy validation</h3>
+<div class="warn-block"><strong>This requires a decision from product leadership.</strong> The platform's AI classification is operating at 83.4% mean confidence — but we have no labelled validation set to measure actual accuracy. We are claiming 91%+ accuracy to trusts without having measured it. Estimated effort: 3–5 days of clinical reviewer time on a sample of ~500 comments.</div>
+<div class="ai-note">✶ AI-generated executive summary. The governance risk flagged in this summary reflects a real unresolved decision.</div>`
+  },
+  {
+    id:7, type:'pm', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 21 Jul 2026',
+    preview:'38 actions logged. Trust C Week 2 momentum holding. Time-to-action improved to 15h.',
+    time:'Mon 21 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">38</span> themes acted on</span> as of Monday morning. Trust C is in week 2 of live operation — 8 actions logged in its first fortnight, ahead of the Trust A onboarding curve at the same stage.</p>
+<h3>Time to action</h3>
+<p>Median time from signal surfaced to action logged: <span class="metric-inline val-green">15 hours</span>. Improved from 19h at launch. The drop correlates with Quality Managers opening signals on the same day they are published — a behaviour shift from the first two weeks of operation.</p>
+<h3>Engagement by persona</h3>
+<table>
+  <tr><th>Persona</th><th>Signals opened</th><th>Actions logged</th><th>Trend</th></tr>
+  <tr><td>Chief Nurse</td><td>74</td><td>16</td><td style="color:var(--nhsd-green);font-weight:700">&uarr; +8 vs last week</td></tr>
+  <tr><td>Quality Manager</td><td>103</td><td>21</td><td style="color:var(--nhsd-green);font-weight:700">&uarr; +5 vs last week</td></tr>
+  <tr><td>Ward Manager</td><td>11</td><td>3</td><td style="color:var(--nhsd-orange);font-weight:700">Flat — digest still pending</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated daily snapshot. Data sourced from platform instrumentation as of 06:14 Mon 21 Jul.</div>`
+  },
+  {
+    id:8, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 21 Jul 2026',
+    preview:'All green. Trust D DSP Toolkit submission received — compliance pipeline initiated.',
+    time:'Mon 21 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: All green</strong><br>All 6 foundation metrics within target across all 3 live trusts. Weekend batch runs completed without incident.</div>
+<h3>Foundation metrics — 21 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">99.4%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 09m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.2%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.6s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<h3>Trust D — compliance pipeline initiated</h3>
+<p>Trust D submitted their DSP Toolkit self-assessment on Friday 18 Jul. The compliance pipeline has been initiated — estimated 2-week review. No engineering action required at this stage; IG lead to coordinate with Trust D data governance team.</p>
+<div class="ai-note">✶ AI-generated technical snapshot. 3 live trusts, 1 in compliance pipeline, 2 in procurement. No anomalies detected.</div>`
+  },
+  {
+    id:9, type:'p1', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🔴 P2 ALERT — Trust A classification accuracy dropped to 79%',
+    preview:'Claude confidence mean fell to 79.1% for Trust A overnight batch — below the 83% amber threshold. Manual review recommended.',
+    time:'Fri 18 Jul, 06:52',
+    to:'Engineering team + Product Manager',
+    tags:['P2 ALERT','AI QUALITY','TRUST A'],
+    tagStyles:['ib-p1','ib-exec','ib-tech'],
+    body:`<div class="alert-block"><strong>&#9888; P2 — Requires attention within 24 hours</strong><br>Trust A overnight batch returned a mean AI confidence of <strong class="val-red">79.1%</strong>, below the amber threshold of 83%. This is the first confidence breach across any live trust.</div>
+<h3>What we know</h3>
+<p>The Trust A batch run (02:00, 18 Jul) processed 3,218 comments. Mean Claude confidence across the batch was 79.1%, down from 84.2% in Wednesday's run. The drop is concentrated in two care settings: <strong>Maternity</strong> (72.4% mean confidence, 847 comments) and <strong>Mental Health</strong> (78.8%, 412 comments).</p>
+<h3>Likely cause</h3>
+<p>Trust A introduced a new comment collection template in week of 14 Jul that includes free-text follow-up prompts. These produce longer, multi-topic comments that the classification model handles with lower confidence than single-topic short-form FFT responses. This is a distribution shift, not a model regression.</p>
+<h3>Impact</h3>
+<ul>
+  <li>Dashboard signals for Trust A Maternity and Mental Health wards may surface lower-confidence classifications</li>
+  <li>No patient data affected — all comments classified, just with lower certainty scores</li>
+  <li>If confidence stays below 83% for two consecutive runs, an automatic P1 will be raised</li>
+</ul>
+<h3>Recommended actions</h3>
+<ul>
+  <li>Engineering: flag the distribution shift to the model team — no immediate code change needed but log for next model review</li>
+  <li>PM: notify Trust A QM that Maternity and Mental Health signals this week carry lower AI confidence — advise manual spot-check of 10–15 comments</li>
+  <li>Watch Friday and Monday batch runs — if confidence recovers to &ge;83%, no further action needed</li>
+</ul>
+<div class="ai-note">✶ This alert was generated automatically when batch mean confidence breached the 83% amber threshold. Root cause analysis is AI-inferred — engineering verification recommended.</div>`
+  },
+  {
+    id:10, type:'pm', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 18 Jul 2026',
+    preview:'33 actions logged. Trust C onboarding ahead of schedule. AI confidence amber for Trust A — P2 raised separately.',
+    time:'Fri 18 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">33</span> themes acted on</span> as of Friday. Weekly run rate is tracking to deliver 45–50 by month end, ahead of the 40-action July target set at sprint planning.</p>
+<h3>Trust C onboarding — ahead of schedule</h3>
+<div class="ok-block"><strong>Trust C is performing ahead of the onboarding curve.</strong> 5 actions logged in week 1 (target: 3). Quality Manager has opened 22 of 24 signals delivered so far — the highest engagement rate of any trust at week 1.</div>
+<h3>AI confidence — Trust A</h3>
+<p>Mean AI confidence for Trust A dropped to 79.1% overnight. A P2 alert has been raised separately with the engineering team. From a product perspective: notify Trust A Quality Manager that Maternity and Mental Health signals this week should be spot-checked manually before actions are logged.</p>
+<div class="ai-note">✶ AI-generated daily snapshot. North star count reflects confirmed actions logged by clinicians — not AI-suggested actions.</div>`
+  },
+  {
+    id:11, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 18 Jul 2026',
+    preview:'P2 raised for Trust A confidence drop. All infrastructure metrics green. Trust D DSP Toolkit expected today.',
+    time:'Fri 18 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="alert-block" style="background:#fff7ed;border-color:#f97316;color:#7c2d12"><strong>&#9888; Platform status: Amber (AI quality — Trust A)</strong><br>Infrastructure all green. Trust A classification confidence below amber threshold — P2 raised at 06:52.</div>
+<h3>Foundation metrics — 18 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">99.6%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 22m</td><td>&lt;4h</td><td>&#10003; Green</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.1%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>AI confidence (Trust A)</td><td class="val-amber">79.1%</td><td>&ge;83%</td><td>&#9888; P2 raised</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated technical snapshot. P2 alert includes root cause analysis and recommended actions.</div>`
+  },
+  {
+    id:12, type:'exec', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📋 Weekly exec summary — w/e 13 Jul 2026',
+    preview:'North star at 28 actions. Trust C onboarding confirmed for week of 14 Jul. Ward digest decision still outstanding.',
+    time:'Mon 14 Jul, 08:00',
+    to:'Product Head',
+    tags:['EXEC WEEKLY','STRATEGIC'],
+    tagStyles:['ib-exec','ib-exec'],
+    body:`<h3>Executive summary — week ending 13 Jul 2026</h3>
+<p>Solid week operationally. The north star metric is on trajectory and Trust C onboarding is confirmed. One outstanding decision on Ward Manager digest continues to block a structurally important engagement channel.</p>
+<h3>North star</h3>
+<p><span class="metric-inline val-green">28 actions</span> logged as of Sunday — on track for the 40-action July target. Trusts A and B are operating steadily; Trust C begins live operation Monday 14 Jul.</p>
+<h3>Trust C — onboarding confirmed</h3>
+<div class="ok-block"><strong>Trust C is live as of Monday 14 Jul.</strong> Initial batch run completed successfully overnight — 1,874 comments ingested. Quality Manager briefed and has acknowledged the first 3 signals. This brings the platform to 3 live trusts ahead of the original Q3 schedule.</div>
+<h3>Outstanding decision — Ward Manager digest</h3>
+<div class="warn-block"><strong>Ward Manager digest email has not been scoped or prioritised.</strong> Without it, Ward Manager engagement will remain structurally low (&lt;15 signals opened per week). This is the single highest-leverage action available to increase the north star metric before month end. Request: product leadership to confirm prioritisation this week.</div>
+<div class="ai-note">✶ AI-generated executive summary. North star count and trust onboarding status sourced from platform instrumentation.</div>`
+  },
+  {
+    id:13, type:'pm', unread:true,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'📊 PM Daily snapshot — 16 Jul 2026',
+    preview:'Trust C first week: 3 actions logged. North star at 29. Quality Manager engagement strong across all 3 trusts.',
+    time:'Wed 16 Jul, 07:00',
+    to:'Product Manager',
+    tags:['PM DAILY','PRODUCT METRICS'],
+    tagStyles:['ib-pm','ib-pm'],
+    body:`<h3>North star</h3>
+<p><span class="metric-inline"><span class="val-green">29</span> themes acted on</span> as of Wednesday. Trust C has added 3 actions in its first 3 days of operation — the fastest early ramp of any trust, likely driven by an engaged Quality Manager who has reviewed every signal within 4 hours of delivery.</p>
+<h3>Trust C — first week highlights</h3>
+<table>
+  <tr><th>Metric</th><th>Trust A</th><th>Trust B</th><th>Trust C (wk 1)</th></tr>
+  <tr><td>Signals delivered</td><td>18</td><td>16</td><td>9</td></tr>
+  <tr><td>Signals opened</td><td>14</td><td>12</td><td>9</td></tr>
+  <tr><td>Actions logged</td><td>8</td><td>6</td><td>3</td></tr>
+  <tr><td>Open rate</td><td>78%</td><td>75%</td><td style="color:var(--nhsd-green);font-weight:700">100%</td></tr>
+</table>
+<h3>Risk watch</h3>
+<p>Trust B signal-to-action conversion has dipped to 37.5% (6 of 16). Historically this has preceded a short engagement trough — likely a capacity issue on the QM side. No action needed unless it persists into next week.</p>
+<div class="ai-note">✶ AI-generated daily snapshot. Trust C week-1 data reflects 3 days of operation (14–16 Jul).</div>`
+  },
+  {
+    id:14, type:'tech', unread:false,
+    from:'AI Signal Engine', fromShort:'AI',
+    subject:'🖥️ Tech daily snapshot — 14 Jul 2026',
+    preview:'Trust C batch run 1 completed successfully. 1,874 comments ingested. All metrics green.',
+    time:'Mon 14 Jul, 07:00',
+    to:'Engineering team',
+    tags:['TECH DAILY','SYSTEM HEALTH'],
+    tagStyles:['ib-tech','ib-tech'],
+    body:`<div class="ok-block"><strong>Overall platform status: All green — Trust C live</strong><br>First batch run for Trust C completed successfully overnight. 3 trusts now in live operation. All foundation metrics within target.</div>
+<h3>Trust C — first batch run</h3>
+<ul>
+  <li>Batch window: 02:00–03:47 Mon 14 Jul</li>
+  <li>Comments submitted: 1,874</li>
+  <li>Successfully ingested: 1,874 (100%)</li>
+  <li>Mean AI confidence: 84.7% — above the 83% amber threshold</li>
+  <li>Adapter: RLDatix v1 — nominal</li>
+</ul>
+<h3>Foundation metrics — 14 Jul 2026 06:14</h3>
+<table>
+  <tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr>
+  <tr><td>Ingestion success rate</td><td class="val-green">100%</td><td>&ge;99%</td><td>&#10003; Green</td></tr>
+  <tr><td>Processing latency</td><td class="val-green">2h 31m</td><td>&lt;4h</td><td>&#10003; Green — 3-trust load</td></tr>
+  <tr><td>Pipeline error rate</td><td class="val-green">0.0%</td><td>&lt;1%</td><td>&#10003; Green</td></tr>
+  <tr><td>Export success</td><td class="val-green">100%</td><td>&ge;98%</td><td>&#10003; Green</td></tr>
+  <tr><td>Uptime</td><td class="val-green">100%</td><td>&ge;99.5%</td><td>&#10003; Green</td></tr>
+  <tr><td>Page load P95</td><td class="val-green">1.9s</td><td>&lt;2s</td><td>&#10003; Green</td></tr>
+</table>
+<div class="ai-note">✶ AI-generated technical snapshot. Trust C first batch is a milestone — all 3 contracted trusts now in live operation.</div>`
+  }
+];
+
+var activeFilter = 'all';
+var activeId = null;
+
+function renderInbox(items){
+  var list = document.getElementById('inboxList');
+  if(!items.length){
+    list.innerHTML='<div style="padding:24px;text-align:center;color:var(--nhsd-mid-grey);font-size:12px">No signals match this filter</div>';
+    return;
+  }
+  list.innerHTML = items.map(function(s){
+    return '<div class="inbox-item '+(s.unread?'unread':'')+' '+(activeId===s.id?'active':'')+'" onclick="openSignal('+s.id+')">'+
+      (s.unread?'<div class="unread-dot"></div>':'')+
+      '<div class="ii-avatar av-'+s.type+'">'+(s.type==='p1'?'P1':s.type==='exec'?'EX':s.type==='pm'?'PM':'TK')+'</div>'+
+      '<div class="ii-body">'+
+        '<div class="ii-from">'+s.to+'</div>'+
+        '<div class="ii-subject">'+s.subject+'</div>'+
+        '<div class="ii-preview">'+s.preview+'</div>'+
+      '</div>'+
+      '<div class="ii-meta">'+
+        '<span class="ii-time">'+s.time+'</span>'+
+        '<span class="ii-badge ib-'+s.type+'">'+(s.type==='p1'?'P1 ALERT':s.type==='exec'?'EXEC':s.type==='pm'?'PM DAILY':'TECH')+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function filterByType(type, btn){
+  activeFilter = type;
+  document.querySelectorAll('.inf-chip').forEach(function(c){c.classList.remove('active');});
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterInbox(){
+  applyFilters();
+}
+
+function applyFilters(){
+  var q = (document.getElementById('inboxSearch').value||'').toLowerCase();
+  var items = SIGNALS;
+  if(activeFilter !== 'all') items = items.filter(function(s){return s.type===activeFilter;});
+  if(q) items = items.filter(function(s){
+    return s.subject.toLowerCase().includes(q) ||
+      s.preview.toLowerCase().includes(q) ||
+      s.to.toLowerCase().includes(q);
+  });
+  renderInbox(items);
+}
+
+function openSignal(id){
+  activeId = id;
+  var s = SIGNALS.find(function(x){return x.id===id;});
+  if(!s) return;
+  s.unread = false;
+  applyFilters();
+
+  var tagPills = s.tags.map(function(t,i){
+    return '<span class="md-tag '+s.tagStyles[i]+'" style="background:'+tagBg(s.tagStyles[i])+';color:'+tagCol(s.tagStyles[i])+'">'+t+'</span>';
+  }).join('');
+
+  document.getElementById('msgDetail').innerHTML =
+    '<div class="md-header">'+
+      '<div class="md-subject">'+s.subject+'</div>'+
+      '<div class="md-meta-row">'+
+        '<div class="md-from">'+
+          '<div class="md-avatar av-'+s.type+'">'+(s.type==='p1'?'P1':s.type==='exec'?'EX':s.type==='pm'?'PM':'TK')+'</div>'+
+          '<div>'+
+            '<div class="md-sender">'+s.from+'</div>'+
+            '<div class="md-sender-sub">To: '+s.to+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<span class="md-timestamp">'+s.time+'</span>'+
+      '</div>'+
+      '<div class="md-tags">'+tagPills+'</div>'+
+    '</div>'+
+    '<div class="md-body">'+s.body+'</div>'+
+    '<div class="md-provenance"><span style="font-size:11px;font-weight:700">✶</span> AI-generated signal · NHS Patient Feedback Intelligence Platform · Accenture S&amp;PE</div>';
+  lucide.createIcons();
+}
+
+function tagBg(cls){
+  var m={'ib-pm':'#dcfce7','ib-tech':'#dbeafe','ib-p1':'#fde8e7','ib-exec':'#f3e8ff'};
+  return m[cls]||'#e8edee';
+}
+function tagCol(cls){
+  var m={'ib-pm':'#166534','ib-tech':'#1d4ed8','ib-p1':'#9b1c1c','ib-exec':'#6b21a8'};
+  return m[cls]||'#3f525f';
+}
+
+renderInbox(SIGNALS);
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Activity } from 'lucide-react';
+import { Users, TrendingUp, ListChecks, Edit2, Check, Layers, Activity, BarChart2, FileText } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -12,15 +12,22 @@ import { ProgressTracker } from './components/ProgressTracker';
 import { MarketResearchGrid } from './components/MarketResearchGrid';
 import { PrototypeDetailView } from './components/PrototypeDetailView';
 import { PDLCSection } from './components/PDLCSection';
+import { DraftScript } from './components/DraftScript';
 import { PasswordGate } from './components/PasswordGate';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
-import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH } from './data/seedData';
+import { SEED_VERSION, SEED_PROBLEM_STATEMENT, SEED_USER_SEGMENTS, SEED_MARKET_RESEARCH, SEED_DRAFT_SCRIPT } from './data/seedData';
 
 const NhsStartPage = lazy(() =>
   import('../microsites/nhs-dashboard/NhsStartPage').then(m => ({ default: m.NhsStartPage }))
 );
 const NhsDashboardPage = lazy(() =>
   import('../microsites/nhs-dashboard/NhsDashboardPage').then(m => ({ default: m.NhsDashboardPage }))
+);
+const NhsAnalyticsStartPage = lazy(() =>
+  import('../microsites/nhs-analytics/NhsAnalyticsStartPage').then(m => ({ default: m.NhsAnalyticsStartPage }))
+);
+const NhsAnalyticsDashboardPage = lazy(() =>
+  import('../microsites/nhs-analytics/NhsAnalyticsDashboardPage').then(m => ({ default: m.NhsAnalyticsDashboardPage }))
 );
 
 export default function App() {
@@ -29,8 +36,9 @@ export default function App() {
     SEED_PROBLEM_STATEMENT
   );
   const [editingStatement, setEditingStatement] = useState(false);
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('pdlc');
   const [nhsView, setNhsView] = useState<'start' | 'dashboard'>('start');
+  const [nhsAnalyticsView, setNhsAnalyticsView] = useState<'start' | 'dashboard'>('start');
   const [artefactDetailId, setArtefactDetailId] = useState<string | null>(null);
   const [tempStatement, setTempStatement] = useState(problemStatement);
 
@@ -77,6 +85,7 @@ export default function App() {
         await Promise.all([
           seedIfEmpty('problemStatement', SEED_PROBLEM_STATEMENT),
           seedIfEmpty('userSegments', SEED_USER_SEGMENTS),
+          seedIfEmpty('draftScript', SEED_DRAFT_SCRIPT),
           mergeMarketResearch(),
         ]);
         await set(versionRef, SEED_VERSION);
@@ -227,6 +236,7 @@ export default function App() {
             value={activeTab}
             onValueChange={(value) => {
               if (activeTab === 'nhs' && value !== 'nhs') setNhsView('start');
+              if (activeTab === 'nhs-analytics' && value !== 'nhs-analytics') setNhsAnalyticsView('start');
               setActiveTab(value);
             }}
           >
@@ -236,6 +246,7 @@ export default function App() {
                 { value: 'research', label: 'Artefacts', Icon: TrendingUp },
                 { value: 'pdlc', label: 'AI in PDLC', Icon: Layers },
                 { value: 'tasks', label: 'Tasks', Icon: ListChecks },
+                { value: 'script', label: 'Draft Script', Icon: FileText },
               ].map(({ value, label, Icon }) => (
                 <Tabs.Trigger
                   key={value}
@@ -250,10 +261,22 @@ export default function App() {
               <div className="w-px bg-slate-200 my-2 mx-2 self-stretch" aria-hidden="true" />
               <Tabs.Trigger
                 value="nhs"
+                data-testid="tab-nhs"
                 className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition-colors data-[state=active]:text-emerald-600 data-[state=active]:border-emerald-600"
               >
                 <Activity className="w-4 h-4" />
                 NHS platform
+                <span className="text-[9px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-1.5 py-0.5 ml-0.5">
+                  Built
+                </span>
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="nhs-analytics"
+                data-testid="tab-analytics"
+                className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition-colors data-[state=active]:text-emerald-600 data-[state=active]:border-emerald-600"
+              >
+                <BarChart2 className="w-4 h-4" />
+                Performance analytics
                 <span className="text-[9px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-1.5 py-0.5 ml-0.5">
                   Built
                 </span>
@@ -340,8 +363,15 @@ export default function App() {
               </div>
             </Tabs.Content>
 
+            {/* Draft Script */}
+            <Tabs.Content value="script">
+              <DraftScript />
+            </Tabs.Content>
+
             {/* NHS Platform — content renders as a full-screen overlay (see below) */}
             <Tabs.Content value="nhs" />
+            {/* Performance Analytics — content renders as a full-screen overlay (see below) */}
+            <Tabs.Content value="nhs-analytics" />
           </Tabs.Root>
         </div>
 
@@ -372,6 +402,31 @@ export default function App() {
                 />
               ) : (
                 <NhsDashboardPage onBack={() => setNhsView('start')} />
+              )}
+            </Suspense>
+          </div>
+        )}
+
+        {/* Performance Analytics — full-screen overlay, mirrors NHS Platform pattern. */}
+        {activeTab === 'nhs-analytics' && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <Suspense
+              fallback={
+                <div
+                  className="flex items-center justify-center h-full min-h-screen"
+                  style={{ backgroundColor: '#003087', fontFamily: 'Arial, sans-serif' }}
+                >
+                  <span className="text-white text-sm font-medium">Loading Performance Analytics…</span>
+                </div>
+              }
+            >
+              {nhsAnalyticsView === 'start' ? (
+                <NhsAnalyticsStartPage
+                  onViewAnalytics={() => setNhsAnalyticsView('dashboard')}
+                  onBack={() => { setNhsAnalyticsView('start'); setActiveTab('users'); }}
+                />
+              ) : (
+                <NhsAnalyticsDashboardPage onBack={() => setNhsAnalyticsView('start')} />
               )}
             </Suspense>
           </div>
