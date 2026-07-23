@@ -96,6 +96,24 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-10 · NHS Performance Analytics microsite added as a second decoupled microsite
+**Status:** Active  
+**Date:** 2026-07-23  
+**Decision:** The NHS Performance Analytics dashboard (`nhs-performance-analytics-v3.html` prototype) is deployed as a second self-contained microsite at `src/microsites/nhs-analytics/`. It follows the same iframe-embed architecture as the NHS Patient Feedback Platform (AD-08): a GDS-style service start page (`NhsAnalyticsStartPage.tsx`) loads first, and "View analytics" opens the prototype in a full-screen iframe (`NhsAnalyticsDashboardPage.tsx`). A sixth tab — "Performance analytics" with a `BarChart2` icon and "Built" badge — appears after the NHS platform tab in the host nav. Chart.js 4.5.1 (UMD) and Lucide vanilla UMD are bundled locally into `public/nhs-analytics/lib/` rather than loaded from CDN at runtime. All HTML special characters use named entities to ensure UTF-8 fidelity. Playwright acceptance tests added in `17-nhs-analytics-smoke.spec.ts`, `18-nhs-analytics-landing.spec.ts`, and `19-nhs-analytics-dashboard.spec.ts`.  
+**Rationale:** The iframe approach is consistent with AD-08 and keeps the React bundle free of chart.js initialisation complexity. Bundling libs locally satisfies the "no CDN at runtime" constraint and makes the microsite self-contained. The start-page-first pattern gives stakeholders context before entering the dense analytics view.  
+**Trade-off:** The iframe limits deep-linking into specific analytics panels, but for a showcase context this is acceptable. Lucide vanilla (not lucide-react) was required for the HTML file; it is a separate package from the host's `lucide-react` dependency.
+
+---
+
+### AD-11 · Analytics AI assistant uses canned interactive responses (Option B)
+**Status:** Active  
+**Date:** 2026-07-23  
+**Decision:** The AI assistant in the Performance Analytics dashboard returns pre-scripted responses for the four suggestion chips rather than making live calls to the Anthropic API. Free-text queries not matching a chip receive a polite demo notice. The `sendMessage` function uses `setTimeout` (700–1 300 ms) to simulate a typing delay. The `CANNED_RESPONSES` object, `conversationHistory`, `SYSTEM_CONTEXT`, and `fetch()` call to `api.anthropic.com` are all absent from the shipped HTML.  
+**Rationale:** A public showcase with no auth layer cannot safely expose an API key. Option B eliminates key management, serverless function overhead, and any risk of abuse or unexpected cost — with zero loss of demo value, since the four chip answers cover every question a stakeholder is likely to ask. Deterministic responses also make the showcase more reliable in live demos.  
+**Trade-off:** The assistant cannot answer novel free-text questions. The canned responses are curated to match the most impactful questions; the demo notice for other queries sets expectations correctly.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -276,5 +294,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-16 (added CD-11 test maintenance policy; CI workflow hardened — fetch-depth 2, visible Vercel output, URL validation; added AC-16 Prototype editing tests; data-testids added to PrototypeDetailView)*  
+*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite — second decoupled iframe embed, sixth nav tab, chart.js + Lucide bundled locally; added AD-11 canned AI responses; Playwright specs AC-17/18/19 added)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
