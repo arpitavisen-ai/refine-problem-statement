@@ -1,15 +1,15 @@
 /**
  * AC-11: NHS Microsite Smoke Test
- * Verifies the app boots with all 5 nav entries, the NHS Platform tab appears
+ * Verifies the app boots with all 6 nav entries, the NHS Platform tab appears
  * after Tasks, the dashboard frame mounts, and there are no console errors.
  */
 import { test, expect } from '@playwright/test';
 import { loadApp } from './helpers';
 
 test.describe('AC-11 · NHS Microsite Smoke', () => {
-  test('app renders all 5 navigation tabs', async ({ page }) => {
+  test('app renders all 6 navigation tabs', async ({ page }) => {
     await loadApp(page);
-    for (const label of ['User Analysis', 'Artefacts', 'AI in PDLC', 'Tasks', 'NHS platform']) {
+    for (const label of ['AI in PDLC', 'Use Case - NHS Platform', 'Tasks', 'Draft Script', 'NHS platform', 'Performance analytics']) {
       await expect(page.getByRole('tab', { name: label })).toBeVisible();
     }
   });

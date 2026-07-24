@@ -27,7 +27,7 @@ test.describe('AC-08 · UI Quality & Accessibility', () => {
 
   test('dialogs trap focus correctly — role="dialog" present', async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, 'Use Case - NHS Platform');
     await page.locator('text=Market & Competitor Analysis').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     // Dialog should have accessible content
@@ -50,7 +50,7 @@ test.describe('AC-08 · UI Quality & Accessibility', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await loadApp(page);
     await expect(page.locator('text=Patient Feedback').first()).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Artefacts' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Use Case - NHS Platform' })).toBeVisible();
   });
 
   test('page renders correctly at 375×812 mobile', async ({ page }) => {
@@ -62,7 +62,7 @@ test.describe('AC-08 · UI Quality & Accessibility', () => {
 
   test('all tab panels switch without blank screens', async ({ page }) => {
     await loadApp(page);
-    for (const tab of ['User Analysis', 'Artefacts', 'PDLC', 'Tasks']) {
+    for (const tab of ['AI in PDLC', 'Use Case - NHS Platform', 'Tasks', 'Draft Script']) {
       await goToTab(page, tab);
       await page.waitForTimeout(400);
       // Page body should have content

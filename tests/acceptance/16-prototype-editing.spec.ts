@@ -24,7 +24,7 @@ const SAMPLE_HTML = Buffer.from(
 
 async function openPrototypeDetail(page: Parameters<typeof loadApp>[0]) {
   await loadApp(page);
-  await goToTab(page, 'Artefacts');
+  await goToTab(page, 'Use Case - NHS Platform');
   // The Prototype card opens a detail view (not a dialog) via its own click handler
   await page.locator('text=Prototype').first().click();
   // Wait until the Design Log heading is visible — confirms we're in the detail view

@@ -10,10 +10,10 @@ test.describe('AC-17 · NHS Analytics smoke', () => {
   test('all tabs render including Performance analytics', async ({ page }) => {
     await loadApp(page);
     const expectedTabs = [
-      'User Analysis',
-      'Artefacts',
       'AI in PDLC',
+      'Use Case - NHS Platform',
       'Tasks',
+      'Draft Script',
       'NHS platform',
       'Performance analytics',
     ];
