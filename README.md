@@ -83,6 +83,45 @@ npm run test:report
 
 ---
 
+## App Architecture
+
+```mermaid
+flowchart TD
+    A([fa:fa-lock Password Gate]) --> B[App — AI in Product Management]
+
+    B --> T1[AI in PDLC]
+    B --> T2[Use Case — NHS Platform]
+    B --> T3[Tasks]
+    B --> T4[Draft Script]
+    B --> T5([NHS platform ✦ Built])
+    B --> T6([Performance analytics ✦ Built])
+
+    T2 --> T2a[Problem Statement & Stats]
+    T2 --> T2b[User Personas Grid]
+    T2 --> T2c[Artefacts · MarketResearchGrid]
+    T2c --> T2c1[Item modal — rich editor]
+    T2c --> T2c2[Prototype detail view]
+
+    T1 --> T1a[PDLC phase flip-cards]
+    T1a --> T1b[Phase modal editor]
+
+    T3 --> T3a[Progress tracker]
+    T3 --> T3b[Kanban board — drag & drop]
+
+    T4 --> T4a[Script blocks — rich text]
+    T4 --> T4b[Download .pptx]
+
+    T5 --> N1[NhsStartPage] --> N2[NhsDashboardPage — iframe v5_1]
+    T6 --> A1[NhsAnalyticsStartPage] --> A2[NhsAnalyticsDashboardPage — iframe v3]
+
+    style T5 fill:#009639,color:#fff
+    style T6 fill:#009639,color:#fff
+    style N2 fill:#003087,color:#fff
+    style A2 fill:#003087,color:#fff
+```
+
+---
+
 ## CI / CD
 
 Every push and pull request triggers the pipeline in `.github/workflows/ci.yml`:

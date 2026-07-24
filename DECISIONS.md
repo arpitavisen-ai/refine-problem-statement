@@ -160,9 +160,9 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-### DD-05 · Artefacts tab as the single source of truth for discovery outputs
-**Status:** Active  
-**Decision:** All discovery artefacts (market research, personas analysis, OKRs, roadmap, research plan, findings) are stored as `marketResearch` items in Firebase and rendered in the Artefacts tab via `MarketResearchGrid`.  
+### DD-05 · Artefacts section as the single source of truth for discovery outputs
+**Status:** Active (updated DD-13)
+**Decision:** All discovery artefacts (market research, personas analysis, OKRs, roadmap, research plan, findings) are stored as `marketResearch` items in Firebase and rendered via `MarketResearchGrid`. As of DD-13, the artefacts section is displayed inline within the "Use Case - NHS Platform" tab below the personas grid — no longer a standalone tab.  
 **Rationale:** A single data structure and rendering path for all artefact types. Rich content is stored as HTML strings in a `richContent` field, rendered in an expanded card modal. Thumbnails are Unsplash URLs for visual variety without asset hosting.
 
 ---
@@ -202,10 +202,10 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-### DD-10 · Persona video embed in User Analysis
+### DD-10 · Persona video embed in Use Case - NHS Platform tab
 **Status:** Active  
-**Date:** 2026-07-06  
-**Decision:** Each persona card in the User Analysis tab has an optional `videoUrl` field. When set, a video player is shown inside the persona detail modal. YouTube URLs are converted to embed URLs; direct `.mp4`/`.webm`/`.ogg` links are played via a native `<video>` element. The field is editable in-app and persisted to Firebase via `onUpdate`.  
+**Date:** 2026-07-06 (tab renamed DD-13)
+**Decision:** Each persona card in the Use Case - NHS Platform tab has an optional `videoUrl` field. When set, a video player is shown inside the persona detail modal. YouTube URLs are converted to embed URLs; direct `.mp4`/`.webm`/`.ogg` links are played via a native `<video>` element. The field is editable in-app and persisted to Firebase via `onUpdate`.  
 **Rationale:** Allows user research recordings or stakeholder interview clips to be attached directly to the persona they relate to — keeping evidence alongside analysis in one place.  
 **Where:** `src/app/components/PersonaCard.tsx` (`toEmbedUrl` helper + video section in modal); `videoUrl: ""` added to all three personas in `seedData.ts`.
 
@@ -256,6 +256,15 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 **Decision:** NHS FFT upload files (`.xlsx`, `.csv`) are parsed in the browser using the `xlsx` library. Parsed records are deduplicated by composite key (`trustCode|wardCode|responseDate|overallExperience|comments`) before being merged into Firebase.  
 **Rationale:** No server required for file processing. Deduplication on the client prevents accidental double-imports from re-uploading the same file.  
 **Where:** `src/app/utils/fftParser.ts` (parsing) + `App.tsx` `handleFFTImport` (dedup + merge).
+
+---
+
+### DD-13 · Tab restructure — "Use Case - NHS Platform" consolidates User Analysis and Artefacts
+**Status:** Active  
+**Date:** 2026-07-24  
+**Decision:** The standalone "User Analysis" and "Artefacts" tabs were merged into a single "Use Case - NHS Platform" tab. The tab now presents, in order: (1) problem statement + discovery stats panel, (2) user personas grid, (3) artefacts section (MarketResearchGrid) inline below the personas. The standalone "Artefacts" tab route (`value="research"`) and its `Tabs.Content` block were removed. The hero section was simplified to the product title only ("AI in Product Management") — the editable problem statement and summary stats were removed from the hero. Header branding updated from "Patient Feedback Intelligence Platform" to "S&PE Product AI Pillar". Default active tab remains `pdlc`. NHS Platform and Performance Analytics tabs are unchanged.  
+**Rationale:** Separating personas and artefacts into different tabs created unnecessary navigation friction — both belong to the discovery phase and tell the same story. A single "Use Case" tab lets presenters tell a coherent narrative: context → who the users are → what we built to understand them. Removing the editable problem statement from the hero avoids duplication (the content lives in the tab) and simplifies the header layout.  
+**Tests updated:** `02-problem-statement.spec.ts` (navigates to tab; edit test skipped), `03-user-analysis.spec.ts` (tab label updated), `04-artefacts.spec.ts` (tab label updated).
 
 ---
 

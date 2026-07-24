@@ -7,7 +7,7 @@ import { loadApp, goToTab } from './helpers';
 test.describe('AC-04 · Artefacts Tab', () => {
   test.beforeEach(async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, 'Use Case - NHS Platform');
   });
 
   // ── Render ──────────────────────────────────────────────────────────────────

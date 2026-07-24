@@ -4,10 +4,10 @@
 import { test, expect } from '@playwright/test';
 import { loadApp, goToTab } from './helpers';
 
-test.describe('AC-03 · User Analysis Tab', () => {
+test.describe('AC-03 · Use Case - NHS Platform Tab', () => {
   test.beforeEach(async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'User Analysis');
+    await goToTab(page, 'Use Case - NHS Platform');
   });
 
   test('tab renders without errors', async ({ page }) => {
