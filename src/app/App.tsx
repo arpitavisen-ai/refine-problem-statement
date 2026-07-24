@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, ListChecks, Layers, Activity, BarChart2, FileText } from 'lucide-react';
+import { Users, ListChecks, Layers, Activity, BarChart2, FileText, Save } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -303,6 +303,17 @@ export default function App() {
                     onOpenDetail={setArtefactDetailId}
                   />
                 )}
+              </div>
+
+              {/* Save All Changes */}
+              <div className="mt-10 flex justify-center">
+                <button
+                  onClick={() => { flushUserSegments(); flushMarketResearch(); }}
+                  className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
+                >
+                  <Save className="w-4 h-4" />
+                  Save All Changes
+                </button>
               </div>
             </Tabs.Content>
 
