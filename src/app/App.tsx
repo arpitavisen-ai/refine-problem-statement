@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Users, ListChecks, Layers, Activity, BarChart2, FileText, Save } from 'lucide-react';
+import { Users, ListChecks, Layers, Activity, BarChart2, FileText } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -288,6 +288,21 @@ export default function App() {
 
               {/* Artefacts — inline below personas */}
               <div className="mt-14 pt-10 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-500 mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>Research Agenda</p>
+                    <h2 className="text-2xl font-semibold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>Artefact Details</h2>
+                  </div>
+                  {!artefactDetailId && (
+                    <button
+                      onClick={() => addMarketResearch({ title: 'New Activity', description: 'Describe this research activity…' })}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
+                    >
+                      <span className="text-base leading-none">+</span>
+                      Add Activity
+                    </button>
+                  )}
+                </div>
                 {artefactDetailId === 'artefact-prototype' ? (
                   <PrototypeDetailView onBack={() => setArtefactDetailId(null)} />
                 ) : (
@@ -303,17 +318,6 @@ export default function App() {
                     onOpenDetail={setArtefactDetailId}
                   />
                 )}
-              </div>
-
-              {/* Save All Changes */}
-              <div className="mt-10 flex justify-center">
-                <button
-                  onClick={() => { flushUserSegments(); flushMarketResearch(); }}
-                  className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
-                >
-                  <Save className="w-4 h-4" />
-                  Save All Changes
-                </button>
               </div>
             </Tabs.Content>
 
