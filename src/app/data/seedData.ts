@@ -15,7 +15,7 @@ export const SEED_DRAFT_SCRIPT: ScriptBlock[] = [
     title: 'Overall Objective',
     accent: 'indigo',
     body: `<p>The purpose of this work is to demonstrate how AI can be applied throughout the entire Product Development Lifecycle — from discovery through strategy, design, delivery, testing and analytics — and to show how the role of Product Manager continues to evolve as AI becomes embedded in delivery practices.</p>
-<p>This is not a technology demo. Every AI capability shown connects back to a product decision, a user outcome, or a business implication. The central question is not <strong>"what can AI do?"</strong> but <strong>"how do Product Managers create value in an AI-native delivery environment?"</strong></p>
+<p>This is not a technology demo. Every AI capability shown connects back to a product decision, a user outcome, or a business implication. The central question is not <strong>"what can AI do?"</strong> but <strong>"what efficiencies AI introduces in PDLC"</strong> and <strong>"how do Business Analyst and Product Managers create value in an AI-native delivery environment?"</strong></p>
 <h3>Three things the audience should take away</h3>
 <ul>
 <li><strong>AI across every PDLC phase</strong> — from discovery to ops, AI accelerates each stage in a distinct way</li>

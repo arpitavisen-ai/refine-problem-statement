@@ -322,5 +322,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
