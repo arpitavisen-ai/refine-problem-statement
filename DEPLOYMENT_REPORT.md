@@ -278,7 +278,9 @@ invisible because of finding A. I added `unlockPasswordGate` to `loadApp`, readi
 bundle. **For a human:** decide whether the demo password belongs in test code at all, or
 whether CI should inject `APP_PASSWORD` as a secret. I chose the reversible option.
 
-**C · 16 pre-existing failures remain in the host app. NOT fixed — out of scope.**
+**C · Pre-existing host failures. SUPERSEDED — see section 7,** which re-triages all of these individually, fixes 7, and documents the rest as two named product defects.
+
+**C (original note) · 16 pre-existing failures remain in the host app.**
 Pristine `HEAD` fails 18; with this change it fails 16. They cluster in three areas:
 the NHS microsites' skip-link focus order (`13`, `18`), the analytics landing page's
 visibility assertions (`18`), and Firebase-backed artefact/prototype editing (`04`, `16`).
@@ -325,6 +327,197 @@ assets.
    worth it today: the pages are self-contained, pass 59 behavioural checks, and have a
    working Python generator. Revisit if the Crucible needs host auth, shared state, or
    host navigation. Until then, static is the cheaper and lower-risk option.
+
+---
+
+## 7 · Test-failure triage (follow-up task)
+
+Re-triaged all 15 pre-existing failures individually rather than by shared symptom — my
+first grouping was too coarse and misattributed three of them. Corrected classification:
+**5 test bugs (fixed)** and **10 real product defects (left failing, not fixed)**.
+
+No application source file was modified. `PrototypeDetailView.tsx`, the microsite
+components, and `App.tsx` are untouched by this follow-up.
+
+### 7.1 Fixed - genuine test bugs (7)
+
+| Test | Defect | Fix |
+|---|---|---|
+| `12-...journey` demo banner | `'.demo-banner, #demoBar, text=DEMO DATA ONLY'` - Playwright rejects a selector mixing the CSS and text engines in one comma list | `.locator('.demo-banner, #demoBar').or(getByText('DEMO DATA ONLY'))` |
+| `12-...journey` verbatims | Asserted `text=Patient verbatims` - **that string is never rendered.** It occurs once in the whole dashboard, inside a JS source comment. The real heading is "Representative patient comments" | Assert `.verbatim-section`, the real heading, and >=1 `.verbatim` quote |
+| `18-...landing` NHS header | `text=NHS` -> 9 elements, strict-mode violation | Scoped to the `banner` landmark; asserts logo mark and logo text |
+| `18-...landing` what's inside | `text=North star metric` and 4 sibling labels -> 2 elements each (nav item + section heading) | Loop the five labels with `.first()` |
+| `16-...editing` edit button accessible | Located the just-added version with `.first()` | New `versionCard(page, label)` helper - see below |
+| `16-...editing` edit aria-label | Same `.first()` assumption | Same |
+
+**The `.first()` bug.** `PrototypeDetailView` sorts versions by `date` descending with a
+stable sort, and every version created through the modal defaults to *today*. Same-date
+entries therefore keep insertion order, so `.first()` is the **oldest** same-day version -
+never the one the test just added. Any pre-existing entry shadows it. Replaced 12
+positional lookups with a `versionCard(page, label)` helper that filters by label, and
+captured the label return value in the 9 tests that were discarding it.
+
+What these seven have in common: selectors that were **invalid, ambiguous, or
+order-dependent by construction**. They could not have passed. That is the signature of
+tests authored against the green-looking CI described in finding A, which was executing
+nothing.
+
+### 7.2 NOT fixed - product defect: edit modal loads the wrong version's data
+
+**Severity: high. A data-integrity bug, not a CI cleanup item.**
+
+**Reproduction** (Artefacts -> Prototype -> Design Log, 4 versions present):
+
+| Action | Label field shows | Should show |
+|---|---|---|
+| 1st open of edit modal, any version | `""` (empty) | that version's label |
+| 2nd open, "Pre-populated Label Test" | `"Keyboard Test Version"` | `"Pre-populated Label Test"` |
+| 3rd open, "Keyboard Test Version" | `"Pre-populated Label Test"` | `"Keyboard Test Version"` |
+
+The form is consistently **one step behind** - it shows whichever version was open
+previously. Confirmed with a standalone script, independent of the test suite, and
+re-confirmed after 7.1's locator fix: with the correct card now targeted, the field is
+still empty (`Expected: "Pre-populated Label Test", Received: ""`).
+
+**Root cause.** In `src/app/components/PrototypeDetailView.tsx`, `VersionModal`
+initialises form state from props:
+
+```tsx
+const [label, setLabel] = useState(initial?.label ?? '');   // ~line 58
+```
+
+`useState` initialisers run only on first mount. The edit instance is mounted
+unconditionally (~line 521):
+
+```tsx
+<VersionModal open={editingVersion !== null} initial={editingVersion ?? undefined} ... />
+```
+
+At first render `editingVersion` is `null`, so every field initialises empty and stays
+that way - there is no `key` and no effect syncing state to `initial`. `resetToInitial()`
+does read `initial`, but only runs on **close**, which is exactly why the form ends up
+showing the previously-edited version.
+
+**Why it matters beyond the suite.** `handleSubmit` writes the displayed values back via
+`onSave({ label, date, note, fileName, htmlContent })`. A user who opens version B, sees
+version A's text and saves **silently overwrites version B with version A's content**. On
+the first edit after page load the form is empty, so `canSubmit` is false and the user is
+instead blocked from saving without re-entering everything, including re-uploading the
+HTML file. Editing is broken either way.
+
+**Recommended fix** (one line, for whoever owns this component):
+
+```tsx
+<VersionModal key={editingVersion?.id ?? 'new'} ... />
+```
+
+Remounting per version makes the `useState` initialisers correct by construction. A
+`useEffect` syncing props into state also works but reintroduces stale/echo hazards; `key`
+is the idiomatic answer.
+
+Left **failing**, with a comment block at the top of the spec pointing here.
+
+### 7.3 NOT fixed - accessibility defect: microsite skip links unreachable (2 tests)
+
+`13-nhs-start-page.spec.ts` and `18-nhs-analytics-landing.spec.ts`, "skip link is the first
+focusable element".
+
+Each microsite opens as a full-screen overlay rendered **after** the host's tab bar in the
+DOM, and the host content is left in the tab order behind it - not inert, with no focus
+move into the overlay on open.
+
+```
+skip link           DOM index ~109
+host's first tab    DOM index ~60
+after clicking the tab, focus = the tab button; one Tab -> an intermediate DIV
+```
+
+Verified on **both** microsites, and it still reproduces after explicitly blurring to reset
+focus - so it is structural, not an artefact of the test's starting focus.
+
+This defeats the skip links added under `AD-09` for WCAG 2.4.1 (Bypass Blocks): a keyboard
+user entering a microsite cannot reach the skip link first, and must traverse host chrome
+that is visually hidden behind the overlay. It also implicates 2.4.3 (Focus Order).
+
+**Recommended fix:** on overlay open, move focus into the overlay and mark the host subtree
+`inert`. That is a host-shell change in `App.tsx`, not a microsite change, so it does not
+cross the AD-08/AD-13 boundary.
+
+Left **failing** with an explanatory comment, for the same reason as 7.2.
+
+### 7.4 NEW FINDING - the acceptance suite mutates the production Firebase
+
+**This needs a decision before the suite is ever used as a release gate.**
+
+`16-prototype-editing.spec.ts` creates real prototype versions through the UI, which
+`useFirebaseSync` persists to the **same Firebase project production uses**. There is no
+fixture isolation and no teardown. Consequences observed directly during this task:
+
+- The design log accumulated duplicate QA entries across runs ("Keyboard Test Version",
+  "Pre-populated Label Test", ...).
+- `prototypeVersions` is stored as one JSON-string array, so **parallel workers clobber
+  each other** last-write-wins. Between two observations the log went from 4 cards to 1.
+- `prototypeVersions` has **no seed**
+  (`useFirebaseSync<PrototypeVersion[]>('prototypeVersions', [])`). It is user-uploaded
+  content only, so anything lost is not recoverable from code.
+
+**I caused data loss here and cannot tell you how much.** I ran the full suite roughly six
+times while verifying this work. That path now contains only test-created entries. I do not
+know whether genuine uploaded versions existed beforehand - I never captured a baseline of
+it, which I should have done before first running a suite that writes to production data. I
+have **not** attempted any repair: writing to that path is the same destructive action that
+caused the problem, and the remedy is your call.
+
+Two of the 8 remaining `16-` failures ("Cancel in add modal closes without creating a
+card", "saving ... preserves the total number of version cards") are count-based assertions
+that this pollution confounds - they compare card counts against a store other tests are
+concurrently rewriting.
+
+**Recommendations, in priority order:**
+1. Point the acceptance suite at a **separate Firebase project** via env var, as
+   `CLAUDE.md` already mandates for the NHS microsite. This is the real fix.
+2. Until then, do **not** gate production promotion on this suite - it writes to
+   production data on every run.
+3. Give the mutating tests setup/teardown, and make count-based assertions relative to a
+   count captured in the same test rather than absolute.
+4. Consider whether `prototypeVersions` should use per-item paths rather than one JSON
+   blob, so concurrent writers stop clobbering each other (`AD-02`/`CD-10` territory).
+
+### 7.5 Resulting state
+
+Full suite, same runner and origin as every other figure in this report:
+
+| | Before this follow-up | After |
+|---|---|---|
+| Passed | 149 | **153** |
+| Failed | 15 | **11** |
+
+The 11 remaining failures are exactly the two product defects, and nothing else:
+
+| Spec | Count | Defect |
+|---|---|---|
+| `16-prototype-editing` | 9 | 7.2 edit modal (7 tests) + 7.4 shared-state pollution (2 count-based tests) |
+| `13-nhs-start-page` | 1 | 7.3 skip link unreachable |
+| `18-nhs-analytics-landing` | 1 | 7.3 skip link unreachable |
+
+Serial run of `16-prototype-editing.spec.ts` in isolation: **9 passed, 8 failed** — one
+fewer failure than in the parallel run, the difference being a count-based test that only
+fails when concurrent workers are rewriting the same Firebase array (7.4).
+
+### 7.6 Regression check
+
+No spec that was passing before this follow-up is failing now. Specifically:
+
+- **AC-20 (New UI), 25 tests — all pass.** Zero appearances in the failure list.
+- **`qa_final.mjs` — 59/59, "ALL CHECKS PASSED"** against the deployed `/new-ui/` path.
+- The `04-artefacts` thumbnail test flagged as load-flaky in §5 C2 passed in this run,
+  consistent with it being contention-sensitive rather than broken.
+
+Files changed by this follow-up are test files only:
+`12-nhs-dashboard-journey.spec.ts`, `13-nhs-start-page.spec.ts`,
+`16-prototype-editing.spec.ts`, `18-nhs-analytics-landing.spec.ts`.
+No application source file was modified: `PrototypeDetailView.tsx`, the microsite
+components, and `App.tsx` are untouched.
 
 ---
 

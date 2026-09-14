@@ -16,8 +16,11 @@ async function openAnalyticsLanding(page: Parameters<typeof loadApp>[0]) {
 test.describe('AC-18 · NHS Analytics Landing Page', () => {
   test('NHS header is visible on landing page', async ({ page }) => {
     await openAnalyticsLanding(page);
-    await expect(page.locator('text=NHS')).toBeVisible();
-    await expect(page.locator('text=Patient Feedback Intelligence')).toBeVisible();
+    // Scoped to the banner landmark: a bare `text=NHS` matches 9 elements on an
+    // NHS-branded page and trips strict mode. The intent here is the NHS header.
+    const banner = page.getByRole('banner');
+    await expect(banner.locator('.nhs-logo-mark')).toHaveText('NHS');
+    await expect(banner.locator('.nhs-logo-text')).toHaveText('Patient Feedback Intelligence');
   });
 
   test('correct H1 is shown on landing page', async ({ page }) => {
@@ -25,6 +28,25 @@ test.describe('AC-18 · NHS Analytics Landing Page', () => {
     await expect(page.getByRole('heading', { level: 1, name: /Performance analytics for patient feedback/i })).toBeVisible();
   });
 
+  /**
+   * KNOWN ISSUE — fails against a real accessibility defect, not a test defect.
+   *
+   * The microsite opens as a full-screen overlay rendered AFTER the host's tab bar in
+   * the DOM (skip link at document index ~109; the host's first tab button at ~60).
+   * The host content is left in the tab order behind the overlay -- it is not inert and
+   * focus is not moved into the overlay on open. So the skip link added for WCAG 2.4.1
+   * (AD-09) is not reachable as the first tab stop: after clicking the tab, focus sits
+   * on the tab button, and one Tab lands on an intermediate DIV.
+   *
+   * Verified reproducible on BOTH microsites, and it still reproduces after explicitly
+   * blurring to reset focus -- so it is structural, not an artefact of the test's
+   * starting focus.
+   *
+   * Left FAILING rather than skipped so the defect stays visible. The assertion is
+   * correct; the fix belongs in the host overlay (move focus into the overlay on open
+   * and mark the background inert).
+   * Full write-up: DEPLOYMENT_REPORT.md, section 7.
+   */
   test('skip link is the first focusable element and becomes visible on focus', async ({ page }) => {
     await openAnalyticsLanding(page);
     // Tab once from the body — skip link should receive focus first
@@ -40,11 +62,18 @@ test.describe('AC-18 · NHS Analytics Landing Page', () => {
 
   test("what's inside section lists analytics features", async ({ page }) => {
     await openAnalyticsLanding(page);
-    await expect(page.locator('text=North star metric')).toBeVisible();
-    await expect(page.locator('text=Four product drivers')).toBeVisible();
-    await expect(page.locator('text=Technical health')).toBeVisible();
-    await expect(page.locator('text=AI layer')).toBeVisible();
-    await expect(page.locator('text=Signals archive')).toBeVisible();
+    // Each of these labels appears more than once (in-page nav item + section
+    // heading), so an unqualified text locator trips strict mode. The assertion
+    // here is presence in the "what's inside" list, so first match is sufficient.
+    for (const feature of [
+      'North star metric',
+      'Four product drivers',
+      'Technical health',
+      'AI layer',
+      'Signals archive',
+    ]) {
+      await expect(page.locator(`text=${feature}`).first()).toBeVisible();
+    }
   });
 
   test('"View analytics" primary button navigates to analytics dashboard', async ({ page }) => {

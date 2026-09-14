@@ -56,6 +56,43 @@ async function addTestVersion(
   return label;
 }
 
+/**
+ * KNOWN ISSUE — these tests fail against a real product defect, not a test defect.
+ *
+ * The edit modal never pre-populates from the version you clicked. `VersionModal`
+ * initialises its form state with `useState(initial?.label ?? '')`, but the edit
+ * instance is mounted unconditionally in `PrototypeDetailView` with
+ * `initial={editingVersion ?? undefined}` -- so the initialiser runs once, at first
+ * render, when `editingVersion` is still null. There is no `key` and no effect
+ * syncing state to props, so later `initial` changes are ignored. `resetToInitial()`
+ * does read `initial`, but only runs on close, which leaves the form showing the
+ * PREVIOUS version's values.
+ *
+ * Observed (4 versions in the log):
+ *   1st open (any version)        -> label field ""
+ *   2nd open "Pre-populated..."   -> label field "Keyboard Test Version"   (wrong version)
+ *   3rd open "Keyboard Test..."   -> label field "Pre-populated Label Test" (wrong version)
+ *
+ * This is a data-integrity risk, not a cosmetic one: saving an edit writes the
+ * displayed values back, so editing version B can overwrite it with version A's data.
+ *
+ * These tests are deliberately left FAILING rather than skipped, so the defect stays
+ * visible in CI. Do not "fix" them by relaxing the assertions -- they are correct.
+ * Full reproduction and recommended fix: DEPLOYMENT_REPORT.md, section 7.
+ */
+
+/**
+ * Locate the card for a specific version label.
+ *
+ * `.first()` is NOT the version you just added: PrototypeDetailView sorts by `date`
+ * descending with a stable sort, and every version created through the modal defaults
+ * to today's date. Same-date entries therefore keep insertion order, so the OLDEST
+ * same-day version stays first and any pre-existing entry shadows the new one.
+ */
+function versionCard(page: Parameters<typeof loadApp>[0], label: string) {
+  return page.getByTestId('prototype-version-card').filter({ hasText: label }).first();
+}
+
 test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   // ─── Detail view renders ────────────────────────────────────────────────────
@@ -111,7 +148,7 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
   test('edit button is accessible on each version card', async ({ page }) => {
     await openPrototypeDetail(page);
     const label = await addTestVersion(page);
-    const card = page.getByTestId('prototype-version-card').first();
+    const card = versionCard(page, label);
     const editBtn = card.getByTestId('edit-version-btn');
     // The button has an informative aria-label
     await expect(editBtn).toHaveAttribute('aria-label', `Edit ${label}`);
@@ -123,7 +160,7 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
   test('opening the edit modal pre-populates the existing label', async ({ page }) => {
     await openPrototypeDetail(page);
     const label = await addTestVersion(page, 'Pre-populated Label Test', 'Some note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     const modal = page.getByTestId('prototype-version-modal');
@@ -135,8 +172,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
   test('opening the edit modal pre-populates the existing note', async ({ page }) => {
     await openPrototypeDetail(page);
     const note = 'Note that should appear pre-populated';
-    await addTestVersion(page, 'Note Pre-pop Test', note);
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'Note Pre-pop Test', note);
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     await expect(page.getByTestId('prototype-version-modal')).toBeVisible();
@@ -145,8 +182,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('edit modal shows the existing file name in the file picker', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'File Name Test', 'Note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'File Name Test', 'Note');
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     await expect(page.getByTestId('prototype-version-modal')).toBeVisible();
@@ -160,8 +197,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('saving the edit modal updates the label on the version card', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'Before Edit Label', 'Original note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'Before Edit Label', 'Original note');
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     await expect(page.getByTestId('prototype-version-modal')).toBeVisible();
@@ -178,8 +215,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('saving the edit modal updates the note on the version card', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'Note Edit Test', 'Original note text');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'Note Edit Test', 'Original note text');
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
 
@@ -193,12 +230,12 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('saving the edit modal preserves the total number of version cards', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'Card Count Test A', 'Note A');
+    const label = await addTestVersion(page, 'Card Count Test A', 'Note A');
     await addTestVersion(page, 'Card Count Test B', 'Note B');
     const beforeCount = await page.getByTestId('prototype-version-card').count();
 
     // Edit the first card
-    const firstCard = page.getByTestId('prototype-version-card').first();
+    const firstCard = versionCard(page, label);
     await firstCard.getByTestId('edit-version-btn').focus();
     await firstCard.getByTestId('edit-version-btn').click();
     await page.getByTestId('version-label-field').fill('Card Count Test A — edited');
@@ -214,8 +251,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
   test('cancelling the edit modal leaves the card unchanged', async ({ page }) => {
     await openPrototypeDetail(page);
     const original = 'Cancel Edit Test';
-    await addTestVersion(page, original, 'Original note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, original, 'Original note');
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
 
@@ -231,8 +268,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('edit modal can be dismissed with the X button', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page);
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page);
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     await expect(page.getByTestId('prototype-version-modal')).toBeVisible();
@@ -248,14 +285,14 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
   test('edit button has a descriptive aria-label identifying the version', async ({ page }) => {
     await openPrototypeDetail(page);
     const label = await addTestVersion(page, 'Aria Label Version', 'Note');
-    const editBtn = page.getByTestId('prototype-version-card').first().getByTestId('edit-version-btn');
+    const editBtn = versionCard(page, label).getByTestId('edit-version-btn');
     await expect(editBtn).toHaveAttribute('aria-label', `Edit ${label}`);
   });
 
   test('version modal is keyboard-navigable (save is reachable via Tab)', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'Keyboard Test Version', 'Note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'Keyboard Test Version', 'Note');
+    const card = versionCard(page, label);
     await card.getByTestId('edit-version-btn').focus();
     await card.getByTestId('edit-version-btn').click();
     await expect(page.getByTestId('prototype-version-modal')).toBeVisible();
@@ -270,8 +307,8 @@ test.describe('AC-16 · Prototype Design Log — Version Editing', () => {
 
   test('"Open in new tab" button is present on each version card', async ({ page }) => {
     await openPrototypeDetail(page);
-    await addTestVersion(page, 'Open Tab Test', 'Note');
-    const card = page.getByTestId('prototype-version-card').first();
+    const label = await addTestVersion(page, 'Open Tab Test', 'Note');
+    const card = versionCard(page, label);
     await expect(card.getByRole('button', { name: /open in new tab/i })).toBeVisible();
   });
 });
