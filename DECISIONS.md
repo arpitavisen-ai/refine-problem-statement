@@ -124,6 +124,15 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-13 · S&PE Product AI Crucible deployed as a static "New UI" section
+**Status:** Active  
+**Date:** 2026-09-14  
+**Decision:** The four-page S&PE Product AI Crucible prototype (`spe-framework.html`, `spe-case-foundry.html`, `spe-case-01-nhs.html`, `spe-resources.html`) is deployed verbatim as static HTML at `public/new-ui/`, served at `/new-ui/`. The four files stay in one directory so their filename-only relative links keep resolving. No React wrapper, no iframe embed, and no re-platforming into components — unlike AD-08/AD-10 these pages are a whole site with their own header, nav, and footer, so an iframe shell would duplicate chrome and break the same-tab "take me to the new site" intent. Entry is a single fixed "New UI" pill on the host home page linking to `/new-ui/spe-framework.html` in the same tab. The pill sits **bottom-left**: top-right is occupied by the "NHS · Discovery Complete" status indicator, bottom-right by the Sonner toaster, and top-left by the brand lockup. One content addition was made to each of the four pages — a "Showcase home" link (`href="/"`) as the first item in the primary nav — because the prototypes shipped with no route back to the host. Everything else is byte-identical to the source prototype, including the demo/synthetic-data provenance labelling. The pages' Evidence & Attachments preview keeps its `data:` URI mechanism; it is not a defect and must not be reverted to `blob:`.  
+**Rationale:** The repo's existing precedent (AD-08, AD-10) is static HTML in `public/<name>/`, which this follows; the departure is skipping the React start-page/iframe wrapper, which those microsites needed because they are single dashboards embedded *inside* the showcase. The Crucible is a peer site, not an embedded view. Acknowledged limitation: `/new-ui/` is served outside the `PasswordGate` (AD-12), which only wraps the React app — the pages carry demo/synthetic data only, so this is accepted rather than fixed; if real data ever lands there, it needs a server-side gate.  
+**Where:** `public/new-ui/*.html`; badge in `src/app/App.tsx`; acceptance tests in `tests/acceptance/20-new-ui-crucible.spec.ts`; portable QA suite at `qa/qa_final.mjs` in the source package.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -313,5 +322,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-09-14 (added AD-13 S&PE Product AI Crucible static "New UI" section; Playwright spec AC-20). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
