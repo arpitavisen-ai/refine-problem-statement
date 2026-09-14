@@ -11,8 +11,12 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
-const ROOT = path.resolve(__dirname, '../../');
+// package.json sets "type": "module", so this spec is loaded as ESM and `__dirname`
+// is not defined. Referencing it threw at module load, which aborted collection for
+// the whole suite while Playwright still exited 0 — i.e. CI silently ran no tests.
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
 const DECISIONS_PATH = path.join(ROOT, 'DECISIONS.md');
 
 // Source paths whose changes should always be reflected in DECISIONS.md

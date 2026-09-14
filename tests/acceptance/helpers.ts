@@ -3,8 +3,23 @@ import { Page, expect } from '@playwright/test';
 /** Navigate to the app and wait for Firebase to hydrate data (spinner gone + content visible). */
 export async function loadApp(page: Page) {
   await page.goto('/');
+  await unlockPasswordGate(page);
   // Wait for the hero problem-statement section to appear (proves Firebase seeded & React rendered)
   await expect(page.locator('text=Patient Feedback').first()).toBeVisible({ timeout: 25_000 });
+}
+
+/**
+ * Pass the client-side PasswordGate (AD-12), which wraps the whole app and was added
+ * after these specs were written. Not a secret: the value ships in the JS bundle and is
+ * recorded in DECISIONS.md — it only keeps casual visitors out of a synthetic-data demo.
+ * Override with APP_PASSWORD if the demo password is ever rotated.
+ */
+export async function unlockPasswordGate(page: Page) {
+  const field = page.getByPlaceholder('Password');
+  if (!(await field.isVisible().catch(() => false))) return;
+  await field.fill(process.env.APP_PASSWORD ?? 'spe2026');
+  await page.getByRole('button', { name: 'Unlock' }).click();
+  await expect(field).toBeHidden({ timeout: 10_000 });
 }
 
 /** Click a tab by its visible label. */
