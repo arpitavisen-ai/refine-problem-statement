@@ -36,7 +36,11 @@ test.describe('AC-12 · NHS Dashboard Journey', () => {
     // NHS dark blue #003087 → rgb(0, 48, 135)
     expect(bg).toContain('0, 48, 135');
     // Inside the frame: NHS-specific element is present
-    await expect(frame.locator('.demo-banner, #demoBar, text=DEMO DATA ONLY').first()).toBeVisible({ timeout: 10_000 });
+    // `.or()` rather than a comma list: Playwright rejects a selector that mixes the
+    // CSS engine with the text engine in one comma-separated string.
+    await expect(
+      frame.locator('.demo-banner, #demoBar').or(frame.getByText('DEMO DATA ONLY')).first(),
+    ).toBeVisible({ timeout: 10_000 });
   });
 
   // ─── DEMO DATA ONLY label ───────────────────────────────────────────────────
@@ -131,8 +135,14 @@ test.describe('AC-12 · NHS Dashboard Journey', () => {
     await frame.locator('#tab-cn').waitFor({ timeout: 10_000 });
     const firstRow = frame.locator('#issueBody tr').first();
     await firstRow.click();
-    // Verbatims section should appear
-    await expect(frame.locator('text=Patient verbatims').first()).toBeVisible({ timeout: 5_000 });
+    // Verbatims section should appear. The dashboard renders the heading
+    // "Representative patient comments" -- there is no "Patient verbatims" string in
+    // the UI (it only appears in a source comment), so assert on the rendered block.
+    await expect(frame.locator('.verbatim-section')).toBeVisible({ timeout: 5_000 });
+    await expect(
+      frame.locator('.verbatim-head-title').filter({ hasText: 'Representative patient comments' }),
+    ).toBeVisible();
+    await expect(frame.locator('.verbatim').first()).toBeVisible();
   });
 
   // ─── Prioritised Signals (AI narrative) ────────────────────────────────────

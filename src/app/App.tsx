@@ -401,6 +401,28 @@ export default function App() {
             </Suspense>
           </div>
         )}
+
+        {/*
+          "New UI" entry point → the S&PE Product AI Crucible static section (AD-13).
+          Bottom-left corner: top-right holds the "NHS · Discovery Complete" status
+          indicator, bottom-right the Sonner toaster, top-left the brand lockup.
+          Rendered LAST in the tree so it takes the final tab stop — placing it earlier
+          stole the first Tab from the NHS microsites' "skip to main content" links.
+          Hidden while a microsite overlay is open: the brief scopes this entry point to
+          the home page, and the overlays are full-screen. Plain anchor, not a router
+          link — this is a real navigation out of the SPA, in the same tab.
+        */}
+        {activeTab !== 'nhs' && activeTab !== 'nhs-analytics' && (
+          <a
+            href="/new-ui/spe-framework.html"
+            data-testid="new-ui-badge"
+            className="fixed bottom-5 left-5 z-[60] inline-flex items-center gap-2 min-h-[44px] rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold tracking-wide text-white no-underline shadow-lg transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-white/90" aria-hidden="true" />
+            New UI
+          </a>
+        )}
       </div>
     </DndProvider>
     </PasswordGate>

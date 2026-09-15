@@ -27,6 +27,25 @@ test.describe('AC-13 · NHS Service Start Page', () => {
 
   // ─── Skip link (QA Fix #1) ─────────────────────────────────────────────────
 
+  /**
+   * KNOWN ISSUE — fails against a real accessibility defect, not a test defect.
+   *
+   * The microsite opens as a full-screen overlay rendered AFTER the host's tab bar in
+   * the DOM (skip link at document index ~109; the host's first tab button at ~60).
+   * The host content is left in the tab order behind the overlay -- it is not inert and
+   * focus is not moved into the overlay on open. So the skip link added for WCAG 2.4.1
+   * (AD-09) is not reachable as the first tab stop: after clicking the tab, focus sits
+   * on the tab button, and one Tab lands on an intermediate DIV.
+   *
+   * Verified reproducible on BOTH microsites, and it still reproduces after explicitly
+   * blurring to reset focus -- so it is structural, not an artefact of the test's
+   * starting focus.
+   *
+   * Left FAILING rather than skipped so the defect stays visible. The assertion is
+   * correct; the fix belongs in the host overlay (move focus into the overlay on open
+   * and mark the background inert).
+   * Full write-up: DEPLOYMENT_REPORT.md, section 7.
+   */
   test('skip link is the first focusable element and becomes visible on focus', async ({ page }) => {
     await openStartPage(page);
     // Tab once from the page to reach the first focusable element
