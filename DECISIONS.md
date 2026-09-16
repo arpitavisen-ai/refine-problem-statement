@@ -133,6 +133,24 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-14 · Correct AD-13's "byte-identical" claim for `spe-framework.html`
+**Status:** Active  
+**Date:** 2026-09-16  
+**Decision:** AD-13 stated that only a "Showcase home" link was added to each of the four New UI pages and everything else remained byte-identical to the source prototype. That was accurate when written. It no longer holds for `spe-framework.html`, as of `e3672ab`:
+
+- Four stakeholder-requested copy edits (hero H1, framework rail heading, Strategy phase lead paragraph, Strategy phase capability tag).
+- A content merge lifting differentiator and capability material from the old UI's `PDLCSection.tsx` into the "How S&PE differentiates & delivers" column, across 14 of 18 rows, additively — four rows deliberately left unchanged where no old-UI equivalent existed.
+- One new section, "What holds across every phase", for five phase-agnostic items that did not map to a single phase.
+- One scoped inline style on the Strategy capability tag only; the shared rule is unchanged.
+
+`spe-case-foundry.html`, `spe-case-01-nhs.html` and `spe-resources.html` are unaffected and remain byte-identical, as AD-13 describes.
+
+Going forward the committed copy of `spe-framework.html` is canonical. Any source prototype held outside the repo is stale and is not regenerated into this repo.  
+**Rationale:** AD-13's byte-identical claim is load-bearing — it is what lets a reviewer diff the deployed pages against the source prototype and treat any difference as a defect. Left uncorrected, it sends the next reviewer hunting for a discrepancy that is in fact a recorded, deliberate change, and it makes the deployed page look like drift rather than a decision. AD-13's original text is deliberately left intact: it was accurate on 2026-09-14, so this entry records the change rather than rewriting the history.  
+**Where:** `public/new-ui/spe-framework.html`; the changes landed in `e3672ab`, which touched that file only (44 insertions, 10 deletions). The merged source is `PHASE_INSIGHTS.differentiators` in `src/app/components/PDLCSection.tsx`.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -331,5 +349,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
