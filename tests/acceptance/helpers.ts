@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 
-/** Navigate to the app and wait for Firebase to hydrate data (spinner gone + content visible). */
+/** Navigate to the app, pass the password gate, and wait for the React shell to mount. */
 export async function loadApp(page: Page) {
   // Bypass the session password gate so tests never hit the login screen
   await page.addInitScript(() => {
@@ -8,8 +8,15 @@ export async function loadApp(page: Page) {
   });
   await page.goto('/');
   await unlockPasswordGate(page);
-  // Wait for the hero problem-statement section to appear (proves Firebase seeded & React rendered)
-  await expect(page.locator('text=Patient Feedback').first()).toBeVisible({ timeout: 25_000 });
+  // Anchor on a test id, not copy. This probe previously asserted `text=Patient Feedback`,
+  // which the hero simplification (50c13e7) and tab restructure (99d5e81) removed — taking
+  // every loadApp-routed spec down with it. A data-testid is the suite's existing convention
+  // and does not move when copy is rewritten.
+  //
+  // Note this proves the tab shell mounted past the gate — not that Firebase has hydrated.
+  // There is no hydration gate in App.tsx (seed defaults render immediately), so the old
+  // "proves Firebase seeded" claim was never true. Specs assert their own data.
+  await expect(page.getByTestId('tab-nhs')).toBeVisible({ timeout: 25_000 });
 }
 
 /**

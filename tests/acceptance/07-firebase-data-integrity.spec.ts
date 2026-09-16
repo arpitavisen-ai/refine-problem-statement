@@ -5,23 +5,29 @@
 import { test, expect } from '@playwright/test';
 import { loadApp, goToTab } from './helpers';
 
+// The tab restructure (99d5e81, DD-13) merged 'User Analysis' and 'Artefacts' into a single
+// 'Use Case - NHS Platform' tab, and moved the problem statement and stats grid into it from
+// the landing view. Every lookup below follows that move.
+const USE_CASE_TAB = 'Use Case - NHS Platform';
+
 test.describe('AC-07 · Firebase Data Integrity', () => {
   test('seed data present: problem statement contains NHS reference', async ({ page }) => {
     await loadApp(page);
+    await goToTab(page, USE_CASE_TAB);
     await expect(page.locator('text=10 Year Health Plan').first()).toBeVisible({ timeout: 12_000 });
   });
 
   test('seed data present: all 3 persona names exist', async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'User Analysis');
+    await goToTab(page, USE_CASE_TAB);
     for (const name of ['Chief Nurse', 'Quality Manager', 'Ward Manager']) {
       await expect(page.locator(`text=${name}`).first()).toBeVisible({ timeout: 8_000 });
     }
   });
 
-  test('seed data present: 10 artefacts exist in Artefacts tab', async ({ page }) => {
+  test('seed data present: artefacts exist in the Use Case tab', async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, USE_CASE_TAB);
     await page.waitForTimeout(1500);
     for (const title of [
       'Market & Competitor Analysis',
@@ -43,17 +49,17 @@ test.describe('AC-07 · Firebase Data Integrity', () => {
 
   test('no data loss on tab switch (artefacts persist after navigating away)', async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, USE_CASE_TAB);
     await expect(page.locator('text=Market & Competitor Analysis').first()).toBeVisible();
     await goToTab(page, 'Tasks');
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, USE_CASE_TAB);
     // Data should still be there
     await expect(page.locator('text=Market & Competitor Analysis').first()).toBeVisible();
   });
 
   test('richContent loads into modal editor — not blank for seeded artefacts', async ({ page }) => {
     await loadApp(page);
-    await goToTab(page, 'Artefacts');
+    await goToTab(page, USE_CASE_TAB);
     await page.locator('text=Market & Competitor Analysis').first().click();
     const editor = page.locator('[role="dialog"] [contenteditable="true"]');
     await expect(editor).toBeVisible();
@@ -64,6 +70,7 @@ test.describe('AC-07 · Firebase Data Integrity', () => {
 
   test('stat card "Research Activities" reflects artefact count', async ({ page }) => {
     await loadApp(page);
+    await goToTab(page, USE_CASE_TAB);
     const statCard = page.locator('text=Research Activities').first();
     await expect(statCard).toBeVisible();
     // The number next to or above it should be ≥ 10

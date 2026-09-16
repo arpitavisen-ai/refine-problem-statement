@@ -9,7 +9,7 @@ import { loadApp } from './helpers';
 
 async function openNhsDashboard(page: Parameters<typeof loadApp>[0]) {
   await loadApp(page);
-  await page.getByRole('tab', { name: 'NHS platform' }).click();
+  await page.getByTestId('tab-nhs').click();
   // Start page appears first — click through to dashboard
   await page.locator('[data-testid="nhs-start-now-btn"]').click();
   // Wait for the dashboard back strip (host-side chrome above the iframe)
