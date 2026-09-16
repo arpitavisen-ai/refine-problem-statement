@@ -298,6 +298,7 @@ main section[id], .phase { scroll-margin-top: calc(var(--header-height) + var(--
 .card__link { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: var(--sp-05); text-decoration: none; font-size: var(--type-body-compact); min-height: 44px; }
 .card__link::after { content: "\2192"; }
 .card--compact { min-height: 0; }
+.card p + .eyebrow { margin-top: var(--sp-04); }
 .card--muted { background: var(--layer); }
 .card--wide { grid-column: 1 / -1; min-height: 0; }
 .card__status { margin-top: auto; padding-top: var(--sp-05); font-family: var(--font-mono); font-size: var(--type-label); color: var(--text-secondary); }
@@ -639,6 +640,42 @@ details.dims dd { margin: 2px 0 0; }
     </div>
   </section>
 
+
+  <section class="section section--tight" id="problem-numbers">
+    <div class="grid">
+      <div class="col-rail section__rail">
+        <p class="eyebrow">Why this was worth building</p>
+        <h2 class="section-title">The problem, in numbers</h2>
+        <p>The starting position in a typical trust, before any of this existed.</p>
+      </div>
+      <div class="col-content section__content">
+        <div class="cards" data-columns="4">
+          <div class="card card--compact">
+            <div class="eyebrow mono">of free-text comments</div>
+            <h3 class="card-title">10–20%</h3>
+            <p>The share read by hand in a typical trust today. The rest go unread every quarter.</p>
+          </div>
+          <div class="card card--compact">
+            <div class="eyebrow mono">per quarter, per trust</div>
+            <h3 class="card-title">2–3 days</h3>
+            <p>Quality-team time spent coding one quarter of FFT free text in a spreadsheet.</p>
+          </div>
+          <div class="card card--compact">
+            <div class="eyebrow mono">from stay to ward</div>
+            <h3 class="card-title">4–6 weeks</h3>
+            <p>The lag before a patient’s comment reaches the people it is about — too late to act on or to credit.</p>
+          </div>
+          <div class="card card--compact">
+            <div class="eyebrow mono">NHS trusts in scope</div>
+            <h3 class="card-title">311</h3>
+            <p>Each one publishing patient ratings quarterly under the 10 Year Health Plan, which ties trust income to them.</p>
+          </div>
+        </div>
+        <p class="artefacts">Sources: NHS England FFT publications and the 10 Year Health Plan (July 2025), which introduced clinical team payments, patient power payments and quarterly published league tables.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="section section--tight section--layer" id="killed">
     <div class="grid">
       <div class="col-rail section__rail">
@@ -671,6 +708,51 @@ details.dims dd { margin: 2px 0 0; }
           </div>
         </div>
         <p class="artefacts">Two ideas eliminated in the two cheapest phases, and one claim withdrawn — the intended output of a learning-biased lifecycle.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section section--tight" id="research">
+    <div class="grid">
+      <div class="col-rail section__rail">
+        <p class="eyebrow">Discovery</p>
+        <h2 class="section-title">What the research found</h2>
+        <p>Fourteen interviews, nine prototype sessions and one technical spike, over eight weeks.</p>
+      </div>
+      <div class="col-content section__content">
+        <div class="rows">
+          <div class="row">
+            <div>
+              <h3 class="row-title">Information governance passes, but on conditions</h3>
+              <p>Three of four IG leads would approve a cloud processor — with UK data residency and a privacy impact assessment signed before any patient data moves. One trust made an on-premise option a hard condition, so it entered the architecture as a later-phase commitment rather than a surprise.</p>
+            </div>
+            <div class="row__meta">Gate 1 · IG</div>
+          </div>
+          <div class="row">
+            <div>
+              <h3 class="row-title">Alert fatigue comes from true positives, not false ones</h3>
+              <p>Quality Managers did not reject wrong alerts. They rejected too many right ones. A list showing every ward above threshold is unusable, so the default view became the top three deteriorating wards, with everything else one toggle away.</p>
+            </div>
+            <div class="row__meta">Gate 2 · Alert design</div>
+          </div>
+          <div class="row">
+            <div>
+              <h3 class="row-title">Ward managers will not log in — ever</h3>
+              <p>All four said so unprompted, before being asked. That single finding moved the ward-facing dashboard out of scope and made the Monday email the primary touchpoint, with a no-password link that expires after seven days.</p>
+            </div>
+            <div class="row__meta">Gate 2 · Adoption</div>
+          </div>
+          <div class="row">
+            <div>
+              <h3 class="row-title">The near-term driver is compliance, not payment</h3>
+              <p>The 10 Year Health Plan’s patient power payment is still in trial. The Medium Term Planning Framework already mandates near-real-time feedback. Compliance leads the conversation; the payment linkage follows it.</p>
+            </div>
+            <div class="row__meta">Gate 3 · Commercial</div>
+          </div>
+        </div>
+        <p class="artefacts">Deferred on the record rather than dropped: the closed-loop action log, the portfolio view linking experience to outcomes, and integration with Datix, PALS and the NHS App.</p>
+        <p class="artefacts">Artefacts produced across the phases: Market &amp; Competitor Analysis · VMOST · OKRs (Year 1) · Product Roadmap · Target Users · Jobs-to-be-Done Canvases · MVP PRD · Discovery Research Plan · Discovery Findings Report · User Interview Scripts · Technical Discovery Report · Business Strategy Analysis · Prototype.</p>
       </div>
     </div>
   </section>
@@ -957,16 +1039,28 @@ details.dims dd { margin: 2px 0 0; }
             <div class="eyebrow mono">Strategic</div>
             <h4 class="card-title">Chief Nurse</h4>
             <p>Trust-wide risk before the board asks, a board pack without three days of manual compilation, and a regulator evidence pack in one click.</p>
+            <div class="eyebrow mono">What they need</div>
+            <p>Which services are at risk before the board asks, CQC Well-Led evidence on demand, and a red alert within 24 hours of a service crossing its threshold.</p>
+            <div class="eyebrow mono">What blocks them today</div>
+            <p>Ward problems surfacing through the press or a complaint rather than the data. Board packs costing the quality team two to three days every quarter. CQC evidence taking weeks to assemble.</p>
           </div>
           <div class="card card--compact">
             <div class="eyebrow mono">Analytical</div>
             <h4 class="card-title">Quality Manager</h4>
             <p>Every comment classified rather than a sample, top-three deteriorating wards by default, alert to theme to verbatim in three clicks.</p>
+            <div class="eyebrow mono">What they need</div>
+            <p>Every comment processed rather than a tenth of them, quarterly FFT coding down from days to under two hours, and a closed loop: log an action, watch whether the score recovers.</p>
+            <div class="eyebrow mono">What blocks them today</div>
+            <p>Coding FFT free text by hand in Excel. Dashboards that flag every ward above threshold, so nothing can be prioritised. No way to show the board that feedback led to a measurable improvement.</p>
           </div>
           <div class="card card--compact">
             <div class="eyebrow mono">Operational</div>
             <h4 class="card-title">Ward Manager</h4>
             <p>A Monday 08:00 email. No login, under three minutes, always at least one positive comment to take to the team.</p>
+            <div class="eyebrow mono">What they need</div>
+            <p>Last week’s feedback in one email, readable in under three minutes on a twelve-hour shift, and one positive comment worth reading out at the Monday huddle.</p>
+            <div class="eyebrow mono">What blocks them today</div>
+            <p>Feedback arriving four to six weeks after the stay, too late to fix anything or thank anyone. Aggregate scores that say nothing specific. Positive comments never reaching the ward — only complaints do.</p>
           </div>
         </div>
       </div>
