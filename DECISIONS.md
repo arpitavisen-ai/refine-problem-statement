@@ -151,6 +151,26 @@ Going forward the committed copy of `spe-framework.html` is canonical. Any sourc
 
 ---
 
+### AD-15 · Phase table collapses to two client-facing columns; Evidence & attachments becomes case-page only
+**Status:** Active  
+**Date:** 2026-09-16  
+**Decision:** The phase table on `spe-framework.html` and `spe-case-01-nhs.html` collapses from four columns (framework) and three columns (case) to two: **What we deliver** and **How S&PE differentiates**. Human decision authority is folded into the delivery column rather than held in a separate one. The `airow--4col` class is retired and the `.ai` / `.human` cell rules are removed from both pages; the row count stays at 18 per page. The block heading becomes "What this phase delivers" and drops the `✦` provenance mark, since the heading no longer describes AI work — `✦` is retained everywhere else, including the rail foot and the capability tags. `spe-case-foundry.html` and `spe-resources.html` are unchanged and byte-identical.
+
+Separately, the **Evidence & attachments** block is removed from all six phases of `spe-framework.html`. It remains on `spe-case-01-nhs.html`. The `.evidence*` CSS and the delegated JS handler are retained on the framework page — only the rendered affordance is removed.  
+**Rationale:** The table is a sales surface for a practice audience. A four-column AI-mechanics breakdown describes *our process* where the audience needs *the offer and the differentiator*; the two retained columns are the two questions a buyer actually asks. Stakeholder-requested. Attachments belong to a specific case — the framework page is the practice-level view and has nothing to attach, so the affordance was an empty promise there.  
+**Consequence:**
+- The `.rail-claim` assertion that every phase carries a human-decides *column* no longer applies and has been rewritten to "Every phase names the decision a human owns, and the pipeline will not promote without it."
+- The replacement copy rewrites **all 18** differentiator cells, not only the 14 that `e3672ab` touched: 49 of the 50 sentences previously in that column are gone. This **supersedes the content merge recorded in AD-14**.
+- All 18 `We deliver <named artefact>` closing clauses are removed from the differentiator column. The named artefacts now sit in the delivery column instead, in reworded form.
+- The four rows AD-14 records as deliberately left unchanged (rows 2, 9, 13, 15) are also replaced. That rationale no longer applies — this is a stakeholder-requested full replacement, not an additive merge.
+- The case page's replacement copy is past tense and carried no human-decision language (0 of 18 cells, against 11 of 18 on the framework page), while the third column it replaced was exactly that. Thirteen stakeholder-supplied clauses were appended to the named delivery cells to restore that authority; five rows were deliberately left without one.
+- `qa/qa_final.mjs` "case page has zero differentiation cells (by design)" is reversed to assert 18. Five stronger checks were added alongside it (delivery-cell counts on both pages, `airow--4col` absent, two-span headers, block heading no longer claiming AI provenance): 59 → 68 checks.
+- The "User centric" card in "What holds across every phase" on `spe-framework.html` still read "Every phase has a column for what a human decides…" after the `.rail-claim` rewrite, which did not cover it. Corrected in the same change. ("The honest arithmetic" reference to "the second column" was checked and is unaffected — it describes a different block.)
+- **Attachments are not yet wired.** The Evidence & attachments block on `spe-case-01-nhs.html` still carries the prototype-placeholder note and a non-functional `Attach` affordance. Wiring those slots to real in-repo artefacts is blocked on a publishing decision: `/new-ui/` is served outside `PasswordGate` (AD-13) and the stable alias is publicly reachable, verified returning HTTP 200 with full page content and no gate. Internal programme artefacts must not be linked from an ungated page until that is resolved.  
+**Where:** `public/new-ui/spe-framework.html`, `public/new-ui/spe-case-01-nhs.html`, `qa/qa_final.mjs`.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
