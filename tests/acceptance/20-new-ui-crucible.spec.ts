@@ -126,17 +126,13 @@ test.describe('AC-20 · Crucible pages load and link correctly', () => {
   });
 
   /**
-   * Known pre-existing overflow, NOT introduced by the integration: spe-case-01-nhs.html
-   * overflows by 6px at 390px. Verified identical (6px) against the untouched source
-   * prototype served from file://, so it ships from upstream. Cause: the
-   * `.visually-hidden.evidence-input` file input inside `.evidence__rows` keeps its
-   * ~176px intrinsic width and is not fully clipped. Step 2.4 of the build brief forbids
-   * editing the prototype's CSS during integration, so it is reported rather than fixed.
-   * The budget is asserted exactly so any *regression* past today's value still fails.
+   * The 6px overflow previously allowed for spe-case-01-nhs.html is gone. Its cause was
+   * the `.visually-hidden.evidence-input` file input inside `.evidence__rows`, which kept
+   * its ~176px intrinsic width and was not fully clipped. AD-15 replaced the upload
+   * affordance with static links, so the input no longer exists and the page now measures
+   * 0px at 390px. The budget is retired rather than left as a standing allowance.
    */
-  const OVERFLOW_BUDGET_PX: Record<string, number> = {
-    '/new-ui/spe-case-01-nhs.html': 6,
-  };
+  const OVERFLOW_BUDGET_PX: Record<string, number> = {};
 
   test('no horizontal overflow at 390px beyond the known upstream budget', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });

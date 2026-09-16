@@ -183,7 +183,23 @@ ok('timeline has gates 0-4 in order', tlGates.join(',')==='0,1,2,3,4', tlGates.j
 const c2 = await b.newPage({ viewport:{width:1440,height:900} });
 await c2.goto(C);
 ok('framework page has 18 differentiation cells', await g.evaluate(()=>document.querySelectorAll('.airow p.diff').length)===18);
-ok('case page has zero differentiation cells (by design)', await c2.evaluate(()=>document.querySelectorAll('.airow p.diff').length)===0);
+// AD-15 collapsed the phase table to two client-facing columns on BOTH pages, so the
+// case page now carries the differentiator column it previously had by design omitted.
+// The old expectation (zero diff cells here) is reversed deliberately, not weakened:
+// the checks below are strictly stronger — they pin both columns on both pages and
+// assert the retired four-column class is gone.
+ok('case page has 18 differentiation cells', await c2.evaluate(()=>document.querySelectorAll('.airow p.diff').length)===18);
+ok('framework page has 18 delivery cells', await g.evaluate(()=>document.querySelectorAll('.airow p.deliver').length)===18);
+ok('case page has 18 delivery cells', await c2.evaluate(()=>document.querySelectorAll('.airow p.deliver').length)===18);
+for (const [n,pg] of [['framework',g],['case',c2]]) {
+  ok(`${n}: no four-column rows remain`, await pg.evaluate(()=>document.querySelectorAll('.airow--4col').length)===0);
+  ok(`${n}: every phase table heads two columns`, await pg.evaluate(()=>{
+    const heads=[...document.querySelectorAll('.airow--head')];
+    return heads.length===6 && heads.every(h=>h.querySelectorAll('span').length===2); }));
+  // The delivery cell carries the human-decision authority the third column used to hold.
+  ok(`${n}: block heading no longer claims AI provenance`, await pg.evaluate(()=>
+    [...document.querySelectorAll('.aiblock h4, .phase h4')].every(h=>!/AI in this phase/.test(h.textContent))));
+}
 await c2.close();
 
 // hero diagram: renders, no errors, has all five gates and stations

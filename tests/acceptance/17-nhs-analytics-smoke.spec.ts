@@ -9,17 +9,14 @@ import { loadApp, goToTab } from './helpers';
 test.describe('AC-17 · NHS Analytics smoke', () => {
   test('all tabs render including Performance analytics', async ({ page }) => {
     await loadApp(page);
-    const expectedTabs = [
-      'AI in PDLC',
-      'Use Case - NHS Platform',
-      'Tasks',
-      'Draft Script',
-      'NHS platform',
-      'Performance analytics',
-    ];
-    for (const label of expectedTabs) {
+    for (const label of ['AI in PDLC', 'Use Case - NHS Platform', 'Tasks', 'Draft Script']) {
       await expect(page.getByRole('tab', { name: label })).toBeVisible();
     }
+    // getByRole name matching is substring + case-insensitive, so { name: 'NHS platform' }
+    // also matches 'Use Case - NHS Platform' and trips strict mode. The tab restructure
+    // (99d5e81) introduced that collision. Use the test ids the app exposes.
+    await expect(page.getByTestId('tab-nhs')).toBeVisible();
+    await expect(page.getByTestId('tab-analytics')).toBeVisible();
   });
 
   test('Performance analytics tab appears after NHS platform tab', async ({ page }) => {

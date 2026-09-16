@@ -49,7 +49,11 @@ test.describe('AC-08 · UI Quality & Accessibility', () => {
   test('page renders correctly at 1280×800 desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await loadApp(page);
-    await expect(page.locator('text=Patient Feedback').first()).toBeVisible();
+    // 'Patient Feedback' was removed from the hero by the hero simplification (50c13e7);
+    // assert the heading the hero actually renders now.
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'AI in Product Management' }),
+    ).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Use Case - NHS Platform' })).toBeVisible();
   });
 

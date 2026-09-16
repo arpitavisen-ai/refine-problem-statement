@@ -133,6 +133,46 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
+### AD-14 · Correct AD-13's "byte-identical" claim for `spe-framework.html`
+**Status:** Active  
+**Date:** 2026-09-16  
+**Decision:** AD-13 stated that only a "Showcase home" link was added to each of the four New UI pages and everything else remained byte-identical to the source prototype. That was accurate when written. It no longer holds for `spe-framework.html`, as of `e3672ab`:
+
+- Four stakeholder-requested copy edits (hero H1, framework rail heading, Strategy phase lead paragraph, Strategy phase capability tag).
+- A content merge lifting differentiator and capability material from the old UI's `PDLCSection.tsx` into the "How S&PE differentiates & delivers" column, across 14 of 18 rows, additively — four rows deliberately left unchanged where no old-UI equivalent existed.
+- One new section, "What holds across every phase", for five phase-agnostic items that did not map to a single phase.
+- One scoped inline style on the Strategy capability tag only; the shared rule is unchanged.
+
+`spe-case-foundry.html`, `spe-case-01-nhs.html` and `spe-resources.html` are unaffected and remain byte-identical, as AD-13 describes.
+
+Going forward the committed copy of `spe-framework.html` is canonical. Any source prototype held outside the repo is stale and is not regenerated into this repo.  
+**Rationale:** AD-13's byte-identical claim is load-bearing — it is what lets a reviewer diff the deployed pages against the source prototype and treat any difference as a defect. Left uncorrected, it sends the next reviewer hunting for a discrepancy that is in fact a recorded, deliberate change, and it makes the deployed page look like drift rather than a decision. AD-13's original text is deliberately left intact: it was accurate on 2026-09-14, so this entry records the change rather than rewriting the history.  
+**Where:** `public/new-ui/spe-framework.html`; the changes landed in `e3672ab`, which touched that file only (44 insertions, 10 deletions). The merged source is `PHASE_INSIGHTS.differentiators` in `src/app/components/PDLCSection.tsx`.
+
+---
+
+### AD-15 · Phase table collapses to two client-facing columns; Evidence & attachments becomes case-page only
+**Status:** Active  
+**Date:** 2026-09-16  
+**Decision:** The phase table on `spe-framework.html` and `spe-case-01-nhs.html` collapses from four columns (framework) and three columns (case) to two: **What we deliver** and **How S&PE differentiates**. Human decision authority is folded into the delivery column rather than held in a separate one. The `airow--4col` class is retired and the `.ai` / `.human` cell rules are removed from both pages; the row count stays at 18 per page. The block heading becomes "What this phase delivers" and drops the `✦` provenance mark, since the heading no longer describes AI work — `✦` is retained everywhere else, including the rail foot and the capability tags. `spe-case-foundry.html` and `spe-resources.html` are unchanged and byte-identical.
+
+Separately, the **Evidence & attachments** block is removed from all six phases of `spe-framework.html`. It remains on `spe-case-01-nhs.html`. The `.evidence*` CSS and the delegated JS handler are retained on the framework page — only the rendered affordance is removed.  
+**Rationale:** The table is a sales surface for a practice audience. A four-column AI-mechanics breakdown describes *our process* where the audience needs *the offer and the differentiator*; the two retained columns are the two questions a buyer actually asks. Stakeholder-requested. Attachments belong to a specific case — the framework page is the practice-level view and has nothing to attach, so the affordance was an empty promise there.  
+**Consequence:**
+- The `.rail-claim` assertion that every phase carries a human-decides *column* no longer applies and has been rewritten to "Every phase names the decision a human owns, and the pipeline will not promote without it."
+- The replacement copy rewrites **all 18** differentiator cells, not only the 14 that `e3672ab` touched: 49 of the 50 sentences previously in that column are gone. This **supersedes the content merge recorded in AD-14**.
+- All 18 `We deliver <named artefact>` closing clauses are removed from the differentiator column. The named artefacts now sit in the delivery column instead, in reworded form.
+- The four rows AD-14 records as deliberately left unchanged (rows 2, 9, 13, 15) are also replaced. That rationale no longer applies — this is a stakeholder-requested full replacement, not an additive merge.
+- The case page's replacement copy is past tense and carried no human-decision language (0 of 18 cells, against 11 of 18 on the framework page), while the third column it replaced was exactly that. Thirteen stakeholder-supplied clauses were appended to the named delivery cells to restore that authority; five rows were deliberately left without one.
+- `qa/qa_final.mjs` "case page has zero differentiation cells (by design)" is reversed to assert 18. Five stronger checks were added alongside it (delivery-cell counts on both pages, `airow--4col` absent, two-span headers, block heading no longer claiming AI provenance): 59 → 68 checks.
+- The "User centric" card in "What holds across every phase" on `spe-framework.html` still read "Every phase has a column for what a human decides…" after the `.rail-claim` rewrite, which did not cover it. Corrected in the same change. ("The honest arithmetic" reference to "the second column" was checked and is unaffected — it describes a different block.)
+- **Attachments on `spe-case-01-nhs.html` are now static links, not an upload promise.** The file input, `Attach` label, `Preview`/`Remove` buttons, inline viewer and the prototype-placeholder note are removed from all 23 slots. Two slots link to artefacts that already exist *and are already publicly served* — `phase-03-dashboard-v1-to-v5` → `/nhs-dashboard/nhs-feedback-dashboard-v5_1.html` and `phase-06-performance-analytics-microsite` → `/nhs-analytics/nhs-performance-analytics.html` — both `target="_blank" rel="noopener"`. The other 21 show a plain `Not yet produced` state with no affordance. The `.evidence*` CSS and the delegated JS handler are retained but now inert.
+- **Two in-repo artefacts were deliberately NOT linked:** `src/imports/Patient_Feedback_Platform_PM_Strategy_Pack.pdf` and `src/imports/NHS_Patient_Feedback_Platform_Personas.docx`. Neither is served, so linking either would mean copying it into `public/`. `/new-ui/` is outside `PasswordGate` (AD-13) and the stable alias was verified returning HTTP 200 with full content and no gate, and the strategy pack contains commercial material (signed LOI value, named prospect trust, per-trust pricing, pipeline and revenue targets). Publishing it is a business decision, not a build one, and is left open.
+- Retiring the upload affordance removed the `.visually-hidden.evidence-input` file input that caused the case page's 6px horizontal overflow at 390px. The page now measures 0px, so the documented overflow budget in `20-new-ui-crucible.spec.ts` is retired rather than left standing.  
+**Where:** `public/new-ui/spe-framework.html`, `public/new-ui/spe-case-01-nhs.html`, `qa/qa_final.mjs`.
+
+---
+
 ## Design Decisions
 
 ### DD-01 · Static config / editable data split in PDLCSection
@@ -331,5 +371,5 @@ npm run promote      ← when happy: merges develop→main, pushes, triggers pro
 
 ---
 
-*Last updated: 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*

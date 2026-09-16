@@ -9,7 +9,7 @@ import { loadApp } from './helpers';
 
 async function openStartPage(page: Parameters<typeof loadApp>[0]) {
   await loadApp(page);
-  await page.getByRole('tab', { name: 'NHS platform' }).click();
+  await page.getByTestId('tab-nhs').click();
   await expect(page.locator('[data-testid="nhs-start-now-btn"]')).toBeVisible({ timeout: 10_000 });
 }
 
@@ -87,7 +87,7 @@ test.describe('AC-13 · NHS Service Start Page', () => {
     await page.locator('[data-testid="nhs-start-back-link"]').click();
     await expect(page.locator('[data-testid="nhs-start-now-btn"]')).not.toBeVisible({ timeout: 5_000 });
     // Re-enter NHS tab
-    await page.getByRole('tab', { name: 'NHS platform' }).click();
+    await page.getByTestId('tab-nhs').click();
     // Should land on start page again, not dashboard
     await expect(page.locator('[data-testid="nhs-start-now-btn"]')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('[data-testid="nhs-dashboard-frame"]')).not.toBeVisible();
