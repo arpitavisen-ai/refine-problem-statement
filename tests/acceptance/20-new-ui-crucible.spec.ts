@@ -436,10 +436,18 @@ test.describe('AC-20b · Case 01 artefact section is manifest-driven', () => {
       }),
     );
 
+    // The commercial exclusion applies to this repository as well as to the page, so
+    // this guard must not restate any excluded value in order to search for it. It
+    // works two ways instead: category terms (labels, not figures), plus a monetary
+    // sweep that fails on any £ figure other than the two the exclusion permits. The
+    // sweep is the stronger half — it catches a figure nobody has thought of yet.
+    //
     // `ARR` and `LOI` are word-bounded and case-sensitive on purpose: a lower-cased
     // substring search hits "narrative", "arrives" and "carried". `pipeline` is not
-    // listed because the page uses it for the CI and ingest pipelines, which the
-    // commercial exclusion does not cover — its commercial senses are matched instead.
+    // matched as a bare word because the page uses it for the CI and ingest pipelines,
+    // which the exclusion does not cover — only its commercial senses are matched. No
+    // trust name is matched, because naming one here would put it in the repository;
+    // the whole commercial gate is omitted from the page instead.
     const excluded: Array<[RegExp, string]> = [
       [/\bARR\b/, 'ARR'],
       [/\bLOI\b/, 'LOI'],
@@ -449,14 +457,24 @@ test.describe('AC-20b · Case 01 artefact section is manifest-driven', () => {
       [/revenue target/i, 'revenue target'],
       [/addressable market/i, 'addressable market'],
       [/per annum/i, 'per annum'],
-      [/north west/i, 'named prospect trust'],
-      [/van westendorp/i, 'Van Westendorp'],
       [/sales pipeline|pipeline projects/i, 'commercial pipeline'],
-      [/£45k|£500k|£2M|£18|30[–-]45k/i, 'commercial figure'],
     ];
+
+    // The only monetary figures the exclusion allows here: both are cost-avoidance
+    // figures in the return case, not pricing, revenue or market sizing.
+    const PERMITTED_FIGURES = ['£15k', '£200k'];
 
     const html = await page.content();
     const hits = excluded.filter(([re]) => re.test(html)).map(([, label]) => label);
+
+    const money = [...html.matchAll(/£\s?\d[\d.,–-]*\s?(?:k|m|bn)?/gi)]
+      .map(m => m[0].replace(/\s/g, ''))
+      .filter(m => !PERMITTED_FIGURES.includes(m));
+
     expect(hits, 'commercially excluded terms on the case page').toEqual([]);
+    expect(
+      [...new Set(money)],
+      'monetary figures on the case page beyond the two the exclusion permits',
+    ).toEqual([]);
   });
 });

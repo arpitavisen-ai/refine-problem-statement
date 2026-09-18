@@ -390,28 +390,46 @@ if (!BASE.startsWith('file://')) {
 }
 
 // commercial exclusions must not appear anywhere in the rendered page
-// `ARR` and `LOI` are matched case-sensitively and on word boundaries -- lower-cased
-// substring matching hits "narrative", "arrives" and "carried". `pipeline` is
-// deliberately absent: the page uses it for the CI and ingest pipelines, which the
-// commercial exclusion does not cover. The commercial senses are matched instead.
+// The commercial exclusion covers the LOI value, the named prospect trust, pricing,
+// pipeline, revenue/ARR targets and addressable-market figures. The exclusion applies
+// to this repository as well as to the page, so this guard must not restate any of the
+// excluded values in order to look for them. It works two ways instead:
+//
+//   1 · category terms, which are safe to name because they are labels, not figures;
+//   2 · a monetary sweep that fails on ANY £ figure other than the two the exclusion
+//       permits (staff time saved and CQC remediation cost, neither of which is
+//       pricing, revenue or market sizing). That is a stronger guard than a blocklist
+//       of known-bad values: it also catches a figure nobody has thought of yet.
+//
+// `ARR` and `LOI` are matched case-sensitively and on word boundaries -- a lower-cased
+// substring search hits "narrative", "arrives" and "carried". `pipeline` is deliberately
+// not matched as a bare word: this page used it for the CI and ingest pipelines before
+// this change, and the exclusion does not cover that sense, so only the commercial
+// senses are matched. No trust name is matched, because naming one here would put it in
+// the repository -- the whole commercial gate is omitted from the page instead.
 const EXCLUSIONS = [
-  { source: '\\bARR\\b',       flags: '',  label: 'ARR' },
-  { source: '\\bLOI\\b',       flags: '',  label: 'LOI' },
+  { source: '\\bARR\\b',          flags: '',  label: 'ARR' },
+  { source: '\\bLOI\\b',          flags: '',  label: 'LOI' },
   { source: 'letter of intent',   flags: 'i', label: 'letter of intent' },
-  { source: '\\bpricing\\b',   flags: 'i', label: 'pricing' },
+  { source: '\\bpricing\\b',      flags: 'i', label: 'pricing' },
   { source: 'entry price',        flags: 'i', label: 'entry price' },
   { source: 'revenue target',     flags: 'i', label: 'revenue target' },
   { source: 'addressable market', flags: 'i', label: 'addressable market' },
   { source: 'per annum',          flags: 'i', label: 'per annum' },
-  { source: 'north west',         flags: 'i', label: 'named prospect trust' },
-  { source: 'van westendorp',     flags: 'i', label: 'Van Westendorp' },
   { source: 'sales pipeline|pipeline projects', flags: 'i', label: 'commercial pipeline' },
-  { source: '£45k|£500k|£2M|£18|30[–-]45k', flags: 'i', label: 'commercial figure' },
 ];
-const hits = await ev.evaluate((terms)=>{
+// The only monetary figures the exclusion allows on this page. Both are cost-avoidance
+// figures in the return case, not pricing, revenue or market sizing.
+const PERMITTED_FIGURES = ['£15k', '£200k'];
+const hits = await ev.evaluate(({ terms, permitted }) => {
   const text = document.documentElement.innerHTML;
-  return terms.filter(t=>new RegExp(t.source, t.flags).test(text)).map(t=>t.label);
-}, EXCLUSIONS);
+  const found = terms.filter(t => new RegExp(t.source, t.flags).test(text)).map(t => t.label);
+  const money = [...text.matchAll(/£\s?\d[\d.,–-]*\s?(?:k|m|bn)?/gi)]
+    .map(m => m[0].replace(/\s/g, ''))
+    .filter(m => !permitted.includes(m));
+  if (money.length) { found.push('unpermitted monetary figure: ' + [...new Set(money)].join(' ')); }
+  return found;
+}, { terms: EXCLUSIONS, permitted: PERMITTED_FIGURES });
 ok('case: no commercially sensitive term appears on the page', hits.length===0, hits.join(', '));
 await ev.close();
 
