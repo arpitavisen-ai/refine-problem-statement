@@ -230,41 +230,72 @@ main section[id], .phase { scroll-margin-top: calc(var(--header-height) + var(--
 .evidence__icon svg { width: 16px; height: 16px; color: var(--text-secondary); display: block; }
 .evidence__cap { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
 .evidence__rows { border-top: var(--border); }
+.evidence__rows:empty { border-top: 0; }
+
 .evidence-row {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-03) var(--sp-04);
-  padding: var(--sp-04) var(--sp-04); border: 1px dashed var(--border-strong); border-top: 0;
-  background: var(--layer);
+  border: 1px solid var(--border-subtle); border-top: 0; background: var(--background);
 }
-.evidence-row + .evidence-row { border-top: 1px dashed var(--border-strong); }
-.evidence-row[data-attached="true"] { border-style: solid; border-color: var(--border-subtle); background: var(--background); }
-.evidence-row__main { display: flex; align-items: flex-start; gap: var(--sp-03); flex: 1 1 260px; min-width: 0; }
+.evidence-row + .evidence-row { border-top: 1px solid var(--border-subtle); }
+.evidence-row[data-kind="pending"] { border-style: dashed; border-color: var(--border-strong); background: var(--layer); }
+.evidence-row[data-kind="pending"] + .evidence-row,
+.evidence-row + .evidence-row[data-kind="pending"] { border-top-style: dashed; border-top-color: var(--border-strong); }
+
+/* summary (expandable rows) and static (linked / pending rows) share one layout */
+.evidence-row__summary, .evidence-row__static {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-03) var(--sp-04);
+  padding: var(--sp-04); min-height: 44px;
+}
+.evidence-row__summary { cursor: pointer; list-style: none; }
+.evidence-row__summary::-webkit-details-marker { display: none; }
+.evidence-row__summary:hover { background: var(--layer); }
+.evidence-row__summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .evidence-row__icon svg { width: 18px; height: 18px; color: var(--text-secondary); display: block; margin-top: 2px; flex-shrink: 0; }
-.evidence-row__label-group { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.evidence-row__label { font-size: var(--type-body-compact); color: var(--text-primary); }
+.evidence-row__label-group { display: flex; flex-direction: column; gap: var(--sp-01); flex: 1 1 260px; min-width: 0; }
+.evidence-row__label { font-size: var(--type-body-compact); font-weight: 600; color: var(--text-primary); }
+.evidence-row__desc { font-size: var(--type-body-compact); color: var(--text-secondary); max-width: var(--measure-prose); }
 .evidence-row__hint { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
 .evidence-row__actions { display: flex; align-items: center; gap: var(--sp-03); flex-wrap: wrap; }
+.evidence-row__toggle {
+  margin-left: auto; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); white-space: nowrap;
+}
+.evidence-row__toggle::after { content: "\00a0\002B"; }
+.evidence-row__disclosure[open] .evidence-row__toggle::after { content: "\00a0\2212"; }
 .chip--attached { border-color: var(--support-success); color: var(--support-success); background: rgba(0,103,71,0.06); }
-.evidence-row__upload {
-  display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--sp-03);
-  border: 1px solid var(--border-strong); font-size: var(--type-label); cursor: pointer;
-  color: var(--text-primary); background: var(--background); transition: background var(--transition);
-}
-.evidence-row__upload:hover { background: var(--layer-hover); }
+.chip--readable { border-color: var(--accent); color: var(--accent); background: var(--accent-wash); }
 .evidence-row__preview {
-  min-height: 32px; padding: 0 var(--sp-03); border: 1px solid transparent; background: none;
-  font-family: inherit; font-size: var(--type-label); color: var(--accent); cursor: pointer;
-  text-decoration: underline; text-underline-offset: 2px;
+  font-size: var(--type-label); color: var(--accent); text-decoration: underline;
+  text-underline-offset: 2px; display: inline-flex; align-items: center; min-height: 32px;
 }
-.evidence-row__preview:disabled { color: var(--text-secondary); cursor: not-allowed; text-decoration: none; }
-.evidence-row__remove {
-  min-height: 32px; min-width: 32px; border: 1px solid var(--border-strong); background: var(--background);
-  font-size: 16px; line-height: 1; color: var(--text-secondary); cursor: pointer;
-}
-.evidence-row__remove:hover { color: var(--support-error); border-color: var(--support-error); }
-.evidence-row__viewer { flex: 1 1 100%; margin-top: var(--sp-03); }
-.evidence-row__viewer iframe { width: 100%; height: 420px; border: 1px solid var(--border-subtle); display: block; background: #fff; }
-.evidence-row__toolarge { margin: 0; padding: var(--sp-04); background: var(--layer); border: 1px solid var(--border-subtle); font-size: var(--type-body-compact); color: var(--text-secondary); }
-.evidence-row__toolarge a { color: var(--accent); text-decoration: underline; }
+
+/* expanded artefact content */
+.evidence-row__body { padding: var(--sp-05) var(--sp-04) var(--sp-06); border-top: 1px solid var(--border-subtle); background: var(--layer); }
+.evidence-row__body > *:first-child { margin-top: 0; }
+.evidence-row__body > *:last-child { margin-bottom: 0; }
+.evidence-row__body h5 { margin: var(--sp-05) 0 var(--sp-02); font-size: var(--type-body-compact); font-weight: 600; letter-spacing: 0; color: var(--text-primary); }
+.evidence-row__body p { margin: 0 0 var(--sp-03); font-size: var(--type-body-compact); line-height: 1.55; color: var(--text-secondary); max-width: var(--measure-prose); }
+.evidence-row__body strong { color: var(--text-primary); font-weight: 600; }
+.evidence-row__body ul, .evidence-row__body ol { margin: 0 0 var(--sp-03); padding-left: var(--sp-05); font-size: var(--type-body-compact); line-height: 1.55; color: var(--text-secondary); max-width: var(--measure-prose); }
+.evidence-row__body li { margin-bottom: var(--sp-01); }
+.evidence-row__body dl { margin: 0 0 var(--sp-03); display: grid; gap: var(--sp-03); }
+.evidence-row__body dt { font-size: var(--type-body-compact); font-weight: 600; color: var(--text-primary); }
+.evidence-row__body dd { margin: var(--sp-01) 0 0; font-size: var(--type-body-compact); line-height: 1.55; color: var(--text-secondary); max-width: var(--measure-prose); }
+.evidence-row__body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.evidence-row__eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 var(--sp-02); }
+.evidence-row__note { font-size: 11px; font-style: italic; color: var(--text-secondary); border-left: 2px solid var(--border-strong); padding-left: var(--sp-03); }
+.evidence-row__inline-note { font-style: italic; }
+.evidence-row__split { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-05); }
+.evidence-row__scroll { overflow-x: auto; margin-bottom: var(--sp-04); -webkit-overflow-scrolling: touch; }
+.evidence-row__scroll:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.evidence-row__body table { border-collapse: collapse; font-size: 12px; min-width: 560px; width: 100%; }
+.evidence-row__body th, .evidence-row__body td { border: 1px solid var(--border-subtle); padding: var(--sp-02) var(--sp-03); text-align: left; vertical-align: top; color: var(--text-secondary); }
+.evidence-row__body th { background: var(--background); color: var(--text-primary); font-weight: 600; }
+
+/* no-JS fallback list */
+.evidence__fallback { margin: 0; padding: var(--sp-04); border: 1px solid var(--border-subtle); background: var(--background); list-style: none; }
+.evidence__fallback li { font-size: var(--type-body-compact); color: var(--text-secondary); padding: var(--sp-02) 0; border-bottom: 1px dashed var(--border-subtle); }
+.evidence__fallback li:last-child { border-bottom: 0; }
+.evidence__fallback a { color: var(--accent); }
 .evidence__note { margin: var(--sp-04) 0 0; font-size: var(--type-label); color: var(--text-secondary); max-width: var(--measure-prose); }
 
 /* ============================================================
@@ -574,6 +605,8 @@ details.dims dd { margin: 2px 0 0; }
   .row__meta { text-align: left; }
   .phase__nav .btn { width: 100%; }
   .entry__fields { grid-template-columns: 1fr; }
+  .evidence-row__split { grid-template-columns: 1fr; }
+  .evidence-row__toggle { margin-left: 0; }
   .airow { grid-template-columns: 1fr; gap: var(--sp-03); }
   .airow--head { display: none; }
   .airow p { padding: 0; border: 0; }
@@ -813,7 +846,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: competitor and policy map · ingestion build brief · north star framework · written national-data position.</p>
           <div class="stagegate"><div class="stagegate__head"><span class="stagegate__diamond" aria-hidden="true"></span><span class="stagegate__label">Gate 0 &middot; Discovery ready</span></div><ul><li>Only the highest-priority ideas move forward</li><li>Backlog triaged against the north star</li></ul></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-01-competitor-and-policy-map"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">competitor and policy map</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-01-ingestion-build-brief"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">ingestion build brief</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-01-north-star-framework"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">north star framework</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-01-written-national-data-position"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">written national-data position</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-01"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-01" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-01"></div><noscript><ul class="evidence__fallback"><li><strong>competitor and policy map</strong> &mdash; readable with JavaScript on</li><li><strong>ingestion build brief</strong> &mdash; readable with JavaScript on</li><li><strong>north star framework</strong> &mdash; readable with JavaScript on</li><li><strong>written national-data position</strong> &mdash; readable with JavaScript on</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -849,7 +882,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: three-persona pack · six-stage service blueprint · hypothesis log with MVP boundary.</p>
           <div class="stagegate"><div class="stagegate__head"><span class="stagegate__diamond" aria-hidden="true"></span><span class="stagegate__label">Gate 1 &middot; Discover &amp; Validate</span></div><ul><li>Problem / opportunity fit confirmed</li><li>Value hypothesis tested</li><li>Investment approved</li></ul></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-02-three-persona-pack"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">three-persona pack</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-02-six-stage-service-blueprint"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">six-stage service blueprint</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-02-hypothesis-log-with-mvp-boundary"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">hypothesis log with MVP boundary</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-02"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-02" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-02"></div><noscript><ul class="evidence__fallback"><li><strong>three-persona pack</strong> &mdash; readable with JavaScript on</li><li><strong>six-stage service blueprint</strong> &mdash; not yet produced</li><li><strong>hypothesis log with MVP boundary</strong> &mdash; readable with JavaScript on</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -885,7 +918,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: dashboard v1 to v5 · ward digest email · magic-link destination page · service start page · design decision log.</p>
           <div class="stagegate"><div class="stagegate__head"><span class="stagegate__diamond" aria-hidden="true"></span><span class="stagegate__label">Gate 2 &middot; Ready to Build</span></div><ul><li>Validated problem and solution fit</li><li>MVP defined</li><li>Go-to-build decision made</li></ul></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-03-dashboard-v1-to-v5" data-attached="true"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">dashboard v1 to v5</span></span></div><div class="evidence-row__actions"><span class="chip chip--attached">Prototype</span><a class="evidence-row__preview" href="/nhs-dashboard/nhs-feedback-dashboard-v5_1.html" target="_blank" rel="noopener">Open in a new tab</a></div></div><div class="evidence-row" data-slot="phase-03-ward-digest-email"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">ward digest email</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-03-magic-link-destination-page"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">magic-link destination page</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-03-service-start-page"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">service start page</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-03-design-decision-log"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">design decision log</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-03"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-03" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-03"></div><noscript><ul class="evidence__fallback"><li><strong>dashboard v1 to v5</strong> &mdash; <a href="/nhs-dashboard/nhs-feedback-dashboard-v5_1.html" target="_blank" rel="noopener">open the prototype</a> (HTML, 186 KB)</li><li><strong>ward digest email</strong> &mdash; readable with JavaScript on</li><li><strong>magic-link destination page</strong> &mdash; readable with JavaScript on</li><li><strong>service start page</strong> &mdash; readable with JavaScript on</li><li><strong>design decision log</strong> &mdash; readable with JavaScript on</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -921,7 +954,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: decoupled microsite scaffold · namespaced configuration · enforced decision log · generated components with tests.</p>
           <div class="stagegate stagegate--flow"><p>Flows straight into Validation &amp; QA &mdash; in the source lifecycle, build and test sit inside one combined Delivery stage, gated only once testing is complete.</p></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-04-decoupled-microsite-scaffold"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">decoupled microsite scaffold</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-04-namespaced-configuration"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">namespaced configuration</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-04-enforced-decision-log"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">enforced decision log</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-04-generated-components-with-tests"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">generated components with tests</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-04"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-04" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-04"></div><noscript><ul class="evidence__fallback"><li><strong>decoupled microsite scaffold</strong> &mdash; readable with JavaScript on</li><li><strong>namespaced configuration</strong> &mdash; readable with JavaScript on</li><li><strong>enforced decision log</strong> &mdash; readable with JavaScript on</li><li><strong>generated components with tests</strong> &mdash; readable with JavaScript on</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -957,7 +990,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: two round-by-round research reports · Playwright acceptance suite · accessibility evidence · a stated model-quality position.</p>
           <div class="stagegate"><div class="stagegate__head"><span class="stagegate__diamond" aria-hidden="true"></span><span class="stagegate__label">Gate 3 &middot; Release Ready</span></div><ul><li>Quality gates passed</li><li>Security checks complete</li><li>UAT signed off</li><li>Ready for release</li></ul></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-05-two-round-by-round-research-reports"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">two round-by-round research reports</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-05-playwright-acceptance-suite"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">Playwright acceptance suite</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-05-accessibility-evidence"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">accessibility evidence</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-05-a-stated-model-quality-position"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">a stated model-quality position</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-05"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-05" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-05"></div><noscript><ul class="evidence__fallback"><li><strong>two round-by-round research reports</strong> &mdash; readable with JavaScript on</li><li><strong>Playwright acceptance suite</strong> &mdash; readable with JavaScript on</li><li><strong>accessibility evidence</strong> &mdash; readable with JavaScript on</li><li><strong>a stated model-quality position</strong> &mdash; withheld, unresolved conflict</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -993,7 +1026,7 @@ details.dims dd { margin: 2px 0 0; }
 
           <p class="artefacts">Produced: performance analytics microsite · AI signals archive · model cost, latency and quality tracked as product metrics.</p>
           <div class="stagegate"><div class="stagegate__head"><span class="stagegate__diamond" aria-hidden="true"></span><span class="stagegate__label">Gate 4 &middot; Value Realised</span></div><ul><li>Outcomes achieved</li><li>KPIs improving</li><li>Pivot / pause / persevere decided</li></ul></div>
-          <div class="evidence"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4></div><div class="evidence__rows"><div class="evidence-row" data-slot="phase-06-performance-analytics-microsite" data-attached="true"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">performance analytics microsite</span></span></div><div class="evidence-row__actions"><span class="chip chip--attached">Prototype</span><a class="evidence-row__preview" href="/nhs-analytics/nhs-performance-analytics.html" target="_blank" rel="noopener">Open in a new tab</a></div></div><div class="evidence-row" data-slot="phase-06-ai-signals-archive"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">AI signals archive</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div><div class="evidence-row" data-slot="phase-06-model-cost-latency-and-quality-tracked-as-product-metrics"><div class="evidence-row__main"><span class="evidence-row__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span><span class="evidence-row__label-group"><span class="evidence-row__label">model cost, latency and quality tracked as product metrics</span></span></div><div class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></div></div></div></div>
+          <div class="evidence" data-phase="phase-06"><div class="evidence__head"><h4><span class="evidence__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Evidence &amp; attachments</h4><span class="evidence__cap" data-evidence-count="phase-06" data-testid="evidence-count"></span></div><div class="evidence__rows" data-evidence-rows="phase-06"></div><noscript><ul class="evidence__fallback"><li><strong>performance analytics microsite</strong> &mdash; <a href="/nhs-analytics/nhs-performance-analytics.html" target="_blank" rel="noopener">open the prototype</a> (HTML, 87 KB)</li><li><strong>AI signals archive</strong> &mdash; readable with JavaScript on</li><li><strong>model cost, latency and quality tracked as product metrics</strong> &mdash; readable with JavaScript on</li></ul><p class="evidence__note">Artefact content is rendered from a single manifest on this page and needs JavaScript. Where a prototype is attached, its link is in the list above.</p></noscript></div>
           
           <div class="entry">
             <div class="entry__head">
@@ -1291,86 +1324,775 @@ details.dims dd { margin: 2px 0 0; }
   fromHash();
   paint();
 
-  /* ---- evidence & attachments: real file picker, genuine inline PDF preview,
-     nothing persisted. Delegated so it works across every phase panel. ---- */
-  document.addEventListener('change', function (event) {
-    if (!event.target.classList.contains('evidence-input')) { return; }
-    var input = event.target;
-    var row = input.closest('.evidence-row');
-    var file = input.files && input.files[0];
-    if (!file || !row) { return; }
+})();
+</script>
+<script>
+(function () {
+  'use strict';
 
-    var status = row.querySelector('.evidence-row__status');
-    var preview = row.querySelector('.evidence-row__preview');
-    var remove = row.querySelector('.evidence-row__remove');
-    var viewer = row.querySelector('.evidence-row__viewer');
-    var isPdf = file.type === 'application/pdf';
+  /* ==========================================================================
+     Case 01 artefact manifest -- the single source of truth for the
+     Evidence & attachments section. Every row, per-phase count and count
+     label is derived from this array. To add a row, add an entry here and
+     nothing else.
 
-    row.setAttribute('data-attached', 'true');
-    status.textContent = file.name;
-    status.classList.add('chip--attached');
-    remove.hidden = false;
+     kind: 'document' -- a real file exists in the repo and is served; needs href
+           'content'  -- no file was ever produced; the substance is the artefact
+           'pending'  -- nothing exists; honest empty state, no body
+     ========================================================================== */
+  var CASE_01_ARTEFACTS = [
+  {
+    id: 'phase-01-competitor-and-policy-map',
+    phase: 'phase-01',
+    title: 'competitor and policy map',
+    kind: 'content',
+    description: 'Market moment, adjacent-vendor scan, tailwinds and headwinds, and the positioning call. Commercially sensitive figures are omitted — market sizing, per-trust commercial terms and revenue figures are not published here.',
+    body: `
+<h5>Market moment</h5>
+<p>The 10 Year Health Plan, published July 2025, changed how material patient feedback is. For the first time trust income is tied to patient ratings, through three mechanisms:</p>
+<ul>
+<li>Clinical team payment tied to feedback scores</li>
+<li>Patient power payments &mdash; patients influence whether providers get paid in full</li>
+<li>Public league tables including patient ratings, updated quarterly from summer 2025</li>
+</ul>
+<p>The Medium Term Planning Framework, October 2025, already requires all providers to capture near-real-time feedback on at least five wards before patient discharge. That is a current compliance requirement, not a future risk. 311 NHS trusts are in scope &mdash; acute, mental health, community and ambulance &mdash; with the 42 integrated care boards as a secondary segment.</p>
+<h5>Adjacent vendors, as the scan found them</h5>
+<div class="evidence-row__scroll" tabindex="0" role="group" aria-label="Competitive landscape table, scrollable">
+<table>
+<thead><tr><th>Vendor</th><th>AI themes</th><th>Risk alert</th><th>NHS integrations</th><th>Board output</th><th>What the scan concluded</th></tr></thead>
+<tbody>
+<tr><td>Qualtrics</td><td>Limited</td><td>No</td><td>No</td><td>Template</td><td>Generic platform. No NHS context, no FFT or PALS ingest, no early-warning logic.</td></tr>
+<tr><td>Civica / Meridio</td><td>No</td><td>No</td><td>Strong</td><td>No</td><td>Data capture only, no analytical layer. A potential integration partner rather than a competitor.</td></tr>
+<tr><td>Cemplicity</td><td>Basic NLP</td><td>No</td><td>Partial</td><td>Charts only</td><td>Reporting-focused, not intelligence-focused. No anomaly alerting.</td></tr>
+<tr><td>NRC Health</td><td>Yes</td><td>Partial</td><td>No</td><td>Yes</td><td>US product. Data residency mismatch and no NHS App integration.</td></tr>
+<tr><td>In-house Power BI</td><td>No</td><td>No</td><td>Manual</td><td>Static</td><td>The dominant incumbent: manual, slow and sampled. The 10 Year Health Plan makes it untenable.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The crowded end of this market is complaints handling. The gap the scan found is patient experience intelligence &mdash; ingest, understand, alert, act &mdash; and that is where the product was pointed.</p>
+<h5>Tailwinds</h5>
+<ul>
+<li>The 10 Year Health Plan makes feedback financially material through direct income linkage</li>
+<li>The NHS App generates roughly ten times the ratings volume of legacy FFT</li>
+<li>CQC Well-Led inspections increasingly scrutinise how feedback is used</li>
+<li>Every major care scandal cited unread patient feedback as a warning sign</li>
+<li>Integrated care board consolidation creates demand for system-level views</li>
+<li>NHS England is actively seeking market input for a holistic insight system</li>
+</ul>
+<h5>Headwinds</h5>
+<ul>
+<li>NHS procurement cycles run 12 to 18 months</li>
+<li>Data governance and information governance requirements add onboarding complexity</li>
+<li>Existing Civica and Cerner contracts create inertia at the data layer</li>
+<li>Trusts under financial recovery may defer spend</li>
+<li>The 10 Year Health Plan implementation timeline carries political risk</li>
+<li>Post-Synnovis risk appetite has tightened at some trusts</li>
+</ul>
+<h5>How the opportunity was framed</h5>
+<p>This was positioned as a compliance-adjacent, mission-critical product rather than an analytics tool, sitting alongside patient safety and clinical governance spend. The value is a previously unanalysable data asset &mdash; free-text feedback &mdash; converted into financial and reputational protection.</p>
+<dl>
+<div><dt>Defensibility</dt><dd>NHS-specific training data, workflow integrations, and switching costs that grow as historical baseline data accumulates.</dd></div>
+<div><dt>Growth motion</dt><dd>Land in a trust with FFT alerting, expand horizontally into complaints, PALS and surveys, then vertically to integrated care board level.</dd></div>
+<div><dt>Route to market</dt><dd>Direct to Chief Nurse or Chief Quality Officer, with NHS regional networks and consultancy partners as a secondary route.</dd></div>
+<div><dt>Substitutes</dt><dd>Manual Excel sampling is the primary substitute. Its viability collapses as the financial consequences of poor scores materialise.</dd></div>
+</dl>
+<h5>The return case put to a trust finance director</h5>
+<ul>
+<li>Quality Manager coding time falls from two to three days a quarter to about two hours &mdash; roughly &pound;15k of band 7 time a year</li>
+<li>A single Inadequate rating on Well-Led costs upwards of &pound;200k in remediation and reputational damage</li>
+<li>Non-compliance with the near-real-time feedback mandate becomes regulatory exposure from Q1 2026</li>
+</ul>
+<p class="evidence-row__note">Omitted from this page under the commercial exclusion: market sizing, per-trust commercial terms, and Year 1 and Year 2 revenue figures.</p>`
+  },
+  {
+    id: 'phase-01-ingestion-build-brief',
+    phase: 'phase-01',
+    title: 'ingestion build brief',
+    kind: 'content',
+    description: 'The ingest requirements written before scoping, and the phased shape of the platform behind them.',
+    body: `
+<h5>Ingest requirements</h5>
+<dl>
+<div><dt>FFT CSV and Excel</dt><dd>Accept the NHS England FFT export format. Column mapping has to absorb trust naming variations and ward code inconsistencies across providers, so a normalisation layer sits in front of classification.</dd></div>
+<div><dt>NHS App API</dt><dd>Authenticate through NHS Identity and OAuth 2.0. Rate limits apply, so ingest is batched rather than streamed. API schema versioning is tracked, because the NHS App feedback endpoints are in active development.</dd></div>
+<div><dt>Deduplication</dt><dd>A composite key &mdash; trust code, ward code, response date, overall experience, comment hash &mdash; applied at ingest, because trusts re-export overlapping date ranges.</dd></div>
+<div><dt>Adapter pattern</dt><dd>Each source has its own adapter that normalises to a canonical schema before anything enters the pipeline. Adding a source means adding an adapter, not changing the pipeline.</dd></div>
+</dl>
+<h5>Now, next and later, by layer</h5>
+<div class="evidence-row__scroll" tabindex="0" role="group" aria-label="Product roadmap table, scrollable">
+<table>
+<thead><tr><th>Layer</th><th>Now &mdash; Q1&ndash;Q2</th><th>Next &mdash; Q3&ndash;Q4</th><th>Later &mdash; Year 2+</th></tr></thead>
+<tbody>
+<tr><td>Ingest</td><td>NHS App ratings, FFT free text by API and CSV, CSV complaints upload</td><td>PALS API, survey platform connectors, Datix integration</td><td>Real-time streaming ingest, integrated care board aggregation layer</td></tr>
+<tr><td>Understand</td><td>Theme classification, sentiment scoring, ward and pathway mapping</td><td>Severity classification, multi-language support, quarter-on-quarter trend detection</td><td>Cross-trust benchmarking, predictive risk modelling</td></tr>
+<tr><td>Alert</td><td>Sentiment deterioration alerts, weekly digest emails</td><td>Threshold-based real-time alerts, Slack and Teams integration, alert audit trail</td><td>Proactive risk scores, serious incident correlation</td></tr>
+<tr><td>Act</td><td>Board-ready pack, CQC evidence export</td><td>You Said We Did generator, improvement action tracker, API for existing BI tools</td><td>Closed-loop improvement tracking, patient-facing outcomes reporting</td></tr>
+<tr><td>Platform</td><td>Data Security and Protection Toolkit compliance, DTAC assessment, role-based access</td><td>G-Cloud listing, single sign-on and NHS Login, audit logging</td><td>Multi-trust tenancy, on-premise deployment option</td></tr>
+</tbody>
+</table>
+</div>
+<p>The sequencing decision that mattered: toolkit and DTAC compliance are prerequisite to everything, because no trust signs a data processing agreement without them. Those are Q1 deliverables, not Q2. Risk-alerting ships with the MVP rather than after it, because it is the capability that carries the procurement conversation.</p>`
+  },
+  {
+    id: 'phase-01-north-star-framework',
+    phase: 'phase-01',
+    title: 'north star framework',
+    kind: 'content',
+    description: 'Vision, mission, objectives, strategy and tactics, and the Year 1 objectives and key results behind the north star metric. Commercial objectives and revenue key results are omitted.',
+    body: `
+<h5>Vision</h5>
+<p>An NHS where every patient&rsquo;s voice is heard in time to prevent harm &mdash; not in an inquiry, after the fact.</p>
+<h5>Mission</h5>
+<p>To turn unstructured NHS patient feedback into real-time intelligence that trust boards can act on, making the patient&rsquo;s voice measurable, comparable and impossible to ignore.</p>
+<h5>Objectives</h5>
+<ul>
+<li>Reduce median time from feedback to action at NHS trusts from about 90 days to under seven</li>
+<li>Reach 80% coverage of all structured and free-text feedback sources per trust within 12 months of go-live</li>
+<li>Let trusts demonstrate measurable feedback-driven improvements for CQC inspections</li>
+</ul>
+<h5>Strategy and tactics</h5>
+<p>Land with acute trusts where financial pressure from the 10 Year Health Plan is sharpest, and win on risk-alerting &mdash; a capability no incumbent offers &mdash; as the wedge. Expand to system-level intelligence once trust-level penetration reaches critical mass.</p>
+<ul>
+<li>NHS App and FFT integration as launch connectors: highest volume, lowest friction</li>
+<li>The risk-alerting dashboard as the hero of every conversation</li>
+<li>An auto-generated CQC evidence pack as immediate time-to-value for quality teams</li>
+<li>G-Cloud and NHS procurement framework listings to reduce procurement friction</li>
+<li>A You Said We Did output as trust-facing proof of return at renewal</li>
+</ul>
+<h5>Year 1 objectives and key results</h5>
+<dl>
+<div><dt>O1 &middot; Prove the product works at scale in a real NHS trust</dt><dd>Two NHS trusts live with more than 80% of feedback sources ingested by end of Q2. Median time from ingestion to surfaced theme under 24 hours, against a status quo of 30 to 90 days. At least one early-warning alert validated by the trust as clinically meaningful by end of Q3. Net promoter score from quality leads and chief nurses at pilot sites of 45 or better.</dd></div>
+<div><dt>O3 &middot; Establish the technical and data foundation for scale</dt><dd>NHS App, FFT, PALS and complaints integrations all production-ready by end of Q2. Data Security and Protection Toolkit compliance and DTAC assessment complete by end of Q1. Platform uptime of 99.5% or better on a rolling 90-day basis from Q2.</dd></div>
+<div><dt>O4 &middot; Create clear feedback loops from insight to improvement</dt><dd>A You Said We Did report used by at least one trust to communicate improvement back to patients. A board-ready pack exported and used in a trust board meeting by at least two pilot trusts. At least one trust citing platform outputs as CQC evidence in a Well-Led assessment.</dd></div>
+</dl>
+<p class="evidence-row__note">Omitted here: O2, the commercial foundation objective, and its commercial key results; and O3&rsquo;s classification-accuracy key result, which belongs to the unresolved model-quality position recorded in phase 05.</p>
+<h5>The metric the team committed to</h5>
+<p>Feedback themes acted on, per trust, per month. Every vendor in this space reports a sentiment score. Coverage was chosen as the leading indicator instead, because a score nobody acts on is not an outcome.</p>`
+  },
+  {
+    id: 'phase-01-written-national-data-position',
+    phase: 'phase-01',
+    title: 'written national-data position',
+    kind: 'content',
+    description: 'The finding on the national FFT dataset, the data-freshness constraint it created, and the user evidence behind it.',
+    body: `
+<h5>The problem as written at the time</h5>
+<p>NHS trusts face growing financial and reputational exposure from patient feedback they cannot analyse at scale. Most still rely on manual coding, sampled data, and disconnected reporting that prevents timely action. There is no NHS-native platform combining theme classification, closed-loop feedback management, and integration with clinical systems &mdash; leaving organisations unable to detect emerging risks early or demonstrate improvement to regulators and boards.</p>
+<h5>What the national route actually provides</h5>
+<dl>
+<div><dt>The constraint</dt><dd>FFT data arrives in batches, monthly or quarterly, not in real time. A dashboard built on it reflects historic data, not live ward state.</dd></div>
+<div><dt>The consequence for design</dt><dd>Data freshness is stated in the interface at all times, through an always-visible indicator of when data was last ingested, so nobody acts on stale data without realising. Real-time ingest was pushed past the MVP.</dd></div>
+<div><dt>The consequence for the market</dt><dd>Comment-level intelligence has to come from per-trust integrations. The first market was narrowed deliberately, in writing, before build &mdash; rather than discovered to be impossible during it.</dd></div>
+<div><dt>Where the volume is</dt><dd>The NHS App generates roughly ten times the ratings volume of legacy FFT. The data asset exists; the intelligence layer over it did not.</dd></div>
+</dl>
+<h5>The user evidence behind it</h5>
+<ul>
+<li>Feedback reaches a ward four to six weeks after the patient&rsquo;s stay &mdash; too late to fix anything or to thank anyone. Confirmed by every ward manager interviewed.</li>
+<li>Complaints surface through a monthly quality and safety committee, six to eight weeks behind events.</li>
+<li>Ward naming is not standardised across trusts, so matching feedback to organisational structure needs a per-trust mapping table agreed at onboarding.</li>
+</ul>`
+  },
+  {
+    id: 'phase-02-three-persona-pack',
+    phase: 'phase-02',
+    title: 'three-persona pack',
+    kind: 'content',
+    description: 'All three clinical personas in full — goals, pains, motivators and the MVP opportunities each one generated — with their jobs-to-be-done canvases and the secondary audiences behind them.',
+    body: `
+<h5>Chief Nurse / Director of Patient Experience</h5>
+<p class="evidence-row__eyebrow">Strategic owner &middot; board-facing &middot; financially exposed under the 10 Year Health Plan</p>
+<dl>
+<div><dt>Goals</dt><dd>Walk into every board meeting knowing which services are at risk before the board asks. Demonstrate a functioning feedback intelligence process to CQC Well-Led inspectors. Protect trust income tied to patient ratings. Receive a red alert within 24 hours when any service crosses a risk threshold. Produce a board-ready patient experience pack without manual preparation.</dd></div>
+<div><dt>Pains</dt><dd>Finding out about ward problems from the press or a complaint, never from data. Board packs taking the quality team two to three days to compile every quarter. No single view across wards, specialties and care settings. CQC evidence taking weeks to gather during an inspection.</dd></div>
+<div><dt>Motivators</dt><dd>A trust-wide risk view showing the top deteriorating wards at a glance. An automated board pack, ready for the meeting. A real-time alert when sentiment on any service drops below threshold. A one-click CQC evidence pack covering trends, themes and actions taken.</dd></div>
+<div><dt>What the MVP committed to</dt><dd>A 24-hour red alert carrying the top driving theme and a direct dashboard link. An auto-generated board pack covering trust-wide sentiment, top risks and direction of travel. A CQC evidence export showing all feedback processed, themes identified and actions logged. Deferred: the portfolio view linking experience scores to clinical outcomes.</dd></div>
+<div><dt>Core job</dt><dd>When I am accountable for patient experience and trust income across a large NHS organisation, I want to be alerted to deteriorating services within 24 hours &mdash; with the driving theme identified &mdash; so I can act before a ward-level problem becomes a board-level crisis or a CQC finding.</dd></div>
+<div><dt>Switch triggers</dt><dd>A near-miss where the feedback data existed but was not seen in time. An upcoming Well-Led inspection where the patient experience evidence is thin. A finance director flagging income exposure. The standing near-real-time ward monitoring mandate.</dd></div>
+</dl>
+<h5>Quality Manager / Patient Experience Lead</h5>
+<p class="evidence-row__eyebrow">Operational owner &middot; daily platform user &middot; process builder</p>
+<dl>
+<div><dt>Goals</dt><dd>Process every patient comment rather than a 10 to 20% sample. See the top three deteriorating wards at a glance. Drill from a risk alert down to the themes and verbatim comments driving it. Cut quarterly manual FFT coding from two to three days to under two hours. Close the loop: log an action against a theme and track whether scores improve.</dd></div>
+<div><dt>Pains</dt><dd>Two to three days a quarter hand-coding FFT free text in Excel. Sampling a tenth of comments, so real issues go undetected. Dashboards that flag every ward above threshold, making prioritisation impossible. No way to prove to the board that feedback led to measurable improvement.</dd></div>
+<div><dt>Motivators</dt><dd>An alert view defaulting to the top three deteriorating wards only. Classification across every comment rather than a sample. Alert to theme to verbatim in three clicks. A closed-loop action log. A CQC evidence pack generated in hours rather than weeks.</dd></div>
+<div><dt>What the MVP committed to</dt><dd>A top-three alert view with a show-all toggle. Classification across all FFT and NHS App comments, with no manual coding. Drilldown from alert to the top five themes to three to ten representative verbatims. A board pack export. Deferred: the You Said We Did workflow, and integration with Datix, PALS and the NHS App.</dd></div>
+<div><dt>Core job</dt><dd>When I am responsible for turning patient feedback into actionable intelligence for clinical and executive audiences, I want to see the top three deteriorating wards at a glance and drill to the themes and verbatims driving each &mdash; so I can prioritise my response and stop spending days on manual data processing.</dd></div>
+<div><dt>Switch triggers</dt><dd>Quarter-end, with two days of manual coding ahead and a board pack due. A ward issue that escalated to a complaint, where the warning signs sat in the unread majority of comments. A scheduled CQC inspection. A Chief Nurse asking for a real-time picture the current tools cannot give.</dd></div>
+</dl>
+<h5>Ward Manager / Service Line Lead</h5>
+<p class="evidence-row__eyebrow">Frontline responder &middot; alert recipient &middot; advocate or blocker</p>
+<dl>
+<div><dt>Goals</dt><dd>A short email every Monday with last week&rsquo;s feedback, no login. The top two concerns and top two positives from the ward, not a headline score. At least one positive comment to share at the Monday huddle. Under three minutes of attention on a twelve-hour shift.</dd></div>
+<div><dt>Pains</dt><dd>Feedback arriving four to six weeks after the stay, too late to address or to recognise the staff involved. Aggregate satisfaction scores that say nothing specific. Logging into another system mid-shift, which will not happen. Positive comments never reaching the ward team &mdash; only complaints filter through.</dd></div>
+<div><dt>Motivators</dt><dd>One email, Monday 08:00, no login, readable in under three minutes. Always at least one positive verbatim comment &mdash; non-negotiable for staff morale. Concern themes that are specific and actionable. A one-tap share link so the digest reaches the ward group chat.</dd></div>
+<div><dt>What the MVP committed to</dt><dd>A weekly ward digest at Monday 08:00 carrying the top two concerns, the top two positives and at least one verbatim quote, behind a magic link with a seven-day expiry. A share-with-team link in every digest. Deferred: pre-discharge capture, ward comparison, and a ward-facing dashboard.</dd></div>
+<div><dt>Core job</dt><dd>When I am running a ward and accountable for patient experience on my patch, I want to know what patients said about my ward last week &mdash; including the positive comments &mdash; delivered to my inbox before the Monday shift, so I can address concerns early and give my team the recognition they deserve.</dd></div>
+<div><dt>The non-negotiable design constraint</dt><dd>Any touchpoint that needs a login, an app download, or more than three minutes of attention during a ward shift will be abandoned within two weeks. The digest is the product for this persona.</dd></div>
+</dl>
+<h5>Secondary audiences, who receive outputs but never configure anything</h5>
+<dl>
+<div><dt>Trust board and non-executive directors</dt><dd>The auto-generated board pack. One page with trend, risk flags and narrative &mdash; not raw data.</dd></div>
+<div><dt>CQC inspectors</dt><dd>The evidence pack as part of a Well-Led inspection, validating that the trust has a functioning feedback intelligence process.</dd></div>
+<div><dt>Integrated care board analytics teams</dt><dd>A Year 2 audience. A system-level rollup across trusts to spot network-wide themes and outlier providers.</dd></div>
+<div><dt>Patients, indirectly</dt><dd>The You Said We Did output &mdash; proof that their feedback was heard and acted on, which drives future participation.</dd></div>
+</dl>
+<p>The economic buyer and the end user are not the same person. A Chief Nurse or finance director signs, caring about financial risk and CQC outcomes. The Quality Manager and Ward Manager use it daily, caring about workflow and time. If the end user finds it burdensome, the buyer hears about it at renewal.</p>`
+  },
+  {
+    id: 'phase-02-six-stage-service-blueprint',
+    phase: 'phase-02',
+    title: 'six-stage service blueprint',
+    kind: 'pending',
+    description: 'Not yet produced as a readable artefact. The blueprint is described on this page — six journey stages against nine swimlanes, with AI-augmented steps and both lines of visibility marked — but no version of it exists in this repository to publish, and the old interface held only a note that blueprints were generated, never the blueprint itself.'
+  },
+  {
+    id: 'phase-02-hypothesis-log-with-mvp-boundary',
+    phase: 'phase-02',
+    title: 'hypothesis log with MVP boundary',
+    kind: 'content',
+    description: 'The MVP boundary as it was drawn — in scope, out of scope, and deferred with a stated reason — plus the research plan that generated and ranked the hypotheses behind it.',
+    body: `
+<h5>Where the MVP boundary was drawn</h5>
+<div class="evidence-row__split">
+<div>
+<p class="evidence-row__eyebrow">In scope</p>
+<ul>
+<li>NHS App ratings and FFT free text, by CSV and API</li>
+<li>Theme classification on every comment, not a sample</li>
+<li>Sentiment scoring per comment, aggregated per ward</li>
+<li>Trend detection: week-on-week and rolling four-week change</li>
+<li>Alert engine: top three deteriorating wards</li>
+<li>Weekly digest email to ward managers, no login required</li>
+<li>Alert dashboard for the Quality Manager</li>
+<li>Drilldown from alert to theme to verbatim comments</li>
+<li>Board pack export</li>
+<li>Role-based access for Quality Manager and Chief Nurse</li>
+</ul>
+</div>
+<div>
+<p class="evidence-row__eyebrow">Out of scope, with the phase it moved to</p>
+<ul>
+<li>PALS, Datix and complaints integrations &mdash; next</li>
+<li>Survey platform connectors &mdash; next</li>
+<li>You Said We Did generator &mdash; next</li>
+<li>Improvement action tracker &mdash; next</li>
+<li>Integrated care board and cross-trust aggregation &mdash; later</li>
+<li>Real-time streaming ingest &mdash; later</li>
+<li>Multi-language support &mdash; later</li>
+<li>On-premise deployment &mdash; Year 2, but the architecture decision was taken immediately to avoid rework</li>
+<li>Ward-facing web app &mdash; later, because the digest is the product for that persona</li>
+</ul>
+</div>
+</div>
+<h5>How the hypotheses were generated and ranked</h5>
+<p>A focused How Might We session used interview insights as prompts. Jobs-to-be-done were mapped per persona against candidate features, and each hypothesis was written in the form: we believe this feature will produce this outcome for this persona, and we will know it is true when we see this signal. Hypotheses were scored on impact multiplied by confidence, the top three to five carried into prototype design, and everything out of scope was documented rather than dropped.</p>
+<h5>The five-stage discovery that fed it</h5>
+<dl>
+<div><dt>Stage 1 &middot; User interviews</dt><dd>Six to nine participants across Chief Nurse, Quality Manager and Ward Manager roles, spanning acute, community and mental health trusts. Semi-structured, 45 minutes. Verbatim quotes captured, surprises and contradictions noted, synthesised into five to seven insight themes within 48 hours of the final interview.</dd></div>
+<div><dt>Stage 2 &middot; Feedback analysis</dt><dd>Affinity-mapped every observation, then cross-referenced insight themes against the MVP feature list to confirm each feature had a user need behind it. Any feature lacking evidence was flagged for descoping. Alert threshold logic was validated against real mental models of urgent versus monitor.</dd></div>
+<div><dt>Stage 3 &middot; Technical discovery</dt><dd>A format audit of NHS data ingest across two trusts, a model selection exercise weighing accuracy against cost and latency, a classification spike on 300 to 500 real FFT comments against expert-coded ground truth, and confirmation of the UK hosting approach and DTAC timeline.</dd></div>
+<div><dt>Stage 4 &middot; Ideation and hypothesis creation</dt><dd>The How Might We session and hypothesis backlog described above.</dd></div>
+<div><dt>Stage 5 &middot; Design prototypes</dt><dd>Wireframes of the alert dashboard with the top-three default, the drilldown flow, and the weekly digest format. A mid-fidelity interactive prototype, two to three walkthroughs with Quality Managers, one iteration, then lock for sprint planning.</dd></div>
+</dl>
+<p>The plan was scoped to what was needed to build and demonstrate the MVP. It did not try to validate every future feature &mdash; only the assumptions that would invalidate the MVP if they were wrong.</p>
+<h5>The deferrals that were recorded rather than promised</h5>
+<p>The closed-loop action log and the portfolio view linking experience to outcomes were both deferred on the record, as was integration with Datix, PALS and the NHS App. Every deferral was a human call and is written down as one.</p>`
+  },
+  {
+    id: 'phase-03-dashboard-v1-to-v5',
+    phase: 'phase-03',
+    title: 'dashboard v1 to v5',
+    kind: 'document',
+    href: '/nhs-dashboard/nhs-feedback-dashboard-v5_1.html',
+    fileType: 'HTML',
+    fileSize: '186 KB',
+    description: 'The signed-off fifth iteration of the trust dashboard, running on NHS design system tokens. Prioritised signals, ward drilldown, patient verbatims, regulator evidence export and a print-ready board pack.'
+  },
+  {
+    id: 'phase-03-ward-digest-email',
+    phase: 'phase-03',
+    title: 'ward digest email',
+    kind: 'content',
+    description: 'The digest specification as it was written — contents, delivery, and the rendering constraints that shaped it.',
+    body: `
+<h5>What every digest has to contain</h5>
+<ul>
+<li>The top two concern themes from last week, specific and actionable rather than a headline score</li>
+<li>The top two positive themes, named so they can be shared with the team</li>
+<li>At least one positive verbatim patient comment. This is structural, not optional &mdash; a digest that only carries criticism is read as a criticism tool and resented</li>
+<li>A one-tap share-with-team link, so the digest can be forwarded to the ward group chat in seconds</li>
+<li>One screen. Two pages and nobody reads it, including the ward manager</li>
+</ul>
+<h5>Delivery</h5>
+<dl>
+<div><dt>When</dt><dd>Monday 08:00 GMT, by transactional email. Never silently skipped &mdash; if there is no data, the skip is logged as an error rather than passing quietly.</dd></div>
+<div><dt>Access</dt><dd>A magic link with no password and no account. Ward-scoped, seven-day expiry.</dd></div>
+<div><dt>Rendering</dt><dd>Must render correctly in Outlook, including the desktop client, which is the dominant NHS email client. That rules out CSS grid and flexbox in the email body &mdash; table-based layout, tested against the Outlook matrix.</dd></div>
+<div><dt>Fallback</dt><dd>A plain text alternative is always included.</dd></div>
+<div><dt>Trend rendering</dt><dd>The twelve-week sentiment sparkline degrades to a static image inside the email.</dd></div>
+</dl>
+<h5>The written requirement it came from</h5>
+<p>As a Ward Manager, I want a weekly email digest with last week&rsquo;s patient feedback about my ward &mdash; including positive comments &mdash; delivered without needing to log in. Sent every Monday 08:00. Minimum one positive verbatim. Never silently skipped.</p>
+<h5>Why it replaced a dashboard</h5>
+<p>All four ward managers interviewed said, unprompted, that they would not log into another system mid-shift. One had tried two years earlier, could not remember the login, waited three days for a reset and gave up. The email became the primary operational surface and the ward-facing dashboard was descoped before it was designed.</p>`
+  },
+  {
+    id: 'phase-03-magic-link-destination-page',
+    phase: 'phase-03',
+    title: 'magic-link destination page',
+    kind: 'content',
+    description: 'The access pattern behind the page the digest lands on, and the governance conditions attached to it.',
+    body: `
+<h5>The access pattern</h5>
+<dl>
+<div><dt>Mechanism</dt><dd>A signed JSON web token carrying ward-scoped claims. Stateless, so no session store is needed. Revocation is available through a token blocklist if it is ever required.</dd></div>
+<div><dt>Expiry</dt><dd>Seven days, extended from the original design after prototype testing.</dd></div>
+<div><dt>Scope</dt><dd>Read-only, one ward. Treated as a low-risk access pattern on that basis.</dd></div>
+<div><dt>Why not NHS Login</dt><dd>NHS Login was judged unsuitable for staff-facing applications at MVP. Trust-level single sign-on through Azure AD or ADFS covers the Quality Manager and Chief Nurse roles instead; the ward manager route deliberately avoids both.</dd></div>
+<div><dt>Governance position</dt><dd>Three of the four information governance leads interviewed confirmed the pattern was acceptable, on the basis that it is read-only and ward-scoped.</dd></div>
+</dl>
+<h5>What the destination page shows</h5>
+<p>Ward identity, a benchmark comparison, and the hero positive quote &mdash; with no login step in front of any of it. Ward terminals are often shared and locked down, so no patient data is stored locally and session tokens stay server-side.</p>`
+  },
+  {
+    id: 'phase-03-service-start-page',
+    phase: 'phase-03',
+    title: 'service start page',
+    kind: 'content',
+    description: 'The government service start pattern in front of the microsite, and the two accessibility defects fixed when it was built.',
+    body: `
+<h5>What it is</h5>
+<p>The GOV.UK service start pattern, rebuilt on NHS design system tokens as the microsite&rsquo;s entry point. It resolved a deferral: the nav entry originally routed straight to the dashboard, with the interstitial left as a stated gap rather than a silent one. The start page now loads first, Start now proceeds to the dashboard, back from the dashboard returns to the start page, and back from the start page exits to the showcase.</p>
+<h5>Two accessibility defects found and fixed at build time</h5>
+<dl>
+<div><dt>Missing bypass-blocks mechanism</dt><dd>The prototype had no skip link. A Skip to main content anchor is now the first focusable element in the document, visually hidden until focused, addressing WCAG 2.4.1.</dd></div>
+<div><dt>Wrong focus token</dt><dd>The prototype used a focus colour that did not match the NHS design system. It was corrected to the specified focus token, so the start page, the dashboard and the wider microsite now ring focus identically.</dd></div>
+</dl>
+<h5>Boundary note</h5>
+<p>The page is lazily loaded as its own bundle, separate from the dashboard. Its How this was built link reaches the host showcase through a callback prop rather than an import, so the microsite boundary holds: one route, one nav link, no cross-imports.</p>
+<p class="evidence-row__note">The page itself sits inside the showcase application rather than at a standalone URL, so there is no file to attach here. The substance is recorded above.</p>`
+  },
+  {
+    id: 'phase-03-design-decision-log',
+    phase: 'phase-03',
+    title: 'design decision log',
+    kind: 'content',
+    description: 'The design decisions taken during the build, each with the reason it was taken, as recorded in the repository decision log.',
+    body: `
+<h5>Interface and information architecture</h5>
+<dl>
+<div><dt>Static configuration and editable content are split</dt><dd>Phase structure, ordering and visual treatment are code. Only the words are editable data. A content edit can never break the layout.</dd></div>
+<div><dt>Flip-card interaction for lifecycle activities</dt><dd>Each activity card carries a summary on the front and detail on the back, so the overview stays scannable without a modal for every item.</dd></div>
+<div><dt>Discovery cards follow the real discovery sequence</dt><dd>Card order reflects the order the work actually happened in, not alphabetical or importance order, because the sequence is part of the argument.</dd></div>
+<div><dt>Three fonts, three roles</dt><dd>A serif for display and titles, a sans for body, a monospace for labels and metadata. Role assignment is fixed so typography carries hierarchy rather than decoration.</dd></div>
+<div><dt>Tabs consolidated</dt><dd>User analysis and artefacts were merged into one use-case view, with the artefact set rendered inline beneath the personas rather than as a separate destination. Artefacts stopped being a place you had to go and became part of the case.</dd></div>
+<div><dt>Artefacts are the single source of truth for discovery outputs</dt><dd>Every discovery output lives in one artefact collection and is rendered from it, so there is one place a reader looks and one place an author edits.</dd></div>
+<div><dt>Prototype history opens in place</dt><dd>The prototype artefact switches the view in the same tab rather than opening a modal or a new route, so version history reads as part of the artefact rather than a detour.</dd></div>
+<div><dt>Persona video embed</dt><dd>Each persona card accepts an optional video, because a persona is more credible in a clinician&rsquo;s own voice than in a bulleted summary.</dd></div>
+</dl>
+<h5>Content and data handling</h5>
+<dl>
+<div><dt>Rich text is stored as HTML strings</dt><dd>Artefact bodies are authored and stored as HTML rather than a bespoke block format, so a long strategy document survives round-tripping without a schema migration.</dd></div>
+<div><dt>Prototype iterations are stored whole</dt><dd>Each prototype version is kept as its complete document rather than a diff, so any iteration can be opened exactly as it was reviewed.</dd></div>
+<div><dt>FFT data is parsed in the browser</dt><dd>Uploaded FFT exports are parsed client-side. No patient data is sent to a server for the demonstrator to work.</dd></div>
+<div><dt>Ingest surface removed</dt><dd>An ingest tab was built and then removed as out of MVP demo scope, rather than left in place as a non-functioning promise.</dd></div>
+</dl>
+<h5>Accessibility as a build floor</h5>
+<p>WCAG 2.1 AA was specified per component &mdash; contrast, focus order, keyboard paths, reduced motion &mdash; with print views on every surface, and signed off per component by a person rather than certified by a tool. Colour is never the sole means of conveying alert status.</p>
+<p class="evidence-row__note">The full log lives in the repository as the project decision record. The design entries are summarised here; the architecture and delivery entries appear against phase 04.</p>`
+  },
+  {
+    id: 'phase-04-decoupled-microsite-scaffold',
+    phase: 'phase-04',
+    title: 'decoupled microsite scaffold',
+    kind: 'content',
+    description: 'The boundary that was set by hand and held, and how the two NHS surfaces are mounted behind the host without entangling with it.',
+    body: `
+<h5>The rule</h5>
+<p>Each NHS surface is a decoupled module outside the host application tree. It is registered as one lazily loaded route with one nav entry, keeps its own design system scoped to its own wrapper, and owns its own data layer. No file in the microsite imports from the host, and no host file imports from the microsite except the single lazy route component. A cross-boundary import is treated as a design error, not a shortcut.</p>
+<h5>What that buys</h5>
+<ul>
+<li>The NHS surface can be governed, assessed and deployed on its own terms rather than as part of the showcase</li>
+<li>Two design systems coexist without coupling &mdash; NHS light mode stays scoped and never leaks into the host&rsquo;s dark theme</li>
+<li>Lazy loading keeps the microsite bundle, its charts and its fonts out of the host&rsquo;s initial load</li>
+<li>The module could be lifted into its own repository and lose nothing but a link</li>
+</ul>
+<h5>The two surfaces</h5>
+<dl>
+<div><dt>Patient feedback platform</dt><dd>A service start page loads first; Start now opens the signed-off dashboard. The dashboard runs as a self-contained document inside a same-origin frame, which preserves the reviewed prototype behaviour exactly rather than re-implementing it and hoping.</dd></div>
+<div><dt>Performance analytics</dt><dd>The same start-page-first pattern, so stakeholders get context before entering a dense analytics view. Its charting and icon libraries are bundled locally rather than fetched from a CDN at runtime, which keeps the microsite genuinely self-contained.</dd></div>
+</dl>
+<h5>What was learned the hard way</h5>
+<p>A shared component layer across the host and the NHS surfaces was attempted first. Two design systems in one codebase couples them permanently &mdash; after that, neither can move alone. The scaffold was decoupled in response, with its own project and namespaced configuration.</p>`
+  },
+  {
+    id: 'phase-04-namespaced-configuration',
+    phase: 'phase-04',
+    title: 'namespaced configuration',
+    kind: 'content',
+    description: 'How configuration and secrets are separated so the microsite cannot reach the host’s data, and no credential reaches the repository.',
+    body: `
+<h5>Namespacing</h5>
+<p>The microsite&rsquo;s configuration keys carry their own prefix, distinct from the host&rsquo;s. The database client is initialised as a separately named application instance, so the two cannot collide inside the same bundle and the microsite cannot write to the host&rsquo;s paths even by accident. The microsite carries its own seed version, independent of the host&rsquo;s.</p>
+<h5>Secrets discipline</h5>
+<ul>
+<li>Every credential lives in the repository&rsquo;s secret store and is injected at build time. None is committed.</li>
+<li>No environment-specific value is hard-coded into a page or a component.</li>
+<li>The demonstrator runs without user authentication by design, and that limitation is recorded rather than implied &mdash; if the data ever stops being synthetic, the gate has to move server-side.</li>
+</ul>
+<h5>Persistence conventions</h5>
+<dl>
+<div><dt>Values are stored as JSON strings</dt><dd>Every stored value is serialised on write and parsed on read, so nested structures survive the database&rsquo;s own type coercion instead of quietly collapsing.</dd></div>
+<div><dt>Seed if empty, never overwrite</dt><dd>Seed data is written only where nothing exists, against a version number. A deploy cannot overwrite content someone has edited.</dd></div>
+<div><dt>Debounced writes</dt><dd>Edits are batched before they reach the database, so typing in a rich-text field does not generate a write per keystroke.</dd></div>
+</dl>`
+  },
+  {
+    id: 'phase-04-enforced-decision-log',
+    phase: 'phase-04',
+    title: 'enforced decision log',
+    kind: 'content',
+    description: 'The decision log wired into the pipeline as a promotion gate, and the test-maintenance rule that sits alongside it.',
+    body: `
+<h5>The gate</h5>
+<p>The decision log is checked automatically on every pipeline run. If an architectural, design or coding decision has changed and the log has not, promotion fails. Months later, the question &ldquo;why is it built this way&rdquo; has a written answer &mdash; which is the difference between a codebase handed over and a codebase inherited.</p>
+<h5>What that means in practice</h5>
+<ul>
+<li>Entries are written as the work happens, by the person who took the decision, and approved by a person. The pipeline only enforces that an entry exists.</li>
+<li>Deviations are flagged against the recorded intent before promotion rather than found in review, and a human rules on whether each one is a decision or a defect.</li>
+<li>Work is reviewed locally against the recorded intent, then promoted through an explicit gate rather than pushed straight to production.</li>
+<li>Where a later change falsifies an earlier entry, the earlier entry is left intact and a correcting entry is added &mdash; so the log records history rather than being rewritten to look consistent.</li>
+</ul>
+<h5>Test maintenance is part of the same gate</h5>
+<ul>
+<li>A change that alters behaviour without updating the tests that cover it is incomplete</li>
+<li>New user-visible behaviour needs at least a happy path and an error path</li>
+<li>No assertion is weakened, skipped or deleted to make a pipeline run green &mdash; the expectation is updated, with the reason recorded</li>
+<li>Selectors prefer roles, labels and explicit test identifiers over class names or DOM position</li>
+</ul>`
+  },
+  {
+    id: 'phase-04-generated-components-with-tests',
+    phase: 'phase-04',
+    title: 'generated components with tests',
+    kind: 'content',
+    description: 'The component and backend patterns identified during discovery and carried into the build, each with the reason it exists.',
+    body: `
+<h5>Interface components, and where each is reused</h5>
+<dl>
+<div><dt>AlertCard &mdash; dashboard, Chief Nurse view</dt><dd>Renders a deteriorating ward with the threshold crossed, trend direction and top theme. Severity colour is configurable and never the only signal.</dd></div>
+<div><dt>ThemeBar &mdash; alert drilldown, board pack</dt><dd>A horizontal bar showing theme name, comment count and sentiment direction, with no colour-only encoding.</dd></div>
+<div><dt>VerbatimList &mdash; drilldown, digest preview</dt><dd>Anonymised patient verbatims with an optional sentiment tag. Patient words are shown as written and never paraphrased by a model.</dd></div>
+<div><dt>TrendSparkline &mdash; dashboard, board pack, ward digest</dt><dd>A twelve-week sentiment trend, degrading to a static image inside email.</dd></div>
+<div><dt>RoleGate &mdash; every route</dt><dd>Wraps a view in role-based access control. Renders nothing rather than redirecting, which prevents a flash of unauthorised content.</dd></div>
+<div><dt>DataFreshnessTag &mdash; dashboard, digest</dt><dd>An always-visible indicator of when data was last ingested, so nobody acts on stale data without realising.</dd></div>
+</dl>
+<h5>Backend patterns, and why each was chosen</h5>
+<dl>
+<div><dt>Ingest adapter</dt><dd>Each source normalises to a canonical schema before entering the pipeline. Adding a source means adding an adapter, not changing the pipeline.</dd></div>
+<div><dt>Outbox</dt><dd>Alert and digest events are written to the database before dispatch, so no alert or email is lost if a downstream service is briefly unavailable.</dd></div>
+<div><dt>Confidence threshold guard</dt><dd>Any comment below the confidence floor is routed to an unclassified bucket rather than forced into a theme, which keeps theme counts honest.</dd></div>
+<div><dt>Per-trust row-level security</dt><dd>A database-level policy on every patient data table, with the trust identifier injected from the authenticated session rather than a query parameter. No query can accidentally return another trust&rsquo;s data.</dd></div>
+<div><dt>Versioned API adapter</dt><dd>The NHS App feedback schema is in active development, so the connector is version-pinned with its upgrade path isolated from the core pipeline.</dd></div>
+</dl>
+<h5>The architecture the components sit in</h5>
+<ul>
+<li>Classification runs as an isolated service, because the model is the component most likely to change. Swapping it does not redeploy the stack.</li>
+<li>Everything is containerised from day one, which is what makes the Year 2 on-premise option a deployment choice rather than a rewrite.</li>
+<li>A queue decouples ingest from classification, so a large batch upload enqueues records instead of blocking the API response.</li>
+<li>Board pack generation runs server-side, because client-side document generation is unreliable across NHS network proxies.</li>
+</ul>`
+  },
+  {
+    id: 'phase-05-two-round-by-round-research-reports',
+    phase: 'phase-05',
+    title: 'two round-by-round research reports',
+    kind: 'content',
+    description: 'The findings that changed what was built, the gate verdicts, the pivots they forced, and the round 1 interview record they came from. Accuracy findings and the commercial gate are omitted.',
+    body: `
+<h5>The verdict</h5>
+<p>Build, with four targeted pivots. Eight weeks, fourteen interviews, nine prototype sessions and one technical spike. The problem is real, well evidenced, and unsolved at scale. One information governance pivot was required.</p>
+<h5>The findings that changed what was built</h5>
+<dl>
+<div><dt>F1 &middot; The information governance gate passes, conditionally</dt><dd>Three of four IG leads would approve a cloud processor, but only with UK data residency and a privacy impact assessment completed before any patient data is transferred. One trust made an on-premise processing option a hard condition, so it entered the architecture as a later-phase commitment rather than a surprise.</dd></div>
+<div><dt>F2 &middot; Taxonomy, not tuning</dt><dd>Splitting a single blunt theme category into two concrete sub-categories was the fix that closed the classification gap &mdash; estimated at two days of engineering, with no model fine-tuning required. <span class="evidence-row__inline-note">The accuracy figures attached to this finding are excluded; see the model-quality position below.</span></dd></div>
+<div><dt>F3 &middot; Alert fatigue comes from true positives, not false ones</dt><dd>Quality Managers did not reject wrong alerts. They rejected too many right ones. When every ward shows amber, nobody acts. Only the top three deteriorating wards appear by default; everything else is one toggle away.</dd></div>
+<div><dt>F4 &middot; Ward managers will not log in, ever</dt><dd>All four said so unprompted, before being asked. The email digest is the only viable touchpoint, and it must always carry at least one positive comment or it is read as a criticism tool.</dd></div>
+<div><dt>F5 &middot; The near-term driver is compliance, not payment</dt><dd>The patient power payment is still in trial. The Medium Term Planning Framework already mandates near-real-time feedback on five or more wards before discharge. Compliance leads the conversation; the payment linkage follows it.</dd></div>
+</dl>
+<h5>Gate verdicts</h5>
+<dl>
+<div><dt>Information governance and security &middot; pass</dt><dd>Three of four IG leads approve cloud processing, conditional on UK residency, ISO 27001, Cyber Essentials Plus and a signed privacy impact assessment. One trust requires on-premise, added as a Year 2 architecture option.</dd></div>
+<div><dt>Alert design &middot; pass</dt><dd>All three Quality Managers tested said they would act on a red alert &mdash; but only on the top-three design. The all-wards design failed unanimously.</dd></div>
+<div><dt>Model quality &middot; unresolved</dt><dd>Not reported here. The accuracy position is the one claim this case withdrew rather than rounded up, and it is recorded separately below.</dd></div>
+<div><dt>Commercial &middot; omitted</dt><dd>Assessed and passed, but every figure behind it is commercially sensitive, so none of it is published on this page.</dd></div>
+</dl>
+<h5>The four pivots taken before sprint 1</h5>
+<ul>
+<li><strong>Alert experience.</strong> The default view became the top three deteriorating wards, with all wards behind a toggle. Alert fatigue was confirmed as the primary adoption risk.</li>
+<li><strong>Ward manager interface.</strong> The ward-facing web app moved out of the MVP. The digest was elevated to the highest priority, a share-with-team link added, and the magic-link expiry extended to seven days.</li>
+<li><strong>Classification taxonomy.</strong> One broad and highly sensitive theme category was split into two concrete sub-categories, because a single weak category on the most sensitive theme is not acceptable.</li>
+<li><strong>Architecture.</strong> An on-premise deployment option entered the architecture design immediately, for Year 2 delivery, to avoid rework. Tightened risk appetite means a meaningful share of large acute trusts may require it.</li>
+</ul>
+<p>One addition came out of prototype testing rather than the original requirements: a weekly Chief Nurse briefing email, a trust-wide aggregation of the ward digest template, estimated at half a day of engineering.</p>
+<h5>Immediate actions recorded against the report</h5>
+<ol>
+<li>Rewrite the two affected user stories to reflect the top-three default and the email-primary ward manager interface, and circulate for sign-off</li>
+<li>Start the DTAC and privacy impact assessment process for the pilot trust, with a named IG lead and a first draft inside three weeks</li>
+<li>Apply the taxonomy change and re-run classification against the validation set before production code is written</li>
+<li>Hold a ward naming mapping workshop with the pilot trust before sprint planning</li>
+<li>Begin the G-Cloud application, which takes four to eight weeks &mdash; starting before the first contract closes, not after</li>
+</ol>
+<h5>Round 1, as it was recorded</h5>
+<p>Three structured interviews, five questions each, with the verbatim response and what it validated written beside it. Responses are composites drawn from interviews across three NHS trusts; all names are illustrative.</p>
+<dl>
+<div><dt>Chief Nurse, on how problems currently surface</dt><dd>&ldquo;Honestly? In the worst cases, from the local paper. Or a Freedom of Information request arrives and that&rsquo;s how I find out a complaint pattern existed. The formal route is the monthly quality and safety committee &mdash; but that&rsquo;s six, sometimes eight weeks behind. By then you&rsquo;re managing an aftermath, not a situation.&rdquo; <em>The lag is real, and the consequence of missing it is reputational as well as operational.</em></dd></div>
+<div><dt>Chief Nurse, on what an alert has to contain</dt><dd>&ldquo;I&rsquo;d need to know which ward, obviously. But I&rsquo;d also need to know why &mdash; not just sentiment is down 12 points. If it just says worse, I&rsquo;ll pass it to the quality team and wait. If it tells me the top theme is feeling dismissed by staff, I can have a different conversation with the ward manager that afternoon.&rdquo; <em>A score change alone is not actionable. The driving theme is the payload.</em></dd></div>
+<div><dt>Quality Manager, on the quarterly cycle</dt><dd>&ldquo;We export the FFT responses &mdash; usually around 2,000 comments per quarter. I open them in Excel. I read each one and manually assign it to a theme category. That takes me about two days. Then I build the summary charts, write the narrative, and send it to the Chief Nurse. Start to finish, about two and a half weeks.&rdquo; <em>The manual coding cost was exactly as assumed, and the time-to-value case is concrete.</em></dd></div>
+<div><dt>Quality Manager, on whether sampling happens</dt><dd>&ldquo;I try to read all of them but honestly &mdash; if we&rsquo;ve had a particularly busy quarter &mdash; I&rsquo;ll do a proper read of maybe 60 to 70% and skim the rest. Which I know is a problem. There have been times I&rsquo;ve spotted something in month three of a quarter that was clearly visible in month one if I&rsquo;d had time to look.&rdquo; <em>Sampling is a coping mechanism, not a methodology, and the person doing it already knows.</em></dd></div>
+<div><dt>Quality Manager, on what makes a dashboard usable</dt><dd>&ldquo;There might be 30 wards all with slightly different scores and I&rsquo;m supposed to figure out which one needs my attention. It becomes noise. What I actually want is someone to say &mdash; these three wards have moved the most in the wrong direction in the last four weeks. Just those three. I can deal with three.&rdquo; <em>The top-three default is a direct articulation of the need, not a design preference.</em></dd></div>
+<div><dt>Quality Manager, on CQC preparation</dt><dd>&ldquo;Last inspection, I spent three weeks pulling together evidence. It&rsquo;s the most stressful period of my year and most of the work is just assembly &mdash; gathering things that already exist. If I could generate that pack in an afternoon I&rsquo;d cry with relief. Genuinely.&rdquo; <em>Evidence assembly is the strongest commercial hook for this role.</em></dd></div>
+<div><dt>Ward Manager, on what arrives today</dt><dd>&ldquo;I get a quarterly email with a PDF attached. It has a percentage &mdash; like 84% of patients on Ward 7 rated their experience as very good or good. That&rsquo;s it. It arrives about six weeks after the end of the quarter. If something went wrong in January, it went wrong. There&rsquo;s nothing I can do about it now.&rdquo; <em>Aggregate scores are meaningless at ward level, and the lag removes the ability to act.</em></dd></div>
+<div><dt>Ward Manager, on logging in</dt><dd>&ldquo;Once. About two years ago. I couldn&rsquo;t remember my login, IT took three days to reset it, by which point I&rsquo;d given up. I have 22 staff, bed management calls every morning, and a ward round at eight. If something needs a login, it doesn&rsquo;t exist for me.&rdquo; <em>The no-login constraint is absolute, not a preference.</em></dd></div>
+<div><dt>Ward Manager, on what the digest needs</dt><dd>&ldquo;Tell me what patients said. Not a score &mdash; what they actually said. The top two things that were good, the top two things that need fixing. And I want at least one actual quote. My team never get to hear the good stuff. If I could read out one positive comment at the Monday huddle, that would change the whole tone of the week.&rdquo; <em>The positive verbatim is the feature that makes the digest get read every week.</em></dd></div>
+<div><dt>Ward Manager, on the cost of missing a signal</dt><dd>&ldquo;It&rsquo;s happened. A patient raised a formal complaint about how a discharge was handled. When the quality team looked back, there were three comments about discharge confusion on my ward in the two months before. Nobody flagged it. Nobody told me. If I&rsquo;d known, I would have changed how we brief patients before they leave. That&rsquo;s the part that stays with you.&rdquo; <em>The stakes of missing feedback are personal, not just operational.</em></dd></div>
+</dl>
+<h5>What round 2 left open</h5>
+<p>Round 1 found two demo-blocking failures and round 2 confirmed both fixed. What round 2 also named was the remaining risk: the ward digest, not the dashboard. The open failure is reported rather than the closed one, because the alternative is discovering it in front of the client.</p>`
+  },
+  {
+    id: 'phase-05-playwright-acceptance-suite',
+    phase: 'phase-05',
+    title: 'Playwright acceptance suite',
+    kind: 'content',
+    description: 'What the acceptance suite covers, where it runs, and the rules that keep it honest.',
+    body: `
+<h5>Coverage</h5>
+<p>Criteria were agreed by people before any test was generated, so the suite proves the criteria rather than the happy path. It runs at three viewports and keeps running after the team leaves.</p>
+<dl>
+<div><dt>Host application</dt><dd>Application load, the problem statement, user analysis, the artefact set, the lifecycle section, the delivery board, data integrity after navigation, general quality checks, and prototype version editing.</dd></div>
+<div><dt>Documentation gate</dt><dd>A dedicated spec asserting the decision log is current, so the gate is itself tested rather than trusted.</dd></div>
+<div><dt>Patient feedback microsite</dt><dd>Smoke, the full dashboard journey, and the service start page &mdash; including the start-page-first entry, Start now, and the back paths in both directions.</dd></div>
+<div><dt>Performance analytics microsite</dt><dd>Smoke, the landing page, and the dashboard.</dd></div>
+<div><dt>This case, and the wider Crucible section</dt><dd>Entry point and badge, page load and landmarks, cross-page links, anchor integrity, the phase walkthrough, the timeline build-up, live regions, mobile navigation, horizontal overflow at 390px, and the artefact section on this page.</dd></div>
+</dl>
+<h5>Where it runs</h5>
+<p>Against a real deployed build rather than a local development server, so the suite exercises the same artefact a visitor gets &mdash; including the static pages, which no local bundler touches. A separate behavioural check runs the four Crucible pages directly and is portable across a dev server, a deployed preview, or the local filesystem.</p>
+<h5>The rules</h5>
+<ul>
+<li>Behaviour changes and its tests change in the same commit. Otherwise the commit is incomplete.</li>
+<li>New user-visible behaviour gets a happy path and an error path at minimum.</li>
+<li>A failing pipeline is fixed at the root cause. Suppressing an exit code or deleting a test to go green is not an available option.</li>
+<li>Where an assertion is deliberately reversed, the replacement is strictly stronger and the reason is written down.</li>
+<li>Selectors use roles, labels and explicit test identifiers &mdash; not class names, DOM position or index.</li>
+</ul>`
+  },
+  {
+    id: 'phase-05-accessibility-evidence',
+    phase: 'phase-05',
+    title: 'accessibility evidence',
+    kind: 'content',
+    description: 'The accessibility floor as specified, the defects found and fixed, and the checks that hold it in place.',
+    body: `
+<h5>The requirement as written</h5>
+<p>WCAG 2.1 AA, specified per component rather than audited at the end: contrast, focus order, keyboard paths and reduced motion, with a print view on every surface. Conformance was signed off per component by a person, not certified by a tool. For an NHS-facing tool that is the difference between passing assessment and carrying a public finding.</p>
+<h5>Non-negotiables built into the components</h5>
+<ul>
+<li>Colour is never the sole means of conveying alert status. Severity is carried by text and shape as well as hue.</li>
+<li>Theme bars encode direction and volume in the label, not only in the fill.</li>
+<li>The access-control wrapper renders nothing rather than redirecting, which prevents a flash of unauthorised content.</li>
+<li>Email output carries a plain text alternative, and the trend sparkline degrades to a static image.</li>
+<li>Patient verbatims are shown as written, so nothing depends on a model&rsquo;s paraphrase being accurate.</li>
+</ul>
+<h5>Defects found and fixed</h5>
+<dl>
+<div><dt>Missing bypass-blocks mechanism</dt><dd>The start page prototype shipped with no skip link. A Skip to main content anchor became the first focusable element in the document, visually hidden until focused. WCAG 2.4.1.</dd></div>
+<div><dt>Inconsistent focus indicator</dt><dd>The prototype used a focus colour outside the NHS design system. It was corrected to the specified token so every NHS surface rings focus identically.</dd></div>
+<div><dt>Horizontal overflow at 390px</dt><dd>A visually hidden file input on this page kept its intrinsic width and was not fully clipped, producing a small horizontal overflow. Retiring the affordance removed the input and the page now measures zero, so the documented overflow allowance was retired rather than left standing.</dd></div>
+</dl>
+<h5>What is checked automatically</h5>
+<ul>
+<li>One first-level heading per page, and no skipped heading levels</li>
+<li>All four document landmarks present on every page</li>
+<li>No in-page anchor pointing at a missing target</li>
+<li>Every image carrying alternative text</li>
+<li>Document language and a meaningful title set</li>
+<li>Horizontal overflow at 390px held at zero</li>
+<li>A live region announcing phase changes, and a text alternative for the timeline graphic</li>
+<li>Mobile navigation opening on every page</li>
+</ul>`
+  },
+  {
+    id: 'phase-05-a-stated-model-quality-position',
+    phase: 'phase-05',
+    title: 'a stated model-quality position',
+    kind: 'pending',
+    description: 'Deliberately not published here. The accuracy figures recorded in the old interface and the figure stated on this page do not agree, and that conflict is unresolved. Rather than publish a version of it, the material is withheld until the position is settled. What this case does claim about model quality — including the withdrawn target — is stated in "What this case does not claim" further down the page.'
+  },
+  {
+    id: 'phase-06-performance-analytics-microsite',
+    phase: 'phase-06',
+    title: 'performance analytics microsite',
+    kind: 'document',
+    href: '/nhs-analytics/nhs-performance-analytics.html',
+    fileType: 'HTML',
+    fileSize: '87 KB',
+    description: 'The platform reporting on itself — product metrics, system health, AI quality, compliance coverage and the signals archive, with a natural-language layer over its own performance data.'
+  },
+  {
+    id: 'phase-06-ai-signals-archive',
+    phase: 'phase-06',
+    title: 'AI signals archive',
+    kind: 'content',
+    description: 'What the archive holds, the four classes of signal it routes, and the rule about what a signal is allowed to assert. Readable in the analytics microsite linked above.',
+    body: `
+<h5>What it is</h5>
+<p>Every signal the platform has raised, kept as a searchable archive rather than a notification that disappears. Each entry records who it went to, when, what triggered it, and what it recommended &mdash; so the platform&rsquo;s own behaviour is auditable after the fact, not just in the moment.</p>
+<h5>The four classes of signal</h5>
+<dl>
+<div><dt>Priority alert</dt><dd>Raised automatically when a monitored threshold is breached on consecutive runs. Carries what is known, an impact assessment, and recommended actions &mdash; routed to the engineering team and the delivery lead together.</dd></div>
+<div><dt>Daily product snapshot</dt><dd>The north star metric against last month, plus whichever adoption signal is currently the blocker. Routed to the product manager.</dd></div>
+<div><dt>Technical snapshot</dt><dd>Ingestion rates, adapter health and batch outcomes per trust.</dd></div>
+<div><dt>Weekly executive summary</dt><dd>The board-facing view, with the qualification that makes each number honest travelling with it.</dd></div>
+</dl>
+<h5>The rule about what a signal may assert</h5>
+<p>A signal states the trigger as fact and the diagnosis as inference. Where root cause is inferred from log patterns, the entry says so and asks for engineering verification before action. A trend cannot be lifted into a board pack without the caveat attached &mdash; the caveat travels with the number.</p>
+<h5>How the loop closes</h5>
+<p>Benchmark comparison against national FFT flags anomalies, and a human still rules on whether an anomaly is real signal or a volume artefact. When it is real, it re-enters discovery as a hypothesis. That is what makes the lifecycle loop rather than end at go-live.</p>
+<p class="evidence-row__note">The archive itself is the Signals tab of the <a href="/nhs-analytics/nhs-performance-analytics.html" target="_blank" rel="noopener">performance analytics microsite</a>, which opens in a new tab.</p>`
+  },
+  {
+    id: 'phase-06-model-cost-latency-and-quality-tracked-as-product-metrics',
+    phase: 'phase-06',
+    title: 'model cost, latency and quality tracked as product metrics',
+    kind: 'content',
+    description: 'The operational thresholds the platform holds itself to, and the product accountability for the cost of running it. Accuracy thresholds are excluded.',
+    body: `
+<h5>Latency and throughput</h5>
+<dl>
+<div><dt>Classification</dt><dd>Under two seconds per comment. Bulk ingest runs as a batch; single comments classify in real time for live dashboard updates.</dd></div>
+<div><dt>Dashboard load</dt><dd>Under two seconds. Some ward terminals run on constrained bandwidth, so the target is under three seconds on a 10Mbps connection with no heavy client bundle on the critical path.</dd></div>
+<div><dt>Bulk processing</dt><dd>Under five minutes for five thousand rows.</dd></div>
+<div><dt>Alerting</dt><dd>Within 24 hours. The pipeline runs nightly; sub-hour alerting was explicitly deferred past the MVP rather than implied.</dd></div>
+<div><dt>Availability</dt><dd>99.5% on a rolling 90-day basis, with planned maintenance outside 06:00 to 22:00, Monday to Friday.</dd></div>
+</dl>
+<h5>Quality, as an operational control rather than a claim</h5>
+<ul>
+<li>Comments below the confidence floor are flagged as unclassified and surfaced for manual review &mdash; never silently discarded, because a suppressed comment is a hidden failure</li>
+<li>Low-confidence output is visible as low-confidence, so theme counts are not quietly inflated by forced classifications</li>
+<li>The alert engine still needs volume normalisation and service-type benchmarking before it is reliable against real data, and that is stated rather than assumed away</li>
+</ul>
+<p class="evidence-row__note">Accuracy thresholds are omitted here. They belong to the unresolved model-quality position recorded against phase 05.</p>
+<h5>Cost, and who owns it</h5>
+<p>Running cost is treated as a product metric, not an infrastructure line item. The accountability sits with product management alongside the traditional ones:</p>
+<ul>
+<li>Monitoring cost per operation, and model cost against model performance</li>
+<li>Tool selection economics and agent cost modelling</li>
+<li>Total cost of ownership, and cost-to-serve optimisation</li>
+<li>Governance of what the model is allowed to assert unreviewed</li>
+</ul>
+<p>The standing question is the same one at every gate: what is the total cost of running this product, and how can it be reduced without reducing value? Architectural decisions taken during technical discovery lock that cost in for years, which is why the product voice belongs in that room rather than arriving at delivery.</p>
+<h5>The open item on this phase</h5>
+<p>The analytics prototype makes a browser-side model call. Reviewed against what publishing it would expose, that turned out to be an unproxied API call and an unbounded inference cost the moment the link is shared. A server-side proxy with rate limiting became a precondition of publishing, and the prototype stays unpublished until it exists.</p>`
+  }
+  ];
 
-    if (isPdf) {
-      preview.disabled = false;
-      preview.title = '';
-      if (file.size > 15 * 1024 * 1024) {
-        /* very large files: skip the inline data-URL render (memory-heavy as base64)
-           and fall back to a plain download link instead of failing silently */
-        var fallbackUrl = URL.createObjectURL(file);
-        row.dataset.blobUrl = fallbackUrl;
-        viewer.innerHTML = '<p class="evidence-row__toolarge">File is large for an inline preview in this prototype. <a href="' + fallbackUrl + '" download="' + file.name + '">Download to view</a>.</p>';
-      } else {
-        var reader = new FileReader();
-        reader.onload = function () {
-          /* data: URLs (not blob:) are used deliberately -- blob: URLs navigated
-             inside an <iframe> from a file:// (null-origin) parent document are
-             blocked by Chromium as a cross-context navigation, even though the
-             same blob is perfectly readable in the parent document itself. */
-          viewer.innerHTML = '<iframe src="' + reader.result + '" title="' + file.name.replace(/"/g, '') + ' preview"></iframe>';
-        };
-        reader.readAsDataURL(file);
-      }
-    } else {
-      preview.disabled = true;
-      preview.title = 'Preview needs the production viewer for this format (Office/PDF conversion) — not available in this prototype.';
-      viewer.hidden = true;
-      viewer.innerHTML = '';
+  /* ---------------------------------------------------------------------
+     Renderer. Every row, every per-phase count and every label below is
+     derived from CASE_01_ARTEFACTS above. Adding one entry to that array
+     is the only edit needed to add a row -- there is no markup to touch.
+     The <noscript> list inside each phase is the JS-off fallback.
+     --------------------------------------------------------------------- */
+
+  var DOC_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true">'
+    + '<path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'
+    + '<path d="M14 3 V7 H18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
+  function attr(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function labelGroup(item, extra) {
+    return '<span class="evidence-row__icon">' + DOC_ICON + '</span>'
+      + '<span class="evidence-row__label-group">'
+      + '<span class="evidence-row__label">' + item.title + '</span>'
+      + '<span class="evidence-row__desc">' + item.description + '</span>'
+      + (extra || '')
+      + '</span>';
+  }
+
+  function rowHtml(item) {
+    var open = '<div class="evidence-row" data-testid="evidence-row" data-slot="' + attr(item.id)
+      + '" data-kind="' + attr(item.kind) + '">';
+
+    if (item.kind === 'content') {
+      return open
+        + '<details class="evidence-row__disclosure">'
+        + '<summary class="evidence-row__summary" aria-expanded="false">'
+        + labelGroup(item)
+        + '<span class="chip evidence-row__status chip--readable">Readable here</span>'
+        + '<span class="evidence-row__toggle" aria-hidden="true">Read</span>'
+        + '</summary>'
+        + '<div class="evidence-row__body">' + item.body + '</div>'
+        + '</details></div>';
     }
+
+    if (item.kind === 'document') {
+      var meta = [item.fileType, item.fileSize].filter(Boolean).join(' · ');
+      return open
+        + '<div class="evidence-row__static">'
+        + labelGroup(item, meta ? '<span class="evidence-row__hint">' + attr(meta) + '</span>' : '')
+        + '<span class="evidence-row__actions">'
+        + '<span class="chip chip--attached">Attached</span>'
+        + '<a class="evidence-row__preview" href="' + attr(item.href) + '" target="_blank" rel="noopener">Open in a new tab</a>'
+        + '</span></div></div>';
+    }
+
+    return open
+      + '<div class="evidence-row__static">'
+      + labelGroup(item)
+      + '<span class="evidence-row__actions"><span class="chip evidence-row__status">Not yet produced</span></span>'
+      + '</div></div>';
+  }
+
+  function countLabel(items) {
+    var kinds = { content: 0, document: 0, pending: 0 };
+    items.forEach(function (item) { kinds[item.kind] = (kinds[item.kind] || 0) + 1; });
+    var parts = [items.length + ' artefact' + (items.length === 1 ? '' : 's')];
+    if (kinds.content) { parts.push(kinds.content + ' readable here'); }
+    if (kinds.document) { parts.push(kinds.document + ' attached'); }
+    if (kinds.pending) { parts.push(kinds.pending + ' not yet produced'); }
+    return parts.join(' · ');
+  }
+
+  /* Exposed deliberately so the acceptance suite and qa_final can derive their
+     expectations from the manifest instead of hard-coding a row count. */
+  window.__CASE_01_ARTEFACTS__ = CASE_01_ARTEFACTS;
+
+  var byPhase = {};
+  CASE_01_ARTEFACTS.forEach(function (item) {
+    (byPhase[item.phase] = byPhase[item.phase] || []).push(item);
   });
 
-  document.addEventListener('click', function (event) {
-    var preview = event.target.closest('.evidence-row__preview');
-    if (preview) {
-      var row = preview.closest('.evidence-row');
-      var viewer = row.querySelector('.evidence-row__viewer');
-      var open = !viewer.hidden;
-      viewer.hidden = open;
-      preview.setAttribute('aria-expanded', String(!open));
-      preview.textContent = open ? 'Preview' : 'Hide preview';
-      return;
-    }
-    var remove = event.target.closest('.evidence-row__remove');
-    if (remove) {
-      var row2 = remove.closest('.evidence-row');
-      var input2 = row2.querySelector('.evidence-input');
-      var status2 = row2.querySelector('.evidence-row__status');
-      var preview2 = row2.querySelector('.evidence-row__preview');
-      var viewer2 = row2.querySelector('.evidence-row__viewer');
-      if (row2.dataset.blobUrl) { URL.revokeObjectURL(row2.dataset.blobUrl); delete row2.dataset.blobUrl; }
-      row2.removeAttribute('data-attached');
-      input2.value = '';
-      status2.textContent = 'No file attached';
-      status2.classList.remove('chip--attached');
-      preview2.disabled = true;
-      preview2.title = '';
-      preview2.textContent = 'Preview';
-      preview2.setAttribute('aria-expanded', 'false');
-      viewer2.hidden = true;
-      viewer2.innerHTML = '';
-      remove.hidden = true;
-    }
+  Object.keys(byPhase).forEach(function (phase) {
+    var items = byPhase[phase];
+    var rows = document.querySelector('.evidence__rows[data-evidence-rows="' + phase + '"]');
+    if (rows) { rows.innerHTML = items.map(rowHtml).join(''); }
+    var cap = document.querySelector('[data-evidence-count="' + phase + '"]');
+    if (cap) { cap.textContent = countLabel(items); }
   });
+
+  /* `toggle` does not bubble, so listen in the capture phase. Browsers expose
+     the open state of <details> natively; aria-expanded is mirrored on the
+     summary as well because some screen readers still rely on it. */
+  document.addEventListener('toggle', function (event) {
+    var details = event.target;
+    if (!details || !details.classList || !details.classList.contains('evidence-row__disclosure')) { return; }
+    var summary = details.querySelector('.evidence-row__summary');
+    if (summary) { summary.setAttribute('aria-expanded', String(details.open)); }
+  }, true);
 })();
 </script>
 </body>

@@ -234,5 +234,204 @@ for (const [n,u] of [['framework',F],['foundry',FD],['case',C],['resources',R]])
 await g.close();
 await rp.close();
 
+// ---------- 10 · case-01 artefact section is manifest-driven ----------
+// Every expectation below is read from the page's own CASE_01_ARTEFACTS manifest.
+// Nothing here hard-codes a row count: add an entry to the manifest and these
+// checks follow it. That is the point of the section.
+const ev = await b.newPage({ viewport:{width:1440,height:900} });
+const everrs = [];
+ev.on('pageerror', e=>everrs.push(String(e)));
+await ev.goto(C);
+
+const man = await ev.evaluate(()=>{
+  const m = window.__CASE_01_ARTEFACTS__;
+  if (!Array.isArray(m)) return null;
+  const byPhase = {};
+  m.forEach(i=>{ (byPhase[i.phase] = byPhase[i.phase] || []).push(i); });
+  return {
+    total: m.length,
+    ids: m.map(i=>i.id),
+    kinds: m.reduce((a,i)=>{ a[i.kind]=(a[i.kind]||0)+1; return a; },{}),
+    phases: Object.keys(byPhase).sort(),
+    perPhase: Object.fromEntries(Object.entries(byPhase).map(([p,v])=>[p,v.length])),
+    hrefs: m.filter(i=>i.kind==='document').map(i=>i.href),
+    shapeOk: m.every(i=>
+      i.id && i.phase && i.title && i.kind && i.description
+      && (i.kind!=='document' || !!i.href)
+      && (i.kind!=='content'  || !!i.body)
+      && (i.kind!=='pending'  || (!i.body && !i.href))),
+    idsMatchPhase: m.every(i=>i.id.startsWith(i.phase + '-')),
+    uniqueIds: new Set(m.map(i=>i.id)).size === m.length,
+  };
+});
+ok('case: artefact manifest is exposed and well formed', !!man && man.shapeOk && man.uniqueIds && man.idsMatchPhase,
+   man ? JSON.stringify(man.kinds) : 'manifest missing');
+
+// show every phase so all six evidence blocks are in the DOM at once
+await ev.locator('#show-all').click();
+
+const rendered = await ev.evaluate(()=>{
+  const rows = [...document.querySelectorAll('.evidence-row')];
+  const perPhase = {};
+  [...document.querySelectorAll('.evidence[data-phase]')].forEach(block=>{
+    perPhase[block.dataset.phase] = block.querySelectorAll('.evidence-row').length;
+  });
+  return {
+    total: rows.length,
+    ids: rows.map(r=>r.dataset.slot),
+    perPhase,
+    caps: Object.fromEntries([...document.querySelectorAll('[data-evidence-count]')]
+      .map(c=>[c.dataset.evidenceCount, c.textContent.trim()])),
+    kinds: rows.reduce((a,r)=>{ a[r.dataset.kind]=(a[r.dataset.kind]||0)+1; return a; },{}),
+    contentHasDisclosure: rows.filter(r=>r.dataset.kind==='content')
+      .every(r=>!!r.querySelector('details.evidence-row__disclosure > summary')),
+    contentHasBody: rows.filter(r=>r.dataset.kind==='content')
+      .every(r=>(r.querySelector('.evidence-row__body')?.textContent ?? '').trim().length > 0),
+    docsHaveLinks: rows.filter(r=>r.dataset.kind==='document')
+      .every(r=>!!r.querySelector('a.evidence-row__preview[target="_blank"][rel="noopener"]')),
+    pendingHasNoBody: rows.filter(r=>r.dataset.kind==='pending')
+      .every(r=>!r.querySelector('.evidence-row__body') && !r.querySelector('a')),
+    allCollapsed: [...document.querySelectorAll('.evidence-row__disclosure')].every(d=>!d.open),
+  };
+});
+
+ok('case: rendered row count equals the manifest', rendered.total===man.total, rendered.total+' vs '+man.total);
+ok('case: rendered rows are exactly the manifest ids',
+   rendered.ids.slice().sort().join('|')===man.ids.slice().sort().join('|'));
+ok('case: rows keep manifest order within each phase', man.phases.every(p=>{
+  const wanted = man.ids.filter(id=>id.startsWith(p + '-')).join('|');
+  const got = rendered.ids.filter(id=>id.startsWith(p + '-')).join('|');
+  return wanted===got;
+}));
+ok('case: per-phase row counts equal the manifest',
+   man.phases.every(p=>rendered.perPhase[p]===man.perPhase[p]), JSON.stringify(rendered.perPhase));
+ok('case: rendered kinds equal the manifest kinds',
+   JSON.stringify(rendered.kinds)===JSON.stringify(man.kinds), JSON.stringify(rendered.kinds));
+ok('case: every count label is derived from the manifest', man.phases.every(p=>{
+  const label = rendered.caps[p] || '';
+  return label.startsWith(man.perPhase[p] + ' artefact');
+}), JSON.stringify(rendered.caps));
+ok('case: every content row is an expandable disclosure with real substance',
+   rendered.contentHasDisclosure && rendered.contentHasBody);
+ok('case: every document row links out in a new tab', rendered.docsHaveLinks);
+ok('case: pending rows carry no body and no link', rendered.pendingHasNoBody);
+ok('case: rows start collapsed', rendered.allCollapsed);
+ok('case: artefact section raises no page errors', everrs.length===0, everrs.join(' | '));
+
+// keyboard + ARIA on the first content row
+const kb = await ev.evaluate(async ()=>{
+  const row = document.querySelector('.evidence-row[data-kind="content"]');
+  const summary = row.querySelector('summary');
+  summary.focus();
+  const focused = document.activeElement===summary;
+  const before = summary.getAttribute('aria-expanded');
+  summary.click();
+  await new Promise(r=>setTimeout(r,30));
+  const after = summary.getAttribute('aria-expanded');
+  const open = row.querySelector('details').open;
+  summary.click();
+  await new Promise(r=>setTimeout(r,30));
+  return { focused, before, after, open, closed: summary.getAttribute('aria-expanded') };
+});
+ok('case: disclosure is focusable and reports correct ARIA state',
+   kb.focused && kb.before==='false' && kb.after==='true' && kb.open && kb.closed==='false',
+   JSON.stringify(kb));
+
+// heading order inside expanded bodies must not break the document outline
+await ev.evaluate(()=>{ document.querySelectorAll('.evidence-row__disclosure').forEach(d=>{ d.open = true; }); });
+const outline = await ev.evaluate(()=>{
+  const hs=[...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map(h=>+h.tagName[1]);
+  let skips=0; for(let i=1;i<hs.length;i++) if(hs[i]>hs[i-1]+1) skips++;
+  return skips;
+});
+ok('case: heading order holds with every artefact expanded', outline===0, String(outline));
+
+// no horizontal overflow at 390px with everything expanded
+const evm = await b.newPage({ viewport:{width:390,height:844} });
+await evm.goto(C);
+await evm.locator('#show-all').click();
+await evm.evaluate(()=>{ document.querySelectorAll('.evidence-row__disclosure').forEach(d=>{ d.open = true; }); });
+ok('case: no horizontal overflow at 390px with every artefact expanded',
+   await evm.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),
+   await evm.evaluate(()=>document.documentElement.scrollWidth+'px'));
+await evm.close();
+
+// the section still says something useful with JavaScript switched off
+const nojsCtx = await b.newContext({ viewport:{width:1440,height:900}, javaScriptEnabled:false });
+const nojs = await nojsCtx.newPage();
+await nojs.goto(C);
+const fallback = await nojs.evaluate(()=>{
+  const blocks=[...document.querySelectorAll('.evidence[data-phase]')];
+  return {
+    blocks: blocks.length,
+    // <noscript> content is inert markup when scripting is off; read it as text
+    everyBlockHasFallback: blocks.every(b=>{
+      const ns=b.querySelector('noscript');
+      return !!ns && (ns.textContent||'').trim().length>40;
+    }),
+    linkCount: (document.body.innerHTML.match(/nhs-feedback-dashboard-v5_1\.html|nhs-performance-analytics\.html/g)||[]).length,
+  };
+});
+ok('case: artefact section is not empty with JavaScript disabled',
+   fallback.blocks===6 && fallback.everyBlockHasFallback, JSON.stringify(fallback));
+ok('case: both attached prototypes stay reachable with JavaScript disabled',
+   fallback.linkCount>=man.hrefs.length, String(fallback.linkCount));
+await nojsCtx.close();
+
+// every document href actually resolves
+if (!BASE.startsWith('file://')) {
+  const origin = new URL(BASE).origin;
+  const codes = [];
+  for (const href of man.hrefs) {
+    const r = await ev.request.get(new URL(href, origin).href);
+    codes.push(href + '=' + r.status());
+  }
+  ok('case: every attached artefact link resolves', codes.every(c=>c.endsWith('=200')), codes.join(', '));
+}
+
+// commercial exclusions must not appear anywhere in the rendered page
+// The commercial exclusion covers the LOI value, the named prospect trust, pricing,
+// pipeline, revenue/ARR targets and addressable-market figures. The exclusion applies
+// to this repository as well as to the page, so this guard must not restate any of the
+// excluded values in order to look for them. It works two ways instead:
+//
+//   1 · category terms, which are safe to name because they are labels, not figures;
+//   2 · a monetary sweep that fails on ANY £ figure other than the two the exclusion
+//       permits (staff time saved and CQC remediation cost, neither of which is
+//       pricing, revenue or market sizing). That is a stronger guard than a blocklist
+//       of known-bad values: it also catches a figure nobody has thought of yet.
+//
+// `ARR` and `LOI` are matched case-sensitively and on word boundaries -- a lower-cased
+// substring search hits "narrative", "arrives" and "carried". `pipeline` is deliberately
+// not matched as a bare word: this page used it for the CI and ingest pipelines before
+// this change, and the exclusion does not cover that sense, so only the commercial
+// senses are matched. No trust name is matched, because naming one here would put it in
+// the repository -- the whole commercial gate is omitted from the page instead.
+const EXCLUSIONS = [
+  { source: '\\bARR\\b',          flags: '',  label: 'ARR' },
+  { source: '\\bLOI\\b',          flags: '',  label: 'LOI' },
+  { source: 'letter of intent',   flags: 'i', label: 'letter of intent' },
+  { source: '\\bpricing\\b',      flags: 'i', label: 'pricing' },
+  { source: 'entry price',        flags: 'i', label: 'entry price' },
+  { source: 'revenue target',     flags: 'i', label: 'revenue target' },
+  { source: 'addressable market', flags: 'i', label: 'addressable market' },
+  { source: 'per annum',          flags: 'i', label: 'per annum' },
+  { source: 'sales pipeline|pipeline projects', flags: 'i', label: 'commercial pipeline' },
+];
+// The only monetary figures the exclusion allows on this page. Both are cost-avoidance
+// figures in the return case, not pricing, revenue or market sizing.
+const PERMITTED_FIGURES = ['£15k', '£200k'];
+const hits = await ev.evaluate(({ terms, permitted }) => {
+  const text = document.documentElement.innerHTML;
+  const found = terms.filter(t => new RegExp(t.source, t.flags).test(text)).map(t => t.label);
+  const money = [...text.matchAll(/£\s?\d[\d.,–-]*\s?(?:k|m|bn)?/gi)]
+    .map(m => m[0].replace(/\s/g, ''))
+    .filter(m => !permitted.includes(m));
+  if (money.length) { found.push('unpermitted monetary figure: ' + [...new Set(money)].join(' ')); }
+  return found;
+}, { terms: EXCLUSIONS, permitted: PERMITTED_FIGURES });
+ok('case: no commercially sensitive term appears on the page', hits.length===0, hits.join(', '));
+await ev.close();
+
 console.log('\n' + (fails.length===0 ? 'ALL CHECKS PASSED' : 'FAILURES: ' + fails.join(' | ')));
 await b.close();
