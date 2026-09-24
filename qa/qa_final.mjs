@@ -202,17 +202,38 @@ for (const [n,pg] of [['framework',g],['case',c2]]) {
 }
 await c2.close();
 
-// hero diagram: renders, no errors, has all five gates and stations
+// hero diagram (DD-14): the six-phase orbit renders inside a single link to the
+// Thought Leadership page, and sits clear of the hero actions in the two-column layout.
 const heroChecks = await g.evaluate(()=>{
-  const svg = document.querySelector('.hero-diagram svg');
+  const link = document.querySelector('.hero .hero-orbit__link');
+  const svg  = document.querySelector('.hero .hero-orbit');
+  const acts = document.querySelector('.hero .actions');
+  const labels = [...document.querySelectorAll('.hero .hero-orbit__sat')].map(g =>
+    [...g.querySelectorAll('.hero-orbit__label')].map(t=>t.textContent.trim()).join(' '));
+  let overlap = null;
+  if (link && acts) {
+    const a = link.getBoundingClientRect(), b = acts.getBoundingClientRect();
+    overlap = Math.max(0, Math.min(a.right,b.right)-Math.max(a.left,b.left))
+            * Math.max(0, Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+  }
   return {
     present: !!svg,
-    gateLabels: document.querySelectorAll('.hero-svg__gatename').length,
-    loopBoxes: document.querySelectorAll('.hero-svg__loop').length,
-    stationTitles: document.querySelectorAll('.hero-svg__station').length,
+    href: link && link.getAttribute('href'),
+    nestedLinks: link ? link.querySelectorAll('a').length : -1,
+    satellites: document.querySelectorAll('.hero .hero-orbit__sat').length,
+    hub: !!(svg && [...svg.querySelectorAll('text')].find(t=>t.textContent.includes('The Crucible'))),
+    labels,
+    overlap,
   };
 });
-ok('hero diagram renders with all elements', heroChecks.present && heroChecks.gateLabels===5 && heroChecks.loopBoxes===5 && heroChecks.stationTitles===6, JSON.stringify(heroChecks));
+ok('hero diagram renders as a six-phase orbit',
+   heroChecks.present && heroChecks.satellites===6 && heroChecks.hub, JSON.stringify(heroChecks));
+ok('hero diagram is a single link to the framework stepper (placeholder target)',
+   heroChecks.href==='#framework' && heroChecks.nestedLinks===0, JSON.stringify({href:heroChecks.href,nested:heroChecks.nestedLinks}));
+ok('hero diagram labels the six phases in stepper order',
+   JSON.stringify(heroChecks.labels)===JSON.stringify(['Strategy','Discovery','Design','Delivery','Validation & QA','Ops & monitoring']),
+   JSON.stringify(heroChecks.labels));
+ok('hero diagram does not overlap the hero actions', heroChecks.overlap===0, String(heroChecks.overlap));
 ok('hero diagram produces no page errors', gerrs.length===0, gerrs.join(' | '));
 
 // resources page: exists, nav present on every page, link from aiblock works
