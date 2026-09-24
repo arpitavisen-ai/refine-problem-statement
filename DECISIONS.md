@@ -317,6 +317,50 @@ Separately, the **Evidence & attachments** block is removed from all six phases 
 
 ---
 
+### DD-14 · Framework hero adopts a two-column layout with a clickable phase diagram
+**Status:** Active  
+**Date:** 2026-09-24  
+**Decision:** The `spe-framework.html` hero moves from a single `.col-content` block with a
+full-width loop diagram stacked beneath it, to a two-column split: `.col-half-a` carries the
+existing brandmark, h1, body-lead, `.actions` and caption unchanged, and a new `.col-half-b`
+carries a compact circular diagram of the six phases (hexagon of Strategy, Discovery, Design,
+Delivery, Validation & QA, Ops & monitoring around a hub labelled "The Crucible"). The columns
+are vertically centred via `.hero .grid--hero { align-items: center; }`, scoped with a `grid--hero`
+modifier so `.hero__shift`’s existing use of `.col-half-a`/`.col-half-b` is unaffected. The whole
+SVG is wrapped in a single `<a>` to `spe-thought-leadership-pdlc.html` — a long-form article on the
+framework, authored separately and **not yet present in the repo at the time of this entry**; the path
+is the agreed target, so the link ships now and resolves when the article lands. There are no
+per-satellite deep links. Hover reuses the existing `.step` language (`background: var(--layer)`),
+and the global `:focus-visible` rule supplies the focus ring — no new visual language is introduced.
+
+The previous full-width loop diagram (`.hero-diagram` / `.hero-svg__*`, ~11KB of inline SVG carrying
+the Gate 0–4 markers and five human-in-the-loop callouts) is **removed**, along with its now-dead
+CSS and its 620px horizontal-scroll rules. It is recoverable from git history at `615f08a`.
+
+The diagram is **decorative and navigational, not the stepper’s primary entry point** — the
+`#framework` CTA ("Walk the six phases", `data-goto="0"`) remains the primary affordance, and all
+nine `[data-goto]` controls and six `.step` buttons are unchanged by this restructure.  
+**Rationale:** The single-column hero pushed the diagram below the fold and gave the h1 no visual
+counterweight; the old diagram was also sized for 1700px and had to be made horizontally scrollable
+on mobile, which is a poor affordance. A compact six-phase diagram reads at hero size, mirrors the
+stepper’s own taxonomy (the old one used a different vocabulary — teams and artefacts rather than
+phases), and gives the hero a second, lower-commitment route into the material for readers not ready
+to walk all six phases. The target is a dedicated thought-leadership article rather than the existing
+`spe-resources.html` index, so the diagram leads somewhere that expands on the framework itself; the
+article is authored in a separate change — see the stopgap below for what ships in the meantime.  
+**Stopgap (2026-09-24):** `spe-thought-leadership-pdlc.html` is still unwritten, so the diagram
+ships pointing at `href="#framework"` — the stepper section already on the page — rather than at a
+URL that 404s in production. This supersedes nothing: DD-14 stands as written, and the `#framework`
+target is a temporary substitute to be swapped for the article path once the article exists. The
+click-through assertion in `21-new-ui-hero-diagram.spec.ts` is consequently a real test again
+rather than a `test.fixme`, and `qa_final.mjs` asserts the placeholder target.  
+**Note on numbering:** the originating brief called for a `PD-XX` entry; this file has no `PD-`
+series, so the decision is recorded as `DD-14` in the existing Design Decisions sequence.  
+**Where:** `public/new-ui/spe-framework.html` (hero markup, §7 diagram CSS, §8 responsive rules);
+`tests/acceptance/21-new-ui-hero-diagram.spec.ts`; `qa/qa_final.mjs`.
+
+---
+
 ### DD-15 · The acceptance suite defaults to the local build; production is opt-in
 **Status:** Active  
 **Date:** 2026-09-24  
@@ -384,5 +428,5 @@ Separately, the **Evidence & attachments** block is removed from all six phases 
 
 ---
 
-*Last updated: 2026-09-24 (DD-15: the Playwright suite now defaults to the local dist/ build instead of the production URL, with a webServer that rebuilds dist/ first; test:prod and an explicit BASE_URL remain the opt-in routes to the deployed site, and CI is unaffected. CD-08 amended accordingly. test:prod's missing cross-env dependency fixed via scripts/run-playwright.mjs). Previously 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-09-24 (DD-14: spe-framework.html hero restructured into a two-column layout — existing copy in .col-half-a, a new six-phase circular diagram in .col-half-b; the previous full-width loop diagram and its CSS removed. The diagram links to #framework as a stopgap while the thought-leadership article is unwritten. All [data-goto] controls and .step buttons verified unchanged). Previously 2026-09-24 (DD-15: the Playwright suite now defaults to the local dist/ build instead of the production URL, with a webServer that rebuilds dist/ first; test:prod and an explicit BASE_URL remain the opt-in routes to the deployed site, and CI is unaffected. CD-08 amended accordingly. test:prod's missing cross-env dependency fixed via scripts/run-playwright.mjs). Previously 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
