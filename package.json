@@ -7,10 +7,12 @@
     "build": "vite build",
     "dev": "vite",
     "promote": "powershell -ExecutionPolicy Bypass -File scripts/promote.ps1",
-    "test": "npx playwright test --config=playwright.config.ts",
-    "test:prod": "cross-env BASE_URL=https://refine-problem-statement.vercel.app npx playwright test --config=playwright.config.ts",
-    "test:headed": "npx playwright test --config=playwright.config.ts --headed",
-    "test:report": "npx playwright show-report tests/report"
+    "test": "node scripts/run-playwright.mjs local",
+    "test:prod": "node scripts/run-playwright.mjs prod",
+    "test:headed": "node scripts/run-playwright.mjs local --headed",
+    "test:report": "npx playwright show-report tests/report",
+    "serve:dist": "vite build && vite preview --port 4173 --strictPort",
+    "test:local": "node scripts/run-playwright.mjs local"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

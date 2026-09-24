@@ -317,6 +317,18 @@ Separately, the **Evidence & attachments** block is removed from all six phases 
 
 ---
 
+### DD-15 · The acceptance suite defaults to the local build; production is opt-in
+**Status:** Active  
+**Date:** 2026-09-24  
+**Decision:** `playwright.config.ts` resolves its target in this order: an explicit `BASE_URL` env var, then `PW_TARGET=prod`, then a local `vite preview` server on `http://localhost:4173`. The last of these is the default, so a bare `npm test` exercises the local build. Production is reached only on purpose, via `npm run test:prod` or an explicit `BASE_URL`. Local runs start a Playwright `webServer` that runs `npm run serve:dist` (`vite build && vite preview --strictPort`), with `reuseExistingServer: false`. The resolved target is printed at the start of every run and asserted by `00-test-target.spec.ts`.  
+**Rationale:** The config previously defaulted to the production URL. A developer running the suite with no `BASE_URL` set was therefore testing the deployed site: local edits could neither pass nor fail, because nothing local was ever loaded, and the suite reported green on code it had not read. This produced a real misdiagnosis — a branch was believed to be stalled on a code defect when the suite had simply never seen it. Defaulting to local makes the harmless mistake (forgetting to opt into prod) visible and the dangerous one (silently testing the wrong artefact) impossible.  
+`reuseExistingServer` is off deliberately: an already-running preview server is exactly how a stale `dist/` gets served, which was the second half of the same incident. A port clash is now a loud failure rather than a silent wrong answer. The cost is one `vite build` (~7s) per local run, which is cheaper than one wrong diagnosis.  
+**Also fixed:** `test:prod` invoked `cross-env`, which was never a dependency, so the script could not run at all. Both scripts now go through `scripts/run-playwright.mjs`, a dependency-free launcher that spawns Playwright's own CLI directly.  
+**Not changed:** CI. `ci.yml` sets `BASE_URL` to the Vercel preview URL explicitly and calls `npx playwright test` directly, so it takes the first branch of the precedence rule and behaves exactly as before — see the amendment on CD-08.  
+**Where:** `playwright.config.ts`, `scripts/run-playwright.mjs`, `package.json` (`test`, `test:local`, `test:prod`, `test:headed`, `serve:dist`), `tests/acceptance/00-test-target.spec.ts`.
+
+---
+
 ### CD-11 · Test maintenance is mandatory with every code change
 **Status:** Active  
 **Date:** 2026-07-16  
@@ -354,9 +366,10 @@ Separately, the **Evidence & attachments** block is removed from all six phases 
 ---
 
 ### CD-08 · Acceptance tests run against a deployed preview URL, not localhost
-**Status:** Active  
+**Status:** Active in CI; amended for local runs by DD-15  
 **Decision:** Playwright tests in CI run against the Vercel preview deployment (`BASE_URL` env var), not a locally-started dev server.  
-**Rationale:** Tests exercise the production build (Vite bundled, environment variables injected by Vercel) rather than the dev server. Catches build-time issues that wouldn't surface in a `vite dev` environment.
+**Rationale:** Tests exercise the production build (Vite bundled, environment variables injected by Vercel) rather than the dev server. Catches build-time issues that wouldn't surface in a `vite dev` environment.  
+**Amendment (DD-15, 2026-09-24):** This still governs CI, which sets `BASE_URL` explicitly and is unchanged. It no longer governs the *local* default, which now serves the freshly built `dist/` over `vite preview`. The rationale is preserved either way: `vite preview` serves the same production bundle `vite build` emits, not a dev server. What DD-15 removes is the case this entry never intended — a developer running the suite with no `BASE_URL` and unknowingly testing production.
 
 ---
 
@@ -371,5 +384,5 @@ Separately, the **Evidence & attachments** block is removed from all six phases 
 
 ---
 
-*Last updated: 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
+*Last updated: 2026-09-24 (DD-15: the Playwright suite now defaults to the local dist/ build instead of the production URL, with a webServer that rebuilds dist/ first; test:prod and an explicit BASE_URL remain the opt-in routes to the deployed site, and CI is unaffected. CD-08 amended accordingly. test:prod's missing cross-env dependency fixed via scripts/run-playwright.mjs). Previously 2026-09-16 (AD-14: corrects AD-13's "byte-identical" claim for spe-framework.html, which no longer holds as of e3672ab). Previously 2026-09-15 (merged feature/new-ui-integration into main: AD-13 S&PE Product AI Crucible static "New UI" section, Playwright spec AC-20, and spe-framework.html copy revisions). Previously 2026-07-24 (DD-13 tab restructure: User Analysis + Artefacts merged into Use Case - NHS Platform, Draft Script added; seed data updated to reflect revised Overall Objective wording in Draft Script). Previously 2026-07-23 (added AD-10 NHS Performance Analytics microsite; AD-11 canned AI responses; AD-12 client-side password gate; DD-09 prototype detail view; DD-10 persona video embed in User Analysis; CD-10 prototype HTML in Firebase; CD-11 test maintenance mandatory; Playwright specs AC-17/18/19)*  
 *Update this file whenever a significant architectural, design, or coding decision is made, changed, or reversed.*
